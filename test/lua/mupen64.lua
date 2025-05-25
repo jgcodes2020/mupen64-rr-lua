@@ -11,6 +11,12 @@
 dofile(debug.getinfo(1).source:sub(2):gsub("[^\\]+$", "") .. 'prelude.lua')
 
 lust.describe('mupen64', function()
+    lust.describe('shims', function()
+        lust.it('table_get_n_works', function()
+            lust.expect(table.getn({ 1, 2, 3 })).to.equal(3)
+        end)
+    end)
+
     lust.describe('movie', function()
         lust.it('play_returns_res_ok', function()
             lust.expect(movie.play("i_dont_exist_but_whatever.m64")).to.equal(Mupen.result.res_ok)
