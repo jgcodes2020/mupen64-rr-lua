@@ -20,10 +20,31 @@ CORE_EXPORT void* CORE_RDRAM = nullptr;
 // ReSharper restore CppInconsistentNaming
 }
 
+static void log_dummy(const std::wstring&)
+{
+}
+
 core_result core_init(core_params* params)
 {
     g_core = params;
 
+    if (!g_core->log_trace)
+    {
+        g_core->log_trace = log_dummy;
+    }
+    if (!g_core->log_info)
+    {
+        g_core->log_info = log_dummy;
+    }
+    if (!g_core->log_warn)
+    {
+        g_core->log_warn = log_dummy;
+    }
+    if (!g_core->log_error)
+    {
+        g_core->log_error = log_dummy;
+    }
+    
 #define DEFAULT_FUNC(name, func)                                                         \
     if (!g_core->callbacks.name)                                                         \
     {                                                                                    \
