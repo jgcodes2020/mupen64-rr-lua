@@ -383,8 +383,3 @@ void lua_pushcallback(lua_State* L, void* key)
     free(key);
     key = nullptr;
 }
-
-void lua_freecallback(void* key)
-{
-    free(key);
-}

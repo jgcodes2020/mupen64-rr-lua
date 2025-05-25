@@ -63,7 +63,6 @@ void print_con(HWND hwnd, const std::wstring& text);
 
 void* lua_tocallback(lua_State* L, int i);
 void lua_pushcallback(lua_State* L, void* key);
-void lua_freecallback(void* key);
 
 extern std::vector<t_lua_environment*> g_lua_environments;
 
