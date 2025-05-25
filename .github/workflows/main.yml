@@ -47,36 +47,36 @@ jobs:
           name: mupen-x86-sse2
           path: build/Views.Win32
           retention-days: 14
-  benchmark:
-    needs: build
-    runs-on: windows-2025
+  # benchmark:
+  #   needs: build
+  #   runs-on: windows-2025
 
-    steps:
-      - uses: actions/checkout@v4
-        with: 
-          fetch-depth: '2'
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #       with: 
+  #         fetch-depth: '2'
 
-      - name: Download x86 SSE2 Release Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: mupen-x86-sse2
-          path: build/
+  #     - name: Download x86 SSE2 Release Artifact
+  #       uses: actions/download-artifact@v4
+  #       with:
+  #         name: mupen-x86-sse2
+  #         path: build/
 
-      - name: Run x86 benchmark
-        shell: powershell
-        run: cd tools/benchmark; python benchmark.py; cd ../../;
+  #     - name: Run x86 benchmark
+  #       shell: powershell
+  #       run: cd tools/benchmark; python benchmark.py; cd ../../;
 
-      - name: 'Upload mupen.log'
-        uses: actions/upload-artifact@v4
-        with:
-          name: mupen-log
-          path: tools/benchmark/mupen.log
-          retention-days: 14
+  #     - name: 'Upload mupen.log'
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: mupen-log
+  #         path: tools/benchmark/mupen.log
+  #         retention-days: 14
 
-      - name: 'Upload mupen.dmp'
-        uses: actions/upload-artifact@v4
-        with:
-          name: mupen-dmp
-          path: tools/benchmark/mupen.dmp
-          retention-days: 14
+  #     - name: 'Upload mupen.dmp'
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: mupen-dmp
+  #         path: tools/benchmark/mupen.dmp
+  #         retention-days: 14
           
