@@ -29,10 +29,11 @@ namespace LuaCore::Movie
         return 1;
     }
 
-    static int StopMovie(lua_State* L)
+    static int stop(lua_State* L)
     {
-        core_vcr_stop_all();
-        return 0;
+        const auto result = core_vcr_stop_all();
+        lua_pushinteger(L, result);
+        return 1;
     }
 
     static int GetMovieFilename(lua_State* L)

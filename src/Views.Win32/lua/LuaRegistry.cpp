@@ -186,7 +186,7 @@ const luaL_Reg JOYPAD_FUNCS[] = {
 
 const luaL_Reg MOVIE_FUNCS[] = {
 {"play", LuaCore::Movie::play},
-{"stop", LuaCore::Movie::StopMovie},
+{"stop", LuaCore::Movie::stop},
 {"get_filename", LuaCore::Movie::GetMovieFilename},
 {"get_readonly", LuaCore::Movie::GetVCRReadOnly},
 {"set_readonly", LuaCore::Movie::SetVCRReadOnly},
