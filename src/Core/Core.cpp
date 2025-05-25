@@ -44,7 +44,7 @@ core_result core_init(core_params* params)
     {
         g_core->log_error = log_dummy;
     }
-    
+
 #define DEFAULT_FUNC(name, func)                                                         \
     if (!g_core->callbacks.name)                                                         \
     {                                                                                    \

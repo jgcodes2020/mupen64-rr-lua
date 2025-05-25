@@ -114,7 +114,7 @@ void core_vr_resume_emu_impl(bool force)
     {
         return;
     }
-    
+
     if (emu_launched)
     {
         emu_paused = 0;
@@ -149,7 +149,7 @@ void core_vr_frame_advance(size_t count)
     {
         return;
     }
-    
+
     frame_advance_outstanding = count;
     core_vr_resume_emu();
 }
