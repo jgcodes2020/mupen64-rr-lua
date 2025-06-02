@@ -11,9 +11,6 @@
 #include <memory/pif.h>
 #include <r4300/r4300.h>
 
-extern int32_t m_current_vi;
-extern int32_t m_current_sample;
-
 std::chrono::duration<double, std::milli> max_vi_s_ms;
 
 size_t frame_deltas_ptr = 0;
@@ -22,9 +19,9 @@ size_t vi_deltas_ptr = 0;
 time_point last_vi_time;
 time_point last_frame_time;
 
-void core_vr_on_speed_modifier_changed()
+void vr_on_speed_modifier_changed()
 {
-    const double max_vi_s = core_vr_get_vis_per_second(ROM_HEADER.Country_code);
+    const double max_vi_s = g_ctx.vr_get_vis_per_second(ROM_HEADER.Country_code);
     max_vi_s_ms = std::chrono::duration<double, std::milli>(
     1000.0 / (max_vi_s * static_cast<double>(g_core->cfg->fps_modifier) / 100));
 

@@ -6,3 +6,5 @@
 
 #include <Core/stdafx.h>
 #include <Core/include/core_api.h>
+#include <catch_amalgamated.hpp>
+#include <fakeit.hpp>

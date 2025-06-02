@@ -18,7 +18,7 @@ bool core_cht_compile(const std::wstring& code, core_cheat& cheat)
 {
     core_cheat compiled_cheat{};
 
-    auto lines = split_string(code, L"\n");
+    auto lines = g_core->io_service->split_wstring(code, L"\n");
 
     bool serial = false;
     size_t serial_count = 0;
@@ -83,7 +83,7 @@ bool core_cht_compile(const std::wstring& code, core_cheat& cheat)
         {
             // Write byte if GS button pressed
             compiled_cheat.instructions.emplace_back(std::make_tuple(false, [=] {
-                if (core_vr_get_gs_button())
+                if (g_ctx.vr_get_gs_button())
                 {
                     core_rdram_store<uint8_t>(rdramb, address, val & 0xFF);
                 }
@@ -94,7 +94,7 @@ bool core_cht_compile(const std::wstring& code, core_cheat& cheat)
         {
             // Write word if GS button pressed
             compiled_cheat.instructions.emplace_back(std::make_tuple(false, [=] {
-                if (core_vr_get_gs_button())
+                if (g_ctx.vr_get_gs_button())
                 {
                     core_rdram_store<uint16_t>(rdramb, address, val);
                 }
@@ -170,9 +170,9 @@ bool cht_read_from_file(const std::filesystem::path& path, std::vector<core_chea
 
     fclose(f);
 
-    std::wstring wstr = string_to_wstring(str);
+    std::wstring wstr = g_core->io_service->string_to_wstring(str);
 
-    const auto lines = split_string(wstr, L"\n");
+    const auto lines = g_core->io_service->split_string(wstr, L"\n");
 
     bool reading_cheat_code = false;
     cheats.clear();
@@ -236,7 +236,7 @@ void core_cht_get_override_stack(std::stack<std::vector<core_cheat>>& stack)
     stack = cheat_stack;
 }
 
-void core_cht_get_list(std::vector<core_cheat>& list)
+void cht_get_list(std::vector<core_cheat>& list)
 {
     std::scoped_lock lock(cheats_mutex);
 

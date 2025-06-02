@@ -39,7 +39,7 @@ const std::unordered_map<LuaCallbacks::callback_key, std::function<int(lua_State
      return lua_pcall(l, 4, 0, 0);
  }},
 {LuaCallbacks::REG_ATWARPMODIFYSTATUSCHANGED, [](auto l) -> int {
-     lua_pushinteger(l, core_vcr_get_warp_modify_status());
+     lua_pushinteger(l, g_core_ctx->vcr_get_warp_modify_status());
      return lua_pcall(l, 1, 0, 0);
  }},
 };
@@ -185,7 +185,7 @@ bool invoke_callbacks_with_key_impl(const t_lua_environment& lua, const std::fun
         if (function(lua.L))
         {
             const char* str = lua_tostring(lua.L, -1);
-            print_con(lua.hwnd, string_to_wstring(str) + L"\r\n");
+            print_con(lua.hwnd, io_service.string_to_wstring(str) + L"\r\n");
             g_view_logger->info("Lua error: {}", str);
             return false;
         }

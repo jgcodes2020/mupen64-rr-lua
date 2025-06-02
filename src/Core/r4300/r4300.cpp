@@ -68,6 +68,7 @@ int32_t vi_field = 0;
 bool g_vr_fast_forward;
 bool g_vr_frame_skipped;
 core_system_type g_sys_type;
+std::atomic<int32_t> g_wait_counter = 0;
 
 FILE* g_eeprom_file;
 FILE* g_sram_file;
@@ -83,32 +84,32 @@ FILE* g_mpak_file;
         if (blocks[address >> 12]->block[(address & 0xFFF) / 4].ops != NOTCOMPILED) \
             invalid_code[address >> 12] = 1;
 
-void core_vr_invalidate_visuals()
+void vr_invalidate_visuals()
 {
     screen_invalidated = true;
 }
 
 std::filesystem::path get_sram_path()
 {
-    return std::format(L"{}{} {}.sra", g_core->get_saves_directory().wstring(), string_to_wstring((const char*)ROM_HEADER.nom), core_vr_country_code_to_country_name(ROM_HEADER.Country_code));
+    return std::format(L"{}{} {}.sra", g_core->get_saves_directory().wstring(), g_core->io_service->string_to_wstring((const char*)ROM_HEADER.nom), g_ctx.vr_country_code_to_country_name(ROM_HEADER.Country_code));
 }
 
 std::filesystem::path get_eeprom_path()
 {
-    return std::format(L"{}{} {}.eep", g_core->get_saves_directory().wstring(), string_to_wstring((const char*)ROM_HEADER.nom), core_vr_country_code_to_country_name(ROM_HEADER.Country_code));
+    return std::format(L"{}{} {}.eep", g_core->get_saves_directory().wstring(), g_core->io_service->string_to_wstring((const char*)ROM_HEADER.nom), g_ctx.vr_country_code_to_country_name(ROM_HEADER.Country_code));
 }
 
 std::filesystem::path get_flashram_path()
 {
-    return std::format(L"{}{} {}.fla", g_core->get_saves_directory().wstring(), string_to_wstring((const char*)ROM_HEADER.nom), core_vr_country_code_to_country_name(ROM_HEADER.Country_code));
+    return std::format(L"{}{} {}.fla", g_core->get_saves_directory().wstring(), g_core->io_service->string_to_wstring((const char*)ROM_HEADER.nom), g_ctx.vr_country_code_to_country_name(ROM_HEADER.Country_code));
 }
 
 std::filesystem::path get_mempak_path()
 {
-    return std::format(L"{}{} {}.mpk", g_core->get_saves_directory().wstring(), string_to_wstring((const char*)ROM_HEADER.nom), core_vr_country_code_to_country_name(ROM_HEADER.Country_code));
+    return std::format(L"{}{} {}.mpk", g_core->get_saves_directory().wstring(), g_core->io_service->string_to_wstring((const char*)ROM_HEADER.nom), g_ctx.vr_country_code_to_country_name(ROM_HEADER.Country_code));
 }
 
-void core_vr_resume_emu_impl(bool force)
+void vr_resume_emu_impl(bool force)
 {
     if (!force && !vcr_allows_core_unpause())
     {
@@ -123,12 +124,22 @@ void core_vr_resume_emu_impl(bool force)
     g_core->callbacks.emu_paused_changed(emu_paused);
 }
 
-void core_vr_resume_emu()
+void vr_wait_increment()
 {
-    core_vr_resume_emu_impl(false);
+    ++g_wait_counter;
 }
 
-void core_vr_pause_emu()
+void vr_wait_decrement()
+{
+    --g_wait_counter;
+}
+
+void vr_resume_emu()
+{
+    vr_resume_emu_impl(false);
+}
+
+void vr_pause_emu()
 {
     if (!vcr_allows_core_pause())
     {
@@ -143,7 +154,7 @@ void core_vr_pause_emu()
     g_core->callbacks.emu_paused_changed(emu_paused);
 }
 
-void core_vr_frame_advance(size_t count)
+void vr_frame_advance(size_t count)
 {
     if (!vcr_allows_core_unpause())
     {
@@ -151,15 +162,15 @@ void core_vr_frame_advance(size_t count)
     }
 
     frame_advance_outstanding = count;
-    core_vr_resume_emu();
+    vr_resume_emu();
 }
 
-bool core_vr_get_paused()
+bool vr_get_paused()
 {
     return emu_paused;
 }
 
-bool core_vr_get_frame_advance()
+bool vr_get_frame_advance()
 {
     return frame_advance_outstanding;
 }
@@ -169,17 +180,17 @@ void terminate_emu()
     stop = 1;
 }
 
-bool core_vr_get_core_executing()
+bool vr_get_core_executing()
 {
     return core_executing;
 }
 
-bool core_vr_get_launched()
+bool vr_get_launched()
 {
     return emu_launched;
 }
 
-std::filesystem::path CALL core_vr_get_rom_path()
+std::filesystem::path vr_get_rom_path()
 {
     return rom_path;
 }
@@ -1976,7 +1987,7 @@ void core_start()
 bool open_core_file_stream(const std::filesystem::path& path, FILE** file)
 {
     g_core->log_info(std::format(L"[Core] Opening core stream from {}...", path.wstring()));
-
+    
     if (!exists(path))
     {
         FILE* f = nullptr;
@@ -1987,10 +1998,7 @@ bool open_core_file_stream(const std::filesystem::path& path, FILE** file)
         fflush(f);
         fclose(f);
     }
-    if (fopen_s(file, path.string().c_str(), "rb+"))
-    {
-        return false;
-    }
+    *file = _wfsopen(path.wstring().c_str(), L"rb+", _SH_DENYNO);
     return *file != nullptr;
 }
 
@@ -2044,7 +2052,7 @@ void audio_thread()
             continue;
         }
 
-        if (core_vcr_is_seeking())
+        if (g_ctx.vcr_is_seeking())
         {
             continue;
         }
@@ -2105,7 +2113,7 @@ core_result vr_close_rom_impl(bool stop_vcr)
         return VR_NotRunning;
     }
 
-    core_vr_resume_emu_impl(true);
+    vr_resume_emu_impl(true);
 
     audio_thread_stop_requested = true;
     audio_thread_handle.join();
@@ -2113,7 +2121,7 @@ core_result vr_close_rom_impl(bool stop_vcr)
 
     if (stop_vcr)
     {
-        core_vcr_stop_all();
+        g_ctx.vcr_stop_all();
     }
 
     g_core->callbacks.emu_stopping();
@@ -2158,7 +2166,7 @@ core_result vr_start_rom_impl(std::filesystem::path path)
     if (path.extension() == ".m64")
     {
         core_vcr_movie_header movie_header{};
-        const auto result = core_vcr_parse_header(path, &movie_header);
+        const auto result = g_ctx.vcr_parse_header(path, &movie_header);
         if (result != Res_Ok)
         {
             g_core->callbacks.emu_starting_changed(false);
@@ -2166,7 +2174,7 @@ core_result vr_start_rom_impl(std::filesystem::path path)
         }
 
         const auto matching_rom = g_core->find_available_rom([&](auto header) {
-            strtrim((char*)header.nom, sizeof(header.nom));
+            g_core->io_service->strtrim((char*)header.nom, sizeof(header.nom));
             return movie_header.rom_crc1 == header.CRC1 && !_strnicmp((const char*)header.nom, movie_header.rom_name, 20);
         });
 
@@ -2200,7 +2208,7 @@ core_result vr_start_rom_impl(std::filesystem::path path)
         return VR_FileOpenFailed;
     }
 
-    core_vr_on_speed_modifier_changed();
+    g_ctx.vr_on_speed_modifier_changed();
 
     g_core->log_info(std::format(L"[Core] vr_start_rom entry took {}ms", static_cast<int32_t>((std::chrono::high_resolution_clock::now() - start_time).count() / 1'000'000)));
 
@@ -2216,13 +2224,13 @@ core_result vr_start_rom_impl(std::filesystem::path path)
     return Res_Ok;
 }
 
-core_result core_vr_start_rom(std::filesystem::path path)
+core_result vr_start_rom(std::filesystem::path path)
 {
     std::lock_guard lock(g_emu_cs);
     return vr_start_rom_impl(path);
 }
 
-core_result core_vr_close_rom(bool stop_vcr)
+core_result vr_close_rom(bool stop_vcr)
 {
     std::lock_guard lock(g_emu_cs);
     return vr_close_rom_impl(stop_vcr);
@@ -2236,11 +2244,10 @@ core_result vr_reset_rom_impl(bool reset_save_data, bool stop_vcr, bool skip_res
     // Special case:
     // If we're recording a movie and have reset recording enabled, we don't reset immediately, but let the VCR
     // handle the reset instead. This is to ensure that the movie file is properly closed and saved.
-    const auto task = core_vcr_get_task();
+    const auto task = g_ctx.vcr_get_task();
     if (g_core->cfg->is_reset_recording_enabled && !skip_reset_recording_check && task == task_recording)
     {
-        g_core->log_trace(L"vr_reset_rom_impl Reset during recording, handing off to VCR");
-        vcr_reset_requested = true;
+        vcr_request_reset();
         return Res_Ok;
     }
 
@@ -2251,7 +2258,7 @@ core_result vr_reset_rom_impl(bool reset_save_data, bool stop_vcr, bool skip_res
     frame_advance_outstanding = 0;
     emu_resetting = true;
 
-    core_result result = core_vr_close_rom(stop_vcr);
+    core_result result = g_ctx.vr_close_rom(stop_vcr);
     if (result != Res_Ok)
     {
         emu_resetting = false;
@@ -2264,7 +2271,7 @@ core_result vr_reset_rom_impl(bool reset_save_data, bool stop_vcr, bool skip_res
         clear_save_data();
     }
 
-    result = core_vr_start_rom(rom_path);
+    result = g_ctx.vr_start_rom(rom_path);
     if (result != Res_Ok)
     {
         emu_resetting = false;
@@ -2277,34 +2284,39 @@ core_result vr_reset_rom_impl(bool reset_save_data, bool stop_vcr, bool skip_res
     return Res_Ok;
 }
 
-core_result core_vr_reset_rom(bool reset_save_data, bool stop_vcr)
+core_result vr_reset_rom(bool reset_save_data, bool stop_vcr)
 {
     std::lock_guard lock(g_emu_cs);
     return vr_reset_rom_impl(reset_save_data, stop_vcr);
 }
 
-void core_vr_toggle_fullscreen_mode()
+void vr_toggle_fullscreen_mode()
 {
     g_core->plugin_funcs.video_change_window();
     fullscreen ^= true;
 }
 
-void core_vr_set_fast_forward(bool value)
+void vr_set_fast_forward(bool value)
 {
     g_vr_fast_forward = value;
 }
 
-bool core_vr_is_fullscreen()
+bool vr_is_fullscreen()
 {
     return fullscreen;
 }
 
-bool core_vr_get_gs_button()
+bool vr_get_gs_button()
 {
     return gs_button;
 }
 
-void core_vr_set_gs_button(bool value)
+void vr_set_gs_button(bool value)
 {
     gs_button = value;
+}
+
+bool vr_get_mge_available()
+{
+    return g_core->plugin_funcs.video_read_video && g_core->plugin_funcs.video_get_video_size;
 }
