@@ -28,7 +28,7 @@ public:
     {
         FILE* f = nullptr;
 
-        if (fopen_s(&f, path.string().c_str(), "rb"))
+        if (_wfopen_s(&f, path.wstring().c_str(), L"rb"))
         {
             return {};
         }
