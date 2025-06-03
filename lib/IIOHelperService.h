@@ -239,7 +239,7 @@ public:
 
         FILE* fp1 = nullptr;
         FILE* fp2 = nullptr;
-        if (fopen_s(&fp1, first.string().c_str(), "rb") || fopen_s(&fp2, second.string().c_str(), "rb"))
+        if (_wfopen_s(&fp1, first.wstring().c_str(), L"rb") || _wfopen_s(&fp2, second.wstring().c_str(), L"rb"))
         {
             return false;
         }
