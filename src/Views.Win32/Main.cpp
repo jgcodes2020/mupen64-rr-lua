@@ -1362,6 +1362,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
             case IDM_AUDIO_SETTINGS:
             case IDM_RSP_SETTINGS:
                 {
+                    BetterEmulationLock lock;
+                
                     // FIXME: Is it safe to load multiple plugin instances? This assumes they cooperate and dont overwrite eachother's files...
                     // It does seem fine tho, since the config dialog is modal and core is paused
                     g_hwnd_plug = g_main_hwnd;
