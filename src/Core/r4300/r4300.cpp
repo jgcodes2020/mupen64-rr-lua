@@ -1991,7 +1991,7 @@ bool open_core_file_stream(const std::filesystem::path& path, FILE** file)
     if (!exists(path))
     {
         FILE* f = nullptr;
-        if (fopen_s(&f, path.string().c_str(), "w"))
+        if (_wfopen_s(&f, path.wstring().c_str(), L"w"))
         {
             return false;
         }
