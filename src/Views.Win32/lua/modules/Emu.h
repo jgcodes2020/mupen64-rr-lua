@@ -204,20 +204,20 @@ namespace LuaCore::Emu
 #define A(x, n) {x, &n}
 #define B(x, n) {x, n}
         const NameAndVariable list[] = {
-        A("rdram", g_core.rdram),
-        A("rdram_register", g_core.rdram_register),
-        A("MI_register", g_core.MI_register),
-        A("pi_register", g_core.pi_register),
-        A("sp_register", g_core.sp_register),
-        A("rsp_register", g_core.rsp_register),
-        A("si_register", g_core.si_register),
-        A("vi_register", g_core.vi_register),
-        A("ri_register", g_core.ri_register),
-        A("ai_register", g_core.ai_register),
-        A("dpc_register", g_core.dpc_register),
-        A("dps_register", g_core.dps_register),
-        B("SP_DMEM", g_core.SP_DMEM),
-        B("PIF_RAM", g_core.PIF_RAM),
+        A("rdram", g_core_ctx->rdram),
+        A("rdram_register", g_core_ctx->rdram_register),
+        A("MI_register", g_core_ctx->MI_register),
+        A("pi_register", g_core_ctx->pi_register),
+        A("sp_register", g_core_ctx->sp_register),
+        A("rsp_register", g_core_ctx->rsp_register),
+        A("si_register", g_core_ctx->si_register),
+        A("vi_register", g_core_ctx->vi_register),
+        A("ri_register", g_core_ctx->ri_register),
+        A("ai_register", g_core_ctx->ai_register),
+        A("dpc_register", g_core_ctx->dpc_register),
+        A("dps_register", g_core_ctx->dps_register),
+        B("SP_DMEM", g_core_ctx->SP_DMEM),
+        B("PIF_RAM", g_core_ctx->PIF_RAM),
         {NULL, NULL}};
 #undef A
 #undef B

@@ -440,11 +440,11 @@ namespace EncodingManager
     {
         std::lock_guard lock(m_mutex);
 
-        const auto p = reinterpret_cast<short*>((char*)g_core.rdram + (g_core.ai_register->ai_dram_addr & 0xFFFFFF));
+        const auto p = reinterpret_cast<short*>((char*)g_core_ctx->rdram + (g_core_ctx->ai_register->ai_dram_addr & 0xFFFFFF));
         const auto buf = (char*)p;
-        const int ai_len = (int)g_core.ai_register->ai_len;
+        const int ai_len = (int)g_core_ctx->ai_register->ai_len;
 
-        m_audio_bitrate = (int)g_core.ai_register->ai_bitrate + 1;
+        m_audio_bitrate = (int)g_core_ctx->ai_register->ai_bitrate + 1;
 
         if (!m_capturing)
         {
@@ -475,15 +475,15 @@ namespace EncodingManager
             return;
         }
 
-        m_audio_bitrate = (int)g_core.ai_register->ai_bitrate + 1;
+        m_audio_bitrate = (int)g_core_ctx->ai_register->ai_bitrate + 1;
 
         switch (type)
         {
         case sys_ntsc:
-            m_audio_freq = (int)(48681812 / (g_core.ai_register->ai_dacrate + 1));
+            m_audio_freq = (int)(48681812 / (g_core_ctx->ai_register->ai_dacrate + 1));
             break;
         case sys_pal:
-            m_audio_freq = (int)(49656530 / (g_core.ai_register->ai_dacrate + 1));
+            m_audio_freq = (int)(49656530 / (g_core_ctx->ai_register->ai_dacrate + 1));
             break;
         default:
             assert(false);

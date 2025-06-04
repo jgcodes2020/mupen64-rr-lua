@@ -58,29 +58,23 @@ EXPORT core_result CALL core_create(core_params* params, core_ctx** ctx)
         g_core->log_error = log_dummy;
     }
 
-    g_core->rdram = rdram;
-    g_core->rdram_register = &rdram_register;
-    g_core->pi_register = &pi_register;
-    g_core->MI_register = &MI_register;
-    g_core->sp_register = &sp_register;
-    g_core->si_register = &si_register;
-    g_core->vi_register = &vi_register;
-    g_core->rsp_register = &rsp_register;
-    g_core->ri_register = &ri_register;
-    g_core->ai_register = &ai_register;
-    g_core->dpc_register = &dpc_register;
-    g_core->dps_register = &dps_register;
-    g_core->SP_DMEM = SP_DMEM;
-    g_core->SP_IMEM = SP_IMEM;
-    g_core->PIF_RAM = PIF_RAM;
+    g_ctx.rdram = rdram;
+    g_ctx.rdram_register = &rdram_register;
+    g_ctx.pi_register = &pi_register;
+    g_ctx.MI_register = &MI_register;
+    g_ctx.sp_register = &sp_register;
+    g_ctx.si_register = &si_register;
+    g_ctx.vi_register = &vi_register;
+    g_ctx.rsp_register = &rsp_register;
+    g_ctx.ri_register = &ri_register;
+    g_ctx.ai_register = &ai_register;
+    g_ctx.dpc_register = &dpc_register;
+    g_ctx.dps_register = &dps_register;
+    g_ctx.SP_DMEM = SP_DMEM;
+    g_ctx.SP_IMEM = SP_IMEM;
+    g_ctx.PIF_RAM = PIF_RAM;
     CORE_RDRAM = rdram;
-
-    if (!g_core->st_pre_callback)
-    {
-        g_core->st_pre_callback = [](const core_st_callback_info&, const std::vector<uint8_t>&) {
-        };
-    }
-
+    
     g_ctx.vr_byteswap = rom_byteswap;
     g_ctx.vr_get_rom_path = vr_get_rom_path;
     g_ctx.vr_get_lag_count = [] {
@@ -149,7 +143,7 @@ EXPORT core_result CALL core_create(core_params* params, core_ctx** ctx)
     g_ctx.dbg_get_rsp_enabled = dbg_get_rsp_enabled;
     g_ctx.dbg_set_rsp_enabled = dbg_set_rsp_enabled;
     g_ctx.dbg_disassemble = dbg_disassemble;
-
+    
     *ctx = &g_ctx;
 
     return Res_Ok;

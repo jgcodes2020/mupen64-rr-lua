@@ -1618,7 +1618,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
                     BetterEmulationLock lock;
 
                     wchar_t ram_start[20] = {0};
-                    wsprintfW(ram_start, L"0x%p", static_cast<void*>(g_core.rdram));
+                    wsprintfW(ram_start, L"0x%p", static_cast<void*>(g_core_ctx->rdram));
 
                     wchar_t proc_name[MAX_PATH] = {0};
                     GetModuleFileName(NULL, proc_name, MAX_PATH);
@@ -2131,13 +2131,13 @@ static void CALLBACK invalidate_callback(UINT, UINT, DWORD_PTR, DWORD_PTR, DWORD
     // We throttle FPS and VI/s visual updates to 1 per second, so no unstable values are displayed
     if (time - last_statusbar_update > std::chrono::seconds(1))
     {
-        g_core.g_frame_deltas_mutex.lock();
-        auto fps = get_rate_per_second_from_deltas(g_core.g_frame_deltas);
-        g_core.g_frame_deltas_mutex.unlock();
+        g_core_ctx->g_frame_deltas_mutex.lock();
+        auto fps = get_rate_per_second_from_deltas(g_core_ctx->g_frame_deltas);
+        g_core_ctx->g_frame_deltas_mutex.unlock();
 
-        g_core.g_vi_deltas_mutex.lock();
-        auto vis = get_rate_per_second_from_deltas(g_core.g_vi_deltas);
-        g_core.g_vi_deltas_mutex.unlock();
+        g_core_ctx->g_vi_deltas_mutex.lock();
+        auto vis = get_rate_per_second_from_deltas(g_core_ctx->g_vi_deltas);
+        g_core_ctx->g_vi_deltas_mutex.unlock();
 
         Statusbar::post(std::format(L"FPS: {:.1f}", fps), Statusbar::Section::FPS);
         Statusbar::post(std::format(L"VI/s: {:.1f}", vis), Statusbar::Section::VIs);
@@ -2360,10 +2360,12 @@ static core_result init_core()
     g_core.plugin_funcs.audio_extended_funcs = audio_extended_funcs;
     g_core.plugin_funcs.input_extended_funcs = input_extended_funcs;
     g_core.plugin_funcs.rsp_extended_funcs = rsp_extended_funcs;
+    
+    const auto result = core_create(&g_core, &g_core_ctx);
 
     setup_dummy_info();
 
-    return core_create(&g_core, &g_core_ctx);
+    return result;
 }
 
 static void main_dispatcher_init()

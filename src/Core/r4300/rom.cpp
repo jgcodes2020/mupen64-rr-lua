@@ -136,13 +136,13 @@ bool rom_load(std::filesystem::path path)
     if (rom)
     {
         free(rom);
-        g_core->rom = rom = nullptr;
+        g_ctx.rom = rom = nullptr;
     }
 
     if (rom_cache.contains(path))
     {
         g_core->log_info(L"[Core] Loading cached ROM...");
-        g_core->rom = rom = (unsigned char*)malloc(rom_cache[path].second);
+        g_ctx.rom = rom = (unsigned char*)malloc(rom_cache[path].second);
         memcpy(rom, rom_cache[path].first, rom_cache[path].second);
         return true;
     }
@@ -160,7 +160,7 @@ bool rom_load(std::filesystem::path path)
     if (g_core->cfg->use_summercart && taille < 0x4000000)
         taille = 0x4000000;
 
-    g_core->rom = rom = (unsigned char*)malloc(taille);
+    g_ctx.rom = rom = (unsigned char*)malloc(taille);
     memcpy(rom, decompressed_rom.data(), rom_size);
 
     uint8_t tmp;

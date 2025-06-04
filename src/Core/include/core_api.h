@@ -170,11 +170,9 @@ typedef struct {
 #pragma endregion
 
 /**
- * \brief The core's parameters.
+ * \brief Represents parameters passed to the core when creating it.
  */
-typedef struct {
-
-#pragma region Host-Provided
+struct core_params {
     /**
      * \brief The core's configuration.
      */
@@ -195,6 +193,8 @@ typedef struct {
      */
     core_plugin_funcs plugin_funcs;
 
+    core_controller controls[4]{};
+    
     /**
      * \brief Logs the specified message at the trace level.
      */
@@ -325,13 +325,12 @@ typedef struct {
      * \brief The savestate callback wrapper, which is invoked prior to individual savestate callbacks.
      * Can be used to display generic error information.
      */
-    void (*st_pre_callback)(const core_st_callback_info& info, const std::vector<uint8_t>& buffer);
+    void (*st_pre_callback)(const core_st_callback_info& info, const std::vector<uint8_t>& buffer) = [](const core_st_callback_info&, const std::vector<uint8_t>&) {
+    };
+};
 
-#pragma endregion
-
-#pragma region Core-Provided
-    core_controller controls[4];
-
+struct core_ctx {
+    // TODO: Remove these and refactor into a get_timings function.
     core_timer_delta g_frame_deltas[core_timer_max_deltas];
     std::mutex g_frame_deltas_mutex;
     core_timer_delta g_vi_deltas[core_timer_max_deltas];
@@ -354,10 +353,6 @@ typedef struct {
     uint32_t* SP_IMEM;
     uint32_t* PIF_RAM;
 
-#pragma endregion
-} core_params;
-
-struct core_ctx {
 #pragma region Emulator
 
     /**

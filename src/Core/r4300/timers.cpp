@@ -28,11 +28,11 @@ void vr_on_speed_modifier_changed()
     last_frame_time = std::chrono::high_resolution_clock::now();
     last_vi_time = std::chrono::high_resolution_clock::now();
 
-    for (auto& delta : g_core->g_frame_deltas)
+    for (auto& delta : g_ctx.g_frame_deltas)
     {
         delta = {};
     }
-    for (auto& delta : g_core->g_vi_deltas)
+    for (auto& delta : g_ctx.g_vi_deltas)
     {
         delta = {};
     }
@@ -45,9 +45,9 @@ void timer_new_frame()
 {
     const auto current_frame_time = std::chrono::high_resolution_clock::now();
 
-    g_core->g_frame_deltas_mutex.lock();
-    g_core->g_frame_deltas[frame_deltas_ptr] = current_frame_time - last_frame_time;
-    g_core->g_frame_deltas_mutex.unlock();
+    g_ctx.g_frame_deltas_mutex.lock();
+    g_ctx.g_frame_deltas[frame_deltas_ptr] = current_frame_time - last_frame_time;
+    g_ctx.g_frame_deltas_mutex.unlock();
     frame_deltas_ptr = (frame_deltas_ptr + 1) % core_timer_max_deltas;
 
     g_core->callbacks.frame();
@@ -102,9 +102,9 @@ void timer_new_vi()
         }
     }
 
-    g_core->g_vi_deltas_mutex.lock();
-    g_core->g_vi_deltas[vi_deltas_ptr] = current_vi_time - last_vi_time;
-    g_core->g_vi_deltas_mutex.unlock();
+    g_ctx.g_vi_deltas_mutex.lock();
+    g_ctx.g_vi_deltas[vi_deltas_ptr] = current_vi_time - last_vi_time;
+    g_ctx.g_vi_deltas_mutex.unlock();
     vi_deltas_ptr = (vi_deltas_ptr + 1) % core_timer_max_deltas;
 
     last_vi_time = std::chrono::high_resolution_clock::now();
