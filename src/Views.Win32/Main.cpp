@@ -73,6 +73,7 @@ bool g_in_menu_loop;
 bool g_vis_since_input_poll_warning_dismissed;
 bool g_emu_starting;
 bool g_fast_forward;
+bool fullscreen{};
 
 ULONG_PTR gdi_plus_token;
 
@@ -1270,7 +1271,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
             CheckMenuItem(g_main_menu, IDM_LOOP_MOVIE, g_config.core.is_movie_loop_enabled ? MF_CHECKED : MF_UNCHECKED);
             CheckMenuItem(g_main_menu, IDM_VCR_READONLY, g_config.core.vcr_readonly ? MF_CHECKED : MF_UNCHECKED);
             CheckMenuItem(g_main_menu, IDM_WAIT_AT_MOVIE_END, g_config.core.wait_at_movie_end ? MF_CHECKED : MF_UNCHECKED);
-            CheckMenuItem(g_main_menu, IDM_FULLSCREEN, g_core_ctx->vr_is_fullscreen() ? MF_CHECKED : MF_UNCHECKED);
+            CheckMenuItem(g_main_menu, IDM_FULLSCREEN, fullscreen ? MF_CHECKED : MF_UNCHECKED);
 
             for (int i = IDM_SELECT_1; i < IDM_SELECT_10; ++i)
             {
@@ -1660,7 +1661,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
                 DestroyWindow(g_main_hwnd);
                 break;
             case IDM_FULLSCREEN:
-                g_core_ctx->vr_toggle_fullscreen_mode();
+                g_view_plugin_funcs.video_change_window();
+                fullscreen ^= true;
                 break;
             case IDM_REFRESH_ROMBROWSER:
                 if (!g_core_ctx->vr_get_launched())

@@ -114,7 +114,6 @@ typedef struct {
     FBREAD video_fb_read;
     FBWRITE video_fb_write;
     FBGETFRAMEBUFFERINFO video_fb_get_frame_buffer_info;
-    CHANGEWINDOW video_change_window;
 #pragma endregion
 
 #pragma region Audio
@@ -436,13 +435,7 @@ struct core_ctx {
      * \brief Starts frame advancing the specified amount of frames.
      */
     std::function<void(size_t)> vr_frame_advance;
-
-    /**
-     * \brief Toggles between fullscreen and windowed mode.
-     * TODO: Move this to the view; the core should not be responsible for the video plugin's fullscreen state.
-     */
-    std::function<void()> vr_toggle_fullscreen_mode;
-
+    
     /**
      * \brief Sets the fast-forward state.
      */
@@ -452,11 +445,6 @@ struct core_ctx {
      * \brief Gets whether tracelogging is active.
      */
     std::function<bool()> vr_is_tracelog_active;
-
-    /**
-     * \brief Gets the fullscreen state.
-     */
-    std::function<bool()> vr_is_fullscreen;
 
     /**
      * \brief Gets the GS button state.

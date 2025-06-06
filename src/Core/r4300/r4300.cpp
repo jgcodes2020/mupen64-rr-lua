@@ -36,7 +36,6 @@ volatile bool core_executing = false;
 volatile bool emu_resetting = false;
 std::atomic<size_t> frame_advance_outstanding = 0;
 size_t g_total_frames = 0;
-bool fullscreen = false;
 bool gs_button = false;
 
 uint32_t i, dynacore = 0, interpcore = 0;
@@ -2290,20 +2289,9 @@ core_result vr_reset_rom(bool reset_save_data, bool stop_vcr)
     return vr_reset_rom_impl(reset_save_data, stop_vcr);
 }
 
-void vr_toggle_fullscreen_mode()
-{
-    g_core->plugin_funcs.video_change_window();
-    fullscreen ^= true;
-}
-
 void vr_set_fast_forward(bool value)
 {
     g_vr_fast_forward = value;
-}
-
-bool vr_is_fullscreen()
-{
-    return fullscreen;
 }
 
 bool vr_get_gs_button()

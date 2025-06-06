@@ -31,6 +31,8 @@ static DLLABOUT dll_about{};
 static DLLCONFIG dll_config{};
 static DLLTEST dll_test{};
 
+view_plugin_funcs g_view_plugin_funcs{};
+
 #pragma region Dummy Functions
 
 static uint32_t CALL dummy_do_rsp_cycles(uint32_t Cycles)
@@ -163,7 +165,7 @@ void load_gfx(HMODULE handle)
     RECEIVEEXTENDEDFUNCS receive_extended_funcs;
     FUNC(receive_extended_funcs, RECEIVEEXTENDEDFUNCS, dummy_receive_extended_funcs, "ReceiveExtendedFuncs");
 
-    FUNC(g_core.plugin_funcs.video_change_window, CHANGEWINDOW, dummy_void, "ChangeWindow");
+    FUNC(g_view_plugin_funcs.video_change_window, CHANGEWINDOW, dummy_void, "ChangeWindow");
     FUNC(g_core.plugin_funcs.video_close_dll, CLOSEDLL, dummy_void, "CloseDLL");
     FUNC(initiate_gfx, INITIATEGFX, dummy_initiate_gfx, "InitiateGFX");
     FUNC(g_core.plugin_funcs.video_process_dlist, PROCESSDLIST, dummy_void, "ProcessDList");

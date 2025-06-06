@@ -6,6 +6,13 @@
 
 #pragma once
 
+/**
+ * \brief Plugin functions used solely in the view.
+ */
+struct view_plugin_funcs {
+    CHANGEWINDOW video_change_window = nullptr;
+};
+
 class Plugin {
 public:
     /**
@@ -77,6 +84,8 @@ private:
     uint16_t m_version;
     HMODULE m_module;
 };
+
+extern view_plugin_funcs g_view_plugin_funcs;
 
 /// <summary>
 /// Initializes dummy info used by per-plugin functions
