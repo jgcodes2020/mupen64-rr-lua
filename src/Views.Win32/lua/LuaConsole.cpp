@@ -144,7 +144,9 @@ INT_PTR CALLBACK lua_dialog_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpar
                 }
             case IDC_BUTTON_LUABROWSE:
                 {
-                    const auto path = FilePicker::show_open_dialog(L"o_lua", hwnd, L"*.lua");
+                    EnableWindow(hwnd, FALSE);
+                    const auto path = FilePicker::show_open_dialog(L"o_lua", g_main_hwnd, L"*.lua");
+                    EnableWindow(hwnd, TRUE);
 
                     if (path.empty())
                     {
