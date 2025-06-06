@@ -668,18 +668,6 @@ typedef enum {
     task_playback
 } core_vcr_task;
 
-/**
- * \brief The movie freeze buffer, which is used to store the movie (with only essential data) associated with a savestate inside the savestate.
- */
-typedef struct {
-    uint32_t size;
-    uint32_t uid;
-    uint32_t current_sample;
-    uint32_t current_vi;
-    uint32_t length_samples;
-    std::vector<core_buttons> input_buffer;
-} core_vcr_freeze_info;
-
 #pragma endregion
 
 #pragma region Debugger

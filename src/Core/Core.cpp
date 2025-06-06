@@ -113,11 +113,8 @@ EXPORT core_result CALL core_create(core_params* params, core_ctx** ctx)
     g_ctx.vcr_replace_author_info = vcr_replace_author_info;
     g_ctx.vcr_get_seek_completion = vcr_get_seek_completion;
     g_ctx.vcr_begin_seek = vcr_begin_seek;
-    g_ctx.vcr_convert_freeze_buffer_to_movie = vcr_convert_freeze_buffer_to_movie;
     g_ctx.vcr_stop_seek = vcr_stop_seek;
     g_ctx.vcr_is_seeking = vcr_is_seeking;
-    g_ctx.vcr_freeze = vcr_freeze;
-    g_ctx.vcr_unfreeze = vcr_unfreeze;
     g_ctx.vcr_write_backup = vcr_write_backup;
     g_ctx.vcr_stop_all = vcr_stop_all;
     g_ctx.vcr_get_path = vcr_get_path;

@@ -133,8 +133,8 @@ std::vector<uint8_t> generate_savestate()
     memset(g_flashram_buf, 0, sizeof(g_flashram_buf));
     memset(g_event_queue_buf, 0, sizeof(g_event_queue_buf));
 
-    core_vcr_freeze_info freeze{};
-    uint32_t movie_active = vcr_freeze(&freeze);
+    vcr_freeze_info freeze{};
+    uint32_t movie_active = vcr_freeze(freeze);
 
     // NOTE: This saving needs to be done **after** the fixing block, as it is now. See previous regression in f9d58f639c798cbc26bbb808b1c3dbd834ffe2d9.
     save_flashram_infos(g_flashram_buf);
@@ -372,7 +372,7 @@ void savestates_load_immediate_impl(const t_savestate_task& task)
     {
         // this .st is part of a movie, we need to overwrite our current movie buffer
         // hash matches, load and verify rest of the data
-        core_vcr_freeze_info freeze{};
+        vcr_freeze_info freeze{};
 
         g_core->io_service->memread(&ptr, &freeze.size, sizeof(freeze.size));
         g_core->io_service->memread(&ptr, &freeze.uid, sizeof(freeze.uid));

@@ -580,15 +580,6 @@ struct core_ctx {
     std::function<core_result(std::wstring str, bool pause_at_end)> vcr_begin_seek;
 
     /**
-     * \brief Converts a freeze buffer into a movie, trying to reconstruct as much as possible
-     * \param freeze The freeze buffer to convert
-     * \param header The generated header
-     * \param inputs The generated inputs
-     * \return The operation result
-     */
-    std::function<core_result(const core_vcr_freeze_info& freeze, core_vcr_movie_header& header, std::vector<core_buttons>& inputs)> vcr_convert_freeze_buffer_to_movie;
-
-    /**
      * \brief Stops the current seek operation
      */
     std::function<void()> vcr_stop_seek;
@@ -597,20 +588,6 @@ struct core_ctx {
      * \brief Gets whether the VCR engine is currently performing a seek operation
      */
     std::function<bool()> vcr_is_seeking;
-
-    /**
-     * \brief Generates the current movie freeze buffer.
-     * \return Whether a freeze buffer was generated.
-     */
-    std::function<bool(core_vcr_freeze_info* freeze)> vcr_freeze;
-
-    /**
-     * \brief Restores the movie from a freeze buffer
-     * \param freeze The freeze buffer
-     * \return The operation result
-     * TODO: Pass a const ref!
-     */
-    std::function<core_result(core_vcr_freeze_info freeze)> vcr_unfreeze;
 
     /**
      * \brief Writes a backup of the current movie to the backup folder.

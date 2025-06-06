@@ -336,7 +336,7 @@ bool vcr_is_playing()
     return vcr.task == task_playback;
 }
 
-bool vcr_freeze(core_vcr_freeze_info* freeze)
+bool vcr_freeze(vcr_freeze_info& freeze)
 {
     std::scoped_lock lock(vcr_mtx);
 
@@ -347,7 +347,7 @@ bool vcr_freeze(core_vcr_freeze_info* freeze)
 
     assert(vcr.inputs.size() >= vcr.hdr.length_samples);
 
-    core_vcr_freeze_info current_freeze = {
+    freeze = {
     .size = (sizeof(uint32_t) * 4 + sizeof(core_buttons) * (vcr.hdr.length_samples + 1)),
     .uid = vcr.hdr.uid,
     .current_sample = (uint32_t)vcr.current_sample,
@@ -356,19 +356,17 @@ bool vcr_freeze(core_vcr_freeze_info* freeze)
     };
 
     // NOTE: The frozen input buffer is weird: its length is traditionally equal to length_samples + 1, which means the last frame is garbage data
-    current_freeze.input_buffer = {};
-    current_freeze.input_buffer.resize(vcr.hdr.length_samples + 1);
-    memcpy(current_freeze.input_buffer.data(), vcr.inputs.data(), sizeof(core_buttons) * vcr.hdr.length_samples);
+    freeze.input_buffer = {};
+    freeze.input_buffer.resize(vcr.hdr.length_samples + 1);
+    memcpy(freeze.input_buffer.data(), vcr.inputs.data(), sizeof(core_buttons) * vcr.hdr.length_samples);
 
     // Also probably a good time to flush the movie
     write_movie();
 
-    *freeze = current_freeze;
-
     return true;
 }
 
-core_result vcr_unfreeze(core_vcr_freeze_info freeze)
+core_result vcr_unfreeze(const vcr_freeze_info& freeze)
 {
     std::scoped_lock lock(vcr_mtx);
 
@@ -1562,19 +1560,6 @@ core_result vcr_begin_seek_impl(std::wstring str, bool pause_at_end, bool resume
 core_result vcr_begin_seek(std::wstring str, bool pause_at_end)
 {
     return vcr_begin_seek_impl(str, pause_at_end, true, false);
-}
-
-core_result vcr_convert_freeze_buffer_to_movie(const core_vcr_freeze_info& freeze, core_vcr_movie_header& header, std::vector<core_buttons>& inputs)
-{
-    header.magic = MOVIE_MAGIC;
-    header.version = LATEST_MOVIE_VERSION;
-    header.uid = freeze.uid;
-    header.length_samples = freeze.length_samples;
-    header.startFlags = MOVIE_START_FROM_NOTHING;
-    header.length_vis = UINT32_MAX;
-    set_rom_info(&header);
-    inputs = freeze.input_buffer;
-    return Res_Ok;
 }
 
 void vcr_stop_seek()
