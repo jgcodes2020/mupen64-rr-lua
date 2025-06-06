@@ -576,26 +576,6 @@ void update_titlebar()
     SetWindowText(g_main_hwnd, text.c_str());
 }
 
-/**
- * \brief Computes the average rate of entries in the time queue per second (e.g.: FPS from frame deltas)
- * \param times A circular buffer of deltas
- * \return The average rate per second from the delta in the queue
- */
-static double get_rate_per_second_from_deltas(const std::span<core_timer_delta>& times)
-{
-    size_t count = 0;
-    double sum = 0.0;
-    for (const auto& time : times)
-    {
-        if (time.count() > 0.0)
-        {
-            sum += time.count() / 1000000.0;
-            count++;
-        }
-    }
-    return count > 0 ? 1000.0 / (sum / count) : 0.0;
-}
-
 #pragma region Change notifications
 
 void on_script_started(std::any data)
@@ -2131,13 +2111,8 @@ static void CALLBACK invalidate_callback(UINT, UINT, DWORD_PTR, DWORD_PTR, DWORD
     // We throttle FPS and VI/s visual updates to 1 per second, so no unstable values are displayed
     if (time - last_statusbar_update > std::chrono::seconds(1))
     {
-        g_core_ctx->g_frame_deltas_mutex.lock();
-        auto fps = get_rate_per_second_from_deltas(g_core_ctx->g_frame_deltas);
-        g_core_ctx->g_frame_deltas_mutex.unlock();
-
-        g_core_ctx->g_vi_deltas_mutex.lock();
-        auto vis = get_rate_per_second_from_deltas(g_core_ctx->g_vi_deltas);
-        g_core_ctx->g_vi_deltas_mutex.unlock();
+        float fps, vis;
+        g_core_ctx->vr_get_timings(fps, vis);
 
         Statusbar::post(std::format(L"FPS: {:.1f}", fps), Statusbar::Section::FPS);
         Statusbar::post(std::format(L"VI/s: {:.1f}", vis), Statusbar::Section::VIs);

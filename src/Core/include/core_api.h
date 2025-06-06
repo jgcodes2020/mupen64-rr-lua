@@ -330,12 +330,6 @@ struct core_params {
 };
 
 struct core_ctx {
-    // TODO: Remove these and refactor into a get_timings function.
-    core_timer_delta g_frame_deltas[core_timer_max_deltas];
-    std::mutex g_frame_deltas_mutex;
-    core_timer_delta g_vi_deltas[core_timer_max_deltas];
-    std::mutex g_vi_deltas_mutex;
-
     uint8_t* rom;
     uint32_t* rdram;
     core_rdram_reg* rdram_register;
@@ -511,6 +505,12 @@ struct core_ctx {
      * \param addr The address. If UINT32_MAX, the entire cache is invalidated.
      */
     std::function<void(uint32_t addr)> vr_recompile;
+
+    /**
+     * \brief Returns the FPS and VI/s timings.
+     * \remark This function is thread-safe.
+     */
+    std::function<void(float&, float&)> vr_get_timings;
 
 #pragma endregion
 
