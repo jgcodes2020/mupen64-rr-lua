@@ -20,6 +20,8 @@
 
 namespace EncodingManager
 {
+    constexpr auto READSCREEN_MISSING_MSG = L"The current video plugin doesn't support the current capture method.\nTry using another video plugin or switching the capture mode.";
+
     std::filesystem::path m_current_path;
 
     // 0x30018
@@ -208,13 +210,6 @@ namespace EncodingManager
     {
         if (g_config.capture_mode == 0)
         {
-            if (!g_core_ctx->vr_get_mge_available() && !g_core.plugin_funcs.video_read_screen)
-            {
-                DialogService::show_dialog(L"The current video plugin has no readScreen implementation.\nPlugin capture is not possible.", L"Capture", fsvc_error);
-                stop_capture();
-                return;
-            }
-
             readscreen_plugin();
         }
         else if (g_config.capture_mode == 1)
@@ -227,18 +222,27 @@ namespace EncodingManager
         }
         else if (g_config.capture_mode == 3)
         {
-            if (!g_core_ctx->vr_get_mge_available() && !g_core.plugin_funcs.video_read_screen)
-            {
-                DialogService::show_dialog(L"The current video plugin has no readScreen implementation.\nHybrid capture is not possible.", L"Capture", fsvc_error);
-                stop_capture();
-                return;
-            }
             readscreen_hybrid();
         }
         else
         {
             assert(false);
         }
+    }
+
+    /**
+     * \brief Returns true if the readscreen functionality is available in the current capture mode. Shows an error dialog if it is not available.
+     */
+    static bool check_readscreen_available()
+    {
+        bool has_no_mge_or_readscreen = !g_core_ctx->vr_get_mge_available() && !g_core.plugin_funcs.video_read_screen;
+        if ((g_config.capture_mode == 0 || g_config.capture_mode == 3) && has_no_mge_or_readscreen)
+        {
+            DialogService::show_dialog(READSCREEN_MISSING_MSG, L"Capture", fsvc_error);
+            return false;
+        }
+
+        return true;
     }
 
     void get_video_dimensions(int32_t* width, int32_t* height)
@@ -313,6 +317,11 @@ namespace EncodingManager
 
     bool start_capture_impl(std::filesystem::path path, t_config::EncoderType encoder_type, const bool ask_for_encoding_settings)
     {
+        if (!check_readscreen_available())
+        {
+            return false;
+        }
+        
         std::lock_guard lock(m_mutex);
 
         g_view_logger->info("[EncodingManager]: Starting capture at {} x {}...", m_video_width, m_video_height);
