@@ -336,6 +336,17 @@ bool vcr_is_playing()
     return vcr.task == task_playback;
 }
 
+void vcr_increment_rerecord_count()
+{
+    if (vcr.task != task_recording)
+    {
+        return;
+    }
+
+    set_rerecord_count(get_rerecord_count() + 1);
+    g_core->cfg->total_rerecords++;
+}
+
 bool vcr_freeze(vcr_freeze_info& freeze)
 {
     std::scoped_lock lock(vcr_mtx);
@@ -418,9 +429,8 @@ core_result vcr_unfreeze(const vcr_freeze_info& freeze)
         // update header with new ROM info
         if (last_task == task_playback)
             set_rom_info(&vcr.hdr);
-
-        set_rerecord_count(get_rerecord_count() + 1);
-        g_core->cfg->total_rerecords++;
+        
+        vcr_increment_rerecord_count();
 
         if (!vcr.warp_modify_active)
         {
@@ -1786,9 +1796,11 @@ core_result vcr_begin_warp_modify(const std::vector<core_buttons>& inputs)
         vcr.hdr.length_samples = vcr.inputs.size();
 
         vcr.warp_modify_active = false;
+        vcr_increment_rerecord_count();
 
         lock.unlock();
         g_core->callbacks.warp_modify_status_changed(vcr.warp_modify_active);
+        g_core->callbacks.rerecords_changed(get_rerecord_count());
 
         return Res_Ok;
     }
@@ -1804,6 +1816,8 @@ core_result vcr_begin_warp_modify(const std::vector<core_buttons>& inputs)
 
     g_core->log_info(std::format(L"[VCR] Warp modify started at frame {}", vcr.current_sample));
 
+    vcr_increment_rerecord_count();
+    
     vcr.inputs = inputs;
     vcr.hdr.length_samples = vcr.inputs.size();
     vcr.warp_modify_active = true;
@@ -1811,6 +1825,7 @@ core_result vcr_begin_warp_modify(const std::vector<core_buttons>& inputs)
 
     lock.unlock();
     g_core->callbacks.warp_modify_status_changed(vcr.warp_modify_active);
+    g_core->callbacks.rerecords_changed(get_rerecord_count());
 
     return Res_Ok;
 }
