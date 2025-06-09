@@ -607,11 +607,13 @@ void vcr_handle_recording(int32_t index, core_buttons* input)
             *input = vcr.inputs[effective_index];
 
             const auto prev_input = *input;
+            g_core->callbacks.input(input, index);
             *input = prev_input;
         }
         else
         {
             g_core->plugin_funcs.input_get_keys(index, input);
+            g_core->callbacks.input(input, index);
         }
     }
 
@@ -715,6 +717,7 @@ void vcr_handle_playback(int32_t index, core_buttons* input)
         });
     }
 
+    g_core->callbacks.input(input, index);
     vcr.current_sample++;
     vcr.post_controller_poll_callbacks.emplace([=] {
         g_core->callbacks.current_sample_changed(vcr.current_sample);
@@ -808,7 +811,8 @@ void vcr_on_controller_poll(int32_t index, core_buttons* input)
     if (vcr.task == task_idle)
     {
         g_core->plugin_funcs.input_get_keys(index, input);
-        goto call_input_callback;
+        g_core->callbacks.input(input, index);
+        return;
     }
 
     vcr_stop_seek_if_needed();
@@ -822,7 +826,6 @@ void vcr_on_controller_poll(int32_t index, core_buttons* input)
 
     vcr_handle_playback(index, input);
 
-call_input_callback:
     // Since the callback might want to call VCR functions, we have to release the lock to avoid deadlocking in situations with interlocked threads (e.g. UI and Emu)
     // In addition, we have to be careful to only call this function after we're done with VCR work as to avoid reentrancy issues.
     lock.unlock();
@@ -831,7 +834,6 @@ call_input_callback:
         vcr.post_controller_poll_callbacks.front()();
         vcr.post_controller_poll_callbacks.pop();
     }
-    g_core->callbacks.input(input, index);
 }
 
 // Generates a savestate path for a newly created movie.
