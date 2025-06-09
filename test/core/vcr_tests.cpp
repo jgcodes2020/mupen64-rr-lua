@@ -12,36 +12,24 @@ extern t_vcr_state vcr;
 static core_cfg cfg{};
 static core_params params{};
 static core_ctx* ctx = nullptr;
-// static fakeit::Mock<IIOHelperService> io_service{};
-static IIOHelperService real_io_helper_service{};
+static IIOHelperService io_helper_service{};
 
-#pragma region Integration
-
+/**
+ * \brief Initializes the test environment by resetting the vcr state and core parameters, as well as filling out some required functions.
+ */
 static void prepare_test()
 {
-    // io_service.Reset();
-
     vcr = {};
     cfg = {};
     params.cfg = &cfg;
-    // params.io_service = &io_service.get();
-    params.io_service = &real_io_helper_service;
-    params.plugin_funcs.input_get_keys = [](int32_t controller, core_buttons* keys) {
+    params.io_service = &io_helper_service;
+    params.plugin_funcs.input_get_keys = [](int32_t, core_buttons*) {
     };
-    params.plugin_funcs.input_set_keys = [](int32_t controller, core_buttons keys) {
+    params.plugin_funcs.input_set_keys = [](int32_t, core_buttons) {
     };
-
-    // fakeit::When(Method(io_service, str_nth_occurence)).AlwaysDo([&](const std::string& s, const std::string& delim, int n) {
-    //     return real_io_helper_service.str_nth_occurence(s, delim, n);
-    // });
-    // fakeit::When(Method(io_service, string_to_wstring)).AlwaysDo([&](const auto& o) {
-    //     return real_io_helper_service.string_to_wstring(o);
-    // });
-    // fakeit::When(Method(io_service, wstring_to_string)).AlwaysDo([&](const auto& o) {
-    //     return real_io_helper_service.wstring_to_string(o);
-    // });
 }
 
+#pragma region Integration
 
 TEST_CASE("reset_pending_returns_unmodified_input", "vcr_on_controller_poll")
 {
