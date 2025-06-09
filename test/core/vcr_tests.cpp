@@ -245,6 +245,98 @@ TEST_CASE("sample_length_gets_clamped_to_buffer_max", "read_movie_header")
     REQUIRE(out_hdr.length_samples == 2);
 }
 
+/*
+ * Tests that overriding inputs when idle using the `input` callback causes the correct overriden sample to be inputted.
+ */
+TEST_CASE("input_callback_override_works_when_idle", "vcr_on_controller_poll")
+{
+    prepare_test();
+
+    params.callbacks.input = [](core_buttons* input, int index) {
+        *input = {0xDEAD};
+    };
+
+    core_create(&params, &ctx);
+    vcr.task = task_idle;
+
+    core_buttons input{};
+    vcr_on_controller_poll(0, &input);
+
+    REQUIRE(input.value == 0xDEAD);
+}
+
+/*
+ * Tests that overriding inputs during recording using the `input` callback causes the correct overriden sample to be inputted.
+ */
+TEST_CASE("input_callback_override_works_when_recording", "vcr_on_controller_poll")
+{
+    prepare_test();
+
+    params.callbacks.input = [](core_buttons* input, int index) {
+        *input = {0xDEAD};
+    };
+
+    core_create(&params, &ctx);
+    vcr.inputs = {};
+    vcr.hdr.length_samples = 0;
+    vcr.hdr.controller_flags = CONTROLLER_X_PRESENT(0);
+    vcr.task = task_recording;
+    vcr.current_sample = 0;
+
+    core_buttons input{};
+    vcr_on_controller_poll(0, &input);
+
+    REQUIRE(input.value == 0xDEAD);
+}
+
+/*
+ * Tests that overriding inputs during playback using the `input` callback causes the correct overriden sample to be inputted.
+ */
+TEST_CASE("input_callback_override_works_when_playback", "vcr_on_controller_poll")
+{
+    prepare_test();
+
+    params.callbacks.input = [](core_buttons* input, int index) {
+        *input = {0xDEAD};
+    };
+
+    core_create(&params, &ctx);
+    vcr.inputs = {{1}, {2}, {3}, {4}};
+    vcr.hdr.length_samples = vcr.inputs.size();
+    vcr.hdr.controller_flags = CONTROLLER_X_PRESENT(0);
+    vcr.task = task_playback;
+    vcr.current_sample = 1;
+
+    core_buttons input{};
+    vcr_on_controller_poll(0, &input);
+
+    REQUIRE(input.value == 0xDEAD);
+}
+
+/*
+ * Tests that overriding inputs during recording using the `input` callback causes the correct overriden sample to be appended to the inputs.
+ */
+TEST_CASE("correct_sample_appended_by_input_callback_override_during_recording", "vcr_on_controller_poll")
+{
+    prepare_test();
+
+    params.callbacks.input = [](core_buttons* input, int index) {
+        *input = {0xDEAD};
+    };
+
+    core_create(&params, &ctx);
+    vcr.inputs = {{1}, {2}, {3}, {4}};
+    vcr.hdr.length_samples = vcr.inputs.size();
+    vcr.hdr.controller_flags = CONTROLLER_X_PRESENT(0);
+    vcr.task = task_recording;
+    vcr.current_sample = vcr.hdr.length_samples;
+
+    core_buttons input{};
+    vcr_on_controller_poll(0, &input);
+
+    REQUIRE(vcr.inputs.back().value == 0xDEAD);
+}
+
 TEST_CASE("seek_stops_at_expected_frame", "seek")
 {
     struct seek_test_params {
