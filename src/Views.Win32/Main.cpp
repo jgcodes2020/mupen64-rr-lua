@@ -838,11 +838,13 @@ t_window_info get_window_info()
 
 bool confirm_user_exit()
 {
+    BetterEmulationLock lock;
+    
     if (g_config.silent_mode)
     {
         return true;
     }
-
+    
     std::wstring final_message;
     std::vector<std::pair<bool, std::wstring>> messages = {
     {g_core_ctx->vcr_get_task() == task_recording, L"Movie recording"},
