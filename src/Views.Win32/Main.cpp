@@ -843,41 +843,41 @@ bool confirm_user_exit()
         return true;
     }
 
-    int warnings = 0;
-
     std::wstring final_message;
-    if (g_core_ctx->vcr_get_task() == task_recording)
-    {
-        final_message.append(L"Movie recording ");
-        warnings++;
-    }
-    if (EncodingManager::is_capturing())
-    {
-        if (warnings > 0)
-        {
-            final_message.append(L",");
-        }
-        final_message.append(L" AVI capture ");
-        warnings++;
-    }
-    if (g_core_ctx->vr_is_tracelog_active())
-    {
-        if (warnings > 0)
-        {
-            final_message.append(L",");
-        }
-        final_message.append(L" Trace logging ");
-        warnings++;
-    }
-    final_message.append(L"is running. Are you sure you want to close the ROM?");
+    std::vector<std::pair<bool, std::wstring>> messages = {
+    {g_core_ctx->vcr_get_task() == task_recording, L"Movie recording"},
+    {EncodingManager::is_capturing(), L"Capture"},
+    {g_core_ctx->vr_is_tracelog_active(), L"Trace logging"}};
 
-    bool close = false;
-    if (warnings > 0)
+    std::vector<std::wstring> active_messages;
+    for (const auto& [is_active, msg] : messages)
     {
-        close = DialogService::show_ask_dialog(VIEW_DLG_CLOSE_ROM_WARNING, final_message.c_str(), L"Close ROM", true);
+        if (!is_active)
+        {
+            continue;
+        }
+
+        active_messages.push_back(msg);
     }
 
-    return close || warnings == 0;
+    if (active_messages.empty())
+    {
+        return true;
+    }
+
+    for (size_t i = 0; i < active_messages.size(); ++i)
+    {
+        final_message += active_messages[i];
+        if (i < active_messages.size() - 1)
+        {
+            final_message += L", ";
+        }
+    }
+    final_message += L" is running. Are you sure you want to close the ROM?";
+
+    const bool result = DialogService::show_ask_dialog(VIEW_DLG_CLOSE_ROM_WARNING, final_message.c_str(), L"Close ROM", true);
+
+    return result;
 }
 
 bool is_on_gui_thread()
@@ -1344,7 +1344,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
             case IDM_RSP_SETTINGS:
                 {
                     BetterEmulationLock lock;
-                
+
                     // FIXME: Is it safe to load multiple plugin instances? This assumes they cooperate and dont overwrite eachother's files...
                     // It does seem fine tho, since the config dialog is modal and core is paused
                     g_hwnd_plug = g_main_hwnd;
@@ -2337,7 +2337,7 @@ static core_result init_core()
     g_core.plugin_funcs.audio_extended_funcs = audio_extended_funcs;
     g_core.plugin_funcs.input_extended_funcs = input_extended_funcs;
     g_core.plugin_funcs.rsp_extended_funcs = rsp_extended_funcs;
-    
+
     const auto result = core_create(&g_core, &g_core_ctx);
 
     setup_dummy_info();
