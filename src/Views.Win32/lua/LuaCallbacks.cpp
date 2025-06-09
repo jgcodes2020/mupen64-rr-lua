@@ -26,6 +26,11 @@ struct t_atwindowmessage_context {
 static t_atwindowmessage_context atwindowmessage_ctx{};
 static int current_input_n = 0;
 
+static int pcall_no_params(lua_State* L)
+{
+    return lua_pcall(L, 0, 0, 0);
+}
+
 const std::unordered_map<LuaCallbacks::callback_key, std::function<int(lua_State*)>> CALLBACK_FUNC_MAP = {
 {LuaCallbacks::REG_ATINPUT, [](auto l) -> int {
      lua_pushinteger(l, current_input_n);
