@@ -455,4 +455,60 @@ TEST_CASE("seek_stops_at_expected_frame", "seek")
     REQUIRE(vcr.current_sample == param.expected_frame + 1);
 }
 
+/*
+ * Tests that the vcr_freeze function returns false when idle.
+ */
+TEST_CASE("returns_false_when_idle", "vcr_freeze")
+{
+    prepare_test();
+    core_create(&params, &ctx);
+
+    vcr_freeze_info freeze{};
+    const auto result = vcr_freeze(freeze);
+
+    REQUIRE(!result);
+}
+
+/*
+ * Tests that the vcr_freeze function produces the correct freeze buffer for a predefined set of VCR states.
+ */
+TEST_CASE("out_freeze_is_correct", "vcr_freeze")
+{
+    struct freeze_test_params {
+        t_vcr_state vcr{};
+        vcr_freeze_info expected_freeze{};
+    };
+
+    const auto param = GENERATE(freeze_test_params{
+    .vcr = {
+    .task = task_playback,
+    .hdr = {
+    .uid = 0xDEAD,
+    .length_samples = 5,
+    .controller_flags = CONTROLLER_X_PRESENT(0),
+    },
+    .inputs = {{1}, {2}, {3}, {4}, {5}},
+    .current_sample = 2,
+    .current_vi = 4,
+    },
+    .expected_freeze = {.size = 16 + 4 * 6, .uid = 0xDEAD, .current_sample = 2, .current_vi = 4, .length_samples = 5, .input_buffer = {{1}, {2}, {3}, {4}, {5}, {0}}},
+    });
+
+    prepare_test();
+    vcr = param.vcr;
+    core_create(&params, &ctx);
+
+    vcr_freeze_info freeze{};
+    const auto result = vcr_freeze(freeze);
+
+    REQUIRE(result);
+    REQUIRE(freeze.size == param.expected_freeze.size);
+    REQUIRE(freeze.uid == param.expected_freeze.uid);
+    REQUIRE(freeze.current_sample == param.expected_freeze.current_sample);
+    REQUIRE(freeze.current_vi == param.expected_freeze.current_vi);
+    REQUIRE(freeze.length_samples == param.expected_freeze.length_samples);
+    REQUIRE(freeze.input_buffer == param.expected_freeze.input_buffer);
+}
+
+
 #pragma endregion
