@@ -505,3 +505,8 @@ EXPORT void InitiateRSP(core_rsp_info Rsp_Info, uint32_t* CycleCount);
 #ifdef __cplusplus
 }
 #endif
+
+inline bool operator==(const core_buttons& lhs, const core_buttons& rhs)
+{
+    return lhs.value == rhs.value;
+}
