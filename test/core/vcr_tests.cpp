@@ -510,5 +510,140 @@ TEST_CASE("out_freeze_is_correct", "vcr_freeze")
     REQUIRE(freeze.input_buffer == param.expected_freeze.input_buffer);
 }
 
+/*
+ * Tests that vcr_unfreeze fails with VCR_NeedsPlaybackOrRecording when called while idle.
+ */
+TEST_CASE("fails_when_idle", "vcr_unfreeze")
+{
+    prepare_test();
+    core_create(&params, &ctx);
+
+    vcr_freeze_info freeze{};
+    const auto result = vcr_unfreeze(freeze);
+
+    REQUIRE(result == VCR_NeedsPlaybackOrRecording);
+}
+
+/*
+ * Tests that vcr_unfreeze fails with VCR_InvalidFormat when the freeze buffer's size field is categorically too small.
+ */
+TEST_CASE("fails_when_size_too_small", "vcr_unfreeze")
+{
+    prepare_test();
+    core_create(&params, &ctx);
+
+    vcr.task = task_recording;
+
+    vcr_freeze_info freeze{
+    .size = 15,
+    };
+    const auto result = vcr_unfreeze(freeze);
+
+    REQUIRE(result == VCR_InvalidFormat);
+}
+
+/*
+ * Tests that vcr_unfreeze fails with VCR_NotFromThisMovie when the freeze buffer's uid field doesn't match the current movie's uid.
+ */
+TEST_CASE("fails_when_uid_incompatible", "vcr_unfreeze")
+{
+    prepare_test();
+    core_create(&params, &ctx);
+
+    vcr.task = task_recording;
+    vcr.hdr.uid = 0xBEEF;
+
+    vcr_freeze_info freeze{
+    .size = 16,
+    .uid = 0xDEAD,
+    };
+    const auto result = vcr_unfreeze(freeze);
+
+    REQUIRE(result == VCR_NotFromThisMovie);
+}
+
+/*
+ * Tests that vcr_unfreeze fails with VCR_InvalidFrame when the freeze buffer is from a future sample of the current movie, but the VCR is in read-only mode (which would cause a desync due to the input buffer not being updated and therefore mismatched).
+ */
+TEST_CASE("fails_when_desync_risk", "vcr_unfreeze")
+{
+    prepare_test();
+    core_create(&params, &ctx);
+
+    cfg.vcr_readonly = true;
+
+    vcr.task = task_recording;
+    vcr.hdr.uid = 0xDEAD;
+
+    vcr_freeze_info freeze{
+    .size = 16,
+    .uid = 0xDEAD,
+    .current_sample = 10,
+    .length_samples = 5,
+    };
+    const auto result = vcr_unfreeze(freeze);
+
+    REQUIRE(result == VCR_InvalidFrame);
+}
+
+/*
+ * Tests that vcr_unfreeze fails with VCR_InvalidFormat when the freeze buffer's size field is smaller than the expected size for the given input buffer.
+ */
+TEST_CASE("fails_when_malformed_input_size", "vcr_unfreeze")
+{
+    prepare_test();
+    core_create(&params, &ctx);
+
+    cfg.vcr_readonly = false;
+
+    vcr.task = task_recording;
+    vcr.hdr.uid = 0xDEAD;
+
+    vcr_freeze_info freeze{
+    .size = 16 + sizeof(core_buttons) * 1,
+    .uid = 0xDEAD,
+    .current_sample = 10,
+    .length_samples = 5,
+    .input_buffer = {{1}, {2}},
+    };
+    const auto result = vcr_unfreeze(freeze);
+
+    REQUIRE(result == VCR_InvalidFormat);
+}
+
+/*
+ * Tests that vcr_unfreeze succeeds and updates the current sample but not the input buffer when unfreezing while seeking and recording.
+ */
+TEST_CASE("input_buffer_doesnt_change_if_seeking_while_recording", "vcr_unfreeze")
+{
+    prepare_test();
+    core_create(&params, &ctx);
+
+    cfg.vcr_readonly = false;
+
+    vcr.task = task_recording;
+    vcr.hdr.uid = 0xDEAD;
+    vcr.seek_to_frame = std::make_optional(1);
+    vcr.current_sample = 2;
+    vcr.inputs = {{0xDEAD}, {0xBEEF}, {0xCAFE}};
+
+    vcr_freeze_info freeze{
+    .size = 16 + sizeof(core_buttons) * 2,
+    .uid = 0xDEAD,
+    .current_sample = 0,
+    .length_samples = 5,
+    .input_buffer = {{1}, {2}},
+    };
+    const auto result = vcr_unfreeze(freeze);
+
+    REQUIRE(result == Res_Ok);
+    REQUIRE(vcr.inputs.size() == 3);
+    REQUIRE(vcr.inputs[0].value == 0xDEAD);
+    REQUIRE(vcr.inputs[1].value == 0xBEEF);
+    REQUIRE(vcr.inputs[2].value == 0xCAFE);
+    REQUIRE(vcr.current_sample == 0);
+}
+
+// TODO: More tests for vcr_unfreeze!
 
 #pragma endregion
