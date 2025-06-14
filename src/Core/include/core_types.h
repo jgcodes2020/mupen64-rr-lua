@@ -668,6 +668,26 @@ typedef enum {
     task_playback
 } core_vcr_task;
 
+/**
+ * \brief Represents information about a seek operation.
+ */
+struct core_vcr_seek_info {
+    /**
+     * \brief The current sample.
+     */
+    size_t current_sample{};
+
+    /**
+     * \brief The sample the current seek operation was started at. SIZE_MAX if no seek is active.
+     */
+    size_t seek_start_sample{};
+
+    /**
+     * \brief The target sample to seek to. SIZE_MAX if no seek is active.
+     */
+    size_t seek_target_sample{};
+};
+
 #pragma endregion
 
 #pragma region Debugger

@@ -13,6 +13,7 @@ struct t_vcr_state {
     bool reset_pending{};
 
     std::optional<size_t> seek_to_frame{};
+    size_t seek_start_sample{};
     bool seek_pause_at_end{};
     bool seek_savestate_loading{};
     std::unordered_map<size_t, std::vector<uint8_t>> seek_savestates{};
@@ -69,7 +70,7 @@ core_result vcr_read_movie_inputs(std::filesystem::path path, std::vector<core_b
 core_result vcr_start_playback(std::filesystem::path path);
 core_result vcr_start_record(std::filesystem::path path, uint16_t flags, std::string author, std::string description);
 core_result vcr_replace_author_info(const std::filesystem::path& path, const std::string& author, const std::string& description);
-void vcr_get_seek_completion(std::pair<size_t, size_t>& pair);
+core_vcr_seek_info vcr_get_seek_info();
 core_result vcr_begin_seek(std::wstring str, bool pause_at_end);
 void vcr_stop_seek();
 bool vcr_is_seeking();

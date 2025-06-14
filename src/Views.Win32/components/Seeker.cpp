@@ -50,10 +50,9 @@ static LRESULT CALLBACK dlgproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
             {
                 break;
             }
-            std::pair<size_t, size_t> pair;
-            g_core_ctx->vcr_get_seek_completion(pair);
-            auto [current, total] = pair;
-            const auto str = std::format(L"Seeked {:.2f}%", static_cast<float>(current) / static_cast<float>(total) * 100.0);
+            const core_vcr_seek_info info = g_core_ctx->vcr_get_seek_info();
+            // FIXME: Use info.seek_start_sample as the starting point for the percentage!!!
+            const auto str = std::format(L"Seeked {:.2f}%", static_cast<float>(info.current_sample) / static_cast<float>(info.seek_target_sample) * 100.0);
             SetDlgItemText(hwnd, IDC_SEEKER_STATUS, str.c_str());
             break;
         }

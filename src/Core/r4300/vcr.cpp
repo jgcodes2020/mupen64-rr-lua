@@ -429,7 +429,7 @@ core_result vcr_unfreeze(const vcr_freeze_info& freeze)
         // update header with new ROM info
         if (last_task == task_playback)
             set_rom_info(&vcr.hdr);
-        
+
         vcr_increment_rerecord_count();
 
         if (!vcr.warp_modify_active)
@@ -486,10 +486,7 @@ void vcr_create_n_frame_savestate(size_t frame)
     {
         const auto frames_from_end_where_savestates_start_appearing = g_core->cfg->seek_savestate_interval * g_core->cfg->seek_savestate_max_count;
 
-        std::pair<size_t, size_t> seek_completion{};
-        g_ctx.vcr_get_seek_completion(seek_completion);
-
-        if (seek_completion.second - seek_completion.first > frames_from_end_where_savestates_start_appearing)
+        if (vcr.seek_to_frame.value() - vcr.current_sample > frames_from_end_where_savestates_start_appearing)
         {
             g_core->log_info(L"[VCR] Omitting creation of seek savestate because distance to seek end is big enough");
             return;
@@ -1062,13 +1059,14 @@ core_result vcr_replace_author_info(const std::filesystem::path& path, const std
         return result;
     }
 
-    // 2. Compare author and description fields, and int16_t-circuit if they remained identical
+    // 2. Compare author and description fields, and don't do any work if they remained identical
     if (!strcmp(hdr.author, author.c_str()) && !strcmp(hdr.description, description.c_str()))
     {
         g_core->log_info(L"[VCR] Movie author or description didn't change, returning early...");
         return Res_Ok;
     }
 
+    // TODO: Don't use C file APIs, use read_file_buffer+write_file_buffer from IIOHelperService instead!!!
     FILE* f = nullptr;
 
     if (_wfopen_s(&f, path.wstring().c_str(), L"rb+"))
@@ -1102,15 +1100,17 @@ core_result vcr_replace_author_info(const std::filesystem::path& path, const std
     return Res_Ok;
 }
 
-void vcr_get_seek_completion(std::pair<size_t, size_t>& pair)
+core_vcr_seek_info vcr_get_seek_info()
 {
-    if (!vcr_is_seeking())
-    {
-        pair = std::make_pair(vcr.current_sample, SIZE_MAX);
-        return;
-    }
+    std::unique_lock lock(vcr_mtx);
 
-    pair = std::make_pair(vcr.current_sample, vcr.seek_to_frame.value());
+    core_vcr_seek_info info{};
+
+    info.current_sample = vcr.current_sample;
+    info.seek_start_sample = vcr_is_seeking() ? vcr.seek_start_sample : SIZE_MAX;
+    info.seek_target_sample = vcr.seek_to_frame.value_or(SIZE_MAX);
+
+    return info;
 }
 
 core_result vcr_stop_record()
@@ -1474,9 +1474,10 @@ core_result vcr_begin_seek_impl(std::wstring str, bool pause_at_end, bool resume
         g_ctx.vr_resume_emu();
     }
 
-    // We need to backtrack somehow if we're ahead of the frame
+    // Fast path: No backtracking required, just continue ahead
     if (vcr.current_sample <= frame)
     {
+        vcr.seek_start_sample = vcr.current_sample;
         goto finish;
     }
 
@@ -1493,6 +1494,8 @@ core_result vcr_begin_seek_impl(std::wstring str, bool pause_at_end, bool resume
             g_core->callbacks.readonly_changed((bool)g_core->cfg->vcr_readonly);
 
             const auto closest_key = vcr_find_closest_savestate_before_frame(frame);
+
+            vcr.seek_start_sample = closest_key;
 
             g_core->log_info(std::format(L"[VCR] Seeking during playback to frame {}, loading closest savestate at {}...", frame, closest_key));
             vcr.seek_savestate_loading = true;
@@ -1516,6 +1519,8 @@ core_result vcr_begin_seek_impl(std::wstring str, bool pause_at_end, bool resume
             goto finish;
         }
 
+        vcr.seek_start_sample = 0;
+        
         g_core->log_trace(L"[VCR] vcr_begin_seek_impl: playback, slow path");
 
         const auto result = g_ctx.vcr_start_playback(vcr.movie_path);
@@ -1540,7 +1545,7 @@ core_result vcr_begin_seek_impl(std::wstring str, bool pause_at_end, bool resume
         }
 
         const auto target_sample = warp_modify ? vcr.warp_modify_first_difference_frame : frame;
-
+        
         // All seek savestates after the target frame need to be purged, as the user will invalidate them by overwriting inputs prior to them
         if (!g_core->cfg->vcr_readonly)
         {
@@ -1562,6 +1567,8 @@ core_result vcr_begin_seek_impl(std::wstring str, bool pause_at_end, bool resume
 
         const auto closest_key = vcr_find_closest_savestate_before_frame(target_sample);
 
+        vcr.seek_start_sample = closest_key;
+        
         g_core->log_info(std::format(L"[VCR] Seeking backwards during recording to frame {}, loading closest savestate at {}...", target_sample, closest_key));
         vcr.seek_savestate_loading = true;
 
@@ -1817,7 +1824,7 @@ core_result vcr_begin_warp_modify(const std::vector<core_buttons>& inputs)
     g_core->log_info(std::format(L"[VCR] Warp modify started at frame {}", vcr.current_sample));
 
     vcr_increment_rerecord_count();
-    
+
     vcr.inputs = inputs;
     vcr.hdr.length_samples = vcr.inputs.size();
     vcr.warp_modify_active = true;

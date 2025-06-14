@@ -547,10 +547,9 @@ struct core_ctx {
     std::function<core_result(const std::filesystem::path& path, const std::string& author, const std::string& description)> vcr_replace_author_info;
 
     /**
-     * \brief Gets the completion status of the current seek operation.
-     * If no seek operation is active, the first value is the current sample and the second one is SIZE_MAX.
+     * \brief Gets information about the current seek operation.
      */
-    std::function<void(std::pair<size_t, size_t>& pair)> vcr_get_seek_completion;
+    std::function<core_vcr_seek_info()> vcr_get_seek_info;
 
     /**
      * \brief Begins seeking to a frame in the current movie.

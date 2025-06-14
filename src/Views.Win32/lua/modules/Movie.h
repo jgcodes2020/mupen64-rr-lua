@@ -86,13 +86,12 @@ namespace LuaCore::Movie
 
     static int get_seek_completion(lua_State* L)
     {
-        std::pair<size_t, size_t> pair;
-        g_core_ctx->vcr_get_seek_completion(pair);
+        const core_vcr_seek_info info = g_core_ctx->vcr_get_seek_info();
 
         lua_newtable(L);
-        lua_pushinteger(L, pair.first);
+        lua_pushinteger(L, info.current_sample);
         lua_rawseti(L, -2, 1);
-        lua_pushinteger(L, pair.second);
+        lua_pushinteger(L, info.seek_target_sample);
         lua_rawseti(L, -2, 2);
 
         return 1;

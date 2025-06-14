@@ -108,10 +108,9 @@ namespace PianoRoll
      */
     bool can_modify_inputs()
     {
-        std::pair<size_t, size_t> pair{};
-        g_core_ctx->vcr_get_seek_completion(pair);
+        const core_vcr_seek_info info = g_core_ctx->vcr_get_seek_info();
 
-        return !g_core_ctx->vcr_get_warp_modify_status() && pair.second == SIZE_MAX && g_core_ctx->vcr_get_task() == task_recording && !g_core_ctx->vcr_is_seeking() && !g_config.core.vcr_readonly && g_config.core.seek_savestate_interval > 0 && g_core_ctx->vr_get_paused();
+        return !g_core_ctx->vcr_get_warp_modify_status() && info.seek_target_sample == SIZE_MAX && g_core_ctx->vcr_get_task() == task_recording && !g_core_ctx->vcr_is_seeking() && !g_config.core.vcr_readonly && g_config.core.seek_savestate_interval > 0 && g_core_ctx->vr_get_paused();
     }
 
     /**
@@ -313,11 +312,9 @@ namespace PianoRoll
     void ensure_relevant_item_visible()
     {
         const int32_t i = ListView_GetNextItem(g_lv_hwnd, -1, LVNI_SELECTED);
+        const core_vcr_seek_info info = g_core_ctx->vcr_get_seek_info();
 
-        std::pair<size_t, size_t> pair{};
-        g_core_ctx->vcr_get_seek_completion(pair);
-
-        const auto current_sample = std::min(ListView_GetItemCount(g_lv_hwnd), static_cast<int32_t>(pair.first) + 10);
+        const auto current_sample = std::min(ListView_GetItemCount(g_lv_hwnd), static_cast<int32_t>(info.current_sample) + 10);
         const auto playhead_sample = g_core_ctx->vcr_get_task() == task_recording ? current_sample - 1 : current_sample;
 
         if (g_config.piano_roll_keep_playhead_visible)
@@ -761,11 +758,10 @@ namespace PianoRoll
 
             g_piano_roll_state.inputs = g_core_ctx->vcr_get_inputs();
 
-            std::pair<size_t, size_t> pair{};
-            g_core_ctx->vcr_get_seek_completion(pair);
+            const core_vcr_seek_info info = g_core_ctx->vcr_get_seek_info();
 
             const auto item_count = g_core_ctx->vcr_get_task() == task_recording
-            ? std::min(pair.first, g_piano_roll_state.inputs.size())
+            ? std::min(info.current_sample, g_piano_roll_state.inputs.size())
             : g_piano_roll_state.inputs.size();
 
             g_view_logger->info("[PianoRoll] Setting item count to {} (input count: {})...", item_count, g_piano_roll_state.inputs.size());
@@ -1324,12 +1320,14 @@ namespace PianoRoll
                 // Manually call all the setup-related callbacks
                 update_inputs();
                 on_task_changed(g_core_ctx->vcr_get_task());
+
+                const core_vcr_seek_info info = g_core_ctx->vcr_get_seek_info();
+
                 // ReSharper disable once CppRedundantCastExpression
-                std::pair<size_t, size_t> pair{};
-                g_core_ctx->vcr_get_seek_completion(pair);
-                on_current_sample_changed(static_cast<int32_t>(pair.first));
+                on_current_sample_changed(static_cast<int32_t>(info.current_sample));
                 update_groupbox_status_text();
                 update_history_listbox();
+
                 SendMessage(hwnd, WM_SIZE, 0, 0);
 
                 break;
@@ -1428,10 +1426,9 @@ namespace PianoRoll
                         {
                         case 0:
                             {
-                                std::pair<size_t, size_t> pair;
-                                g_core_ctx->vcr_get_seek_completion(pair);
-                                const auto current_sample = pair.first;
-                                if (current_sample == plvdi->item.iItem)
+                                const core_vcr_seek_info info = g_core_ctx->vcr_get_seek_info();
+
+                                if (info.current_sample == plvdi->item.iItem)
                                 {
                                     plvdi->item.iImage = 0;
                                 }

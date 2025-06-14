@@ -20,9 +20,8 @@ namespace LuaCore::Emu
 
     static int GetSampleCount(lua_State* L)
     {
-        std::pair<size_t, size_t> pair{};
-        g_core_ctx->vcr_get_seek_completion(pair);
-        lua_pushinteger(L, pair.first);
+        const core_vcr_seek_info info = g_core_ctx->vcr_get_seek_info();
+        lua_pushinteger(L, info.current_sample);
         return 1;
     }
 

@@ -109,7 +109,7 @@ EXPORT core_result CALL core_create(core_params* params, core_ctx** ctx)
     g_ctx.vcr_start_playback = vcr_start_playback;
     g_ctx.vcr_start_record = vcr_start_record;
     g_ctx.vcr_replace_author_info = vcr_replace_author_info;
-    g_ctx.vcr_get_seek_completion = vcr_get_seek_completion;
+    g_ctx.vcr_get_seek_info = vcr_get_seek_info;
     g_ctx.vcr_begin_seek = vcr_begin_seek;
     g_ctx.vcr_stop_seek = vcr_stop_seek;
     g_ctx.vcr_is_seeking = vcr_is_seeking;

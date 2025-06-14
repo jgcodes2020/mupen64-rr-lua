@@ -384,11 +384,10 @@ const wchar_t* get_status_text()
     static wchar_t text[1024]{};
     memset(text, 0, sizeof(text));
 
-    std::pair<size_t, size_t> pair = {0, 0};
-    g_core_ctx->vcr_get_seek_completion(pair);
+    const core_vcr_seek_info info = g_core_ctx->vcr_get_seek_info();
 
     const auto index_adjustment = g_config.vcr_0_index ? 1 : 0;
-    const auto current_sample = pair.first;
+    const auto current_sample = info.current_sample;
     const auto current_vi = g_core_ctx->vcr_get_current_vi();
     const auto is_before_start = static_cast<int64_t>(current_sample) - static_cast<int64_t>(index_adjustment) < 0;
 
@@ -839,12 +838,12 @@ t_window_info get_window_info()
 bool confirm_user_exit()
 {
     BetterEmulationLock lock;
-    
+
     if (g_config.silent_mode)
     {
         return true;
     }
-    
+
     std::wstring final_message;
     std::vector<std::pair<bool, std::wstring>> messages = {
     {g_core_ctx->vcr_get_task() == task_recording, L"Movie recording"},
