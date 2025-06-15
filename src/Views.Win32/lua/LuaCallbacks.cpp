@@ -201,7 +201,8 @@ bool invoke_callbacks_with_key_impl(const t_lua_environment& lua, const std::fun
 
 bool LuaCallbacks::invoke_callbacks_with_key(const t_lua_environment& lua, callback_key key)
 {
-    return invoke_callbacks_with_key_impl(lua, get_function_for_callback(key), key);
+    const auto func = get_function_for_callback(key);
+    return invoke_callbacks_with_key_impl(lua, func, key);
 }
 
 void LuaCallbacks::invoke_callbacks_with_key_on_all_instances(callback_key key)
