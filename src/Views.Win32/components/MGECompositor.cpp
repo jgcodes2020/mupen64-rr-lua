@@ -17,12 +17,14 @@ struct t_mge_context {
     int32_t width{};
     int32_t height{};
     void* buffer{};
+
+    HWND hwnd{};
     BITMAPINFO bmp_info{};
     HBITMAP dib{};
     HDC dc{};
+    HDC front_dc{};
 };
 
-static HWND mge_hwnd;
 static t_mge_context mge_context{};
 
 static LRESULT CALLBACK wndproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
@@ -31,17 +33,12 @@ static LRESULT CALLBACK wndproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
     {
     case WM_PAINT:
         {
-            PAINTSTRUCT ps;
-            HDC hdc = BeginPaint(hwnd, &ps);
-
-            RECT rect{};
-            GetClientRect(hwnd, &rect);
-
-            BitBlt(hdc, 0, 0, mge_context.bmp_info.bmiHeader.biWidth, mge_context.bmp_info.bmiHeader.biHeight, mge_context.dc, 0, 0, SRCCOPY);
-
-            EndPaint(hwnd, &ps);
+            BitBlt(mge_context.front_dc, 0, 0, mge_context.bmp_info.bmiHeader.biWidth, mge_context.bmp_info.bmiHeader.biHeight, mge_context.dc, 0, 0, SRCCOPY);
+            ValidateRect(hwnd, nullptr);
             return 0;
         }
+    default:
+        break;
     }
     return DefWindowProc(hwnd, msg, wparam, lparam);
 }
@@ -60,24 +57,25 @@ static void recreate_mge_context()
         DeleteObject(mge_context.dib);
     }
 
-    const auto mge_dc = GetDC(mge_hwnd);
+    const auto mge_dc = GetDC(mge_context.hwnd);
 
     mge_context.dc = CreateCompatibleDC(mge_dc);
     mge_context.dib = CreateDIBSection(mge_context.dc, &mge_context.bmp_info, DIB_RGB_COLORS, &mge_context.buffer, nullptr, 0);
     SelectObject(mge_context.dc, mge_context.dib);
 
-    ReleaseDC(mge_hwnd, mge_dc);
+    ReleaseDC(mge_context.hwnd, mge_dc);
 }
 
 void MGECompositor::create(HWND hwnd)
 {
-    mge_hwnd = CreateWindow(CONTROL_CLASS_NAME, L"", WS_CHILD | WS_VISIBLE, 0, 0, 1, 1, hwnd, nullptr, g_app_instance, nullptr);
+    mge_context.hwnd = CreateWindow(CONTROL_CLASS_NAME, L"", WS_CHILD | WS_VISIBLE, 0, 0, 1, 1, hwnd, nullptr, g_app_instance, nullptr);
+    mge_context.front_dc = GetDC(mge_context.hwnd);
 }
 
 void MGECompositor::init()
 {
     WNDCLASS wndclass = {0};
-    wndclass.style = CS_GLOBALCLASS | CS_HREDRAW | CS_VREDRAW;
+    wndclass.style = CS_GLOBALCLASS | CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
     wndclass.lpfnWndProc = (WNDPROC)wndproc;
     wndclass.hInstance = g_app_instance;
     wndclass.hCursor = LoadCursor(NULL, IDC_ARROW);
@@ -91,7 +89,7 @@ void MGECompositor::init()
 
     Messenger::subscribe(Messenger::Message::EmuLaunchedChanged, [](const std::any& data) {
         const auto value = std::any_cast<bool>(data);
-        ShowWindow(mge_hwnd, value && g_core_ctx->vr_get_mge_available() ? SW_SHOW : SW_HIDE);
+        ShowWindow(mge_context.hwnd, value && g_core_ctx->vr_get_mge_available() ? SW_SHOW : SW_HIDE);
     });
 }
 
@@ -103,7 +101,7 @@ void MGECompositor::update_screen()
     {
         recreate_mge_context();
 
-        MoveWindow(mge_hwnd, 0, 0, mge_context.width, mge_context.height, true);
+        MoveWindow(mge_context.hwnd, 0, 0, mge_context.width, mge_context.height, true);
     }
 
     g_core.plugin_funcs.video_read_video(&mge_context.buffer);
@@ -111,7 +109,7 @@ void MGECompositor::update_screen()
     mge_context.last_width = mge_context.width;
     mge_context.last_height = mge_context.height;
 
-    RedrawWindow(mge_hwnd, nullptr, nullptr, RDW_INVALIDATE);
+    RedrawWindow(mge_context.hwnd, nullptr, nullptr, RDW_INVALIDATE);
 }
 
 void MGECompositor::get_video_size(int32_t* width, int32_t* height)
@@ -134,5 +132,5 @@ void MGECompositor::copy_video(void* buffer)
 void MGECompositor::load_screen(void* data)
 {
     memcpy(mge_context.buffer, data, mge_context.width * mge_context.height * 3);
-    RedrawWindow(mge_hwnd, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
+    RedrawWindow(mge_context.hwnd, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
 }
