@@ -11,6 +11,9 @@
  */
 namespace Statusbar
 {
+    /**
+     * \brief Represents different sections of the statusbar.
+     */
     enum class Section {
         Notification,
         VCR,
@@ -21,6 +24,8 @@ namespace Statusbar
         VIs,
         Slot,
         MultiFrameAdvanceCount,
+        // Special marker, don't use
+        Last,
     };
 
     /**
@@ -29,14 +34,15 @@ namespace Statusbar
     void create();
 
     /**
-     * \brief Shows text in the statusbar
-     * \param text The text to be displayed
-     * \param section The statusbar section to display the text in
-     */
-    void post(const std::wstring& text, Section section = Section::Notification);
-
-    /**
      * \brief Gets the statusbar handle
      */
     HWND hwnd();
+
+    /**
+     * \brief Shows text in the statusbar.
+     * \param text The text to be displayed.
+     * \param section The statusbar section to display the text in.
+     * \remark This function is thread-safe.
+     */
+    void post(const std::wstring& text, Section section = Section::Notification);
 } // namespace Statusbar

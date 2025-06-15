@@ -280,6 +280,45 @@ static void on_multi_frame_advance_count_changed(std::any)
     post(std::format(L"MFA {}x", g_config.multi_frame_advance_count), Statusbar::Section::MultiFrameAdvanceCount);
 }
 
+static void fix_segments(std::any)
+{
+    std::unordered_map<Statusbar::Section, std::wstring> section_text;
+
+    for (int i = 0; i <= static_cast<int32_t>(Statusbar::Section::Last); ++i)
+    {
+        const auto section = static_cast<Statusbar::Section>(i);
+
+        const auto segment_index = section_to_segment_index(section);
+
+        if (segment_index == SIZE_MAX)
+        {
+            continue;
+        }
+
+        const auto len = SendMessage(statusbar_hwnd, SB_GETTEXTLENGTH, segment_index, 0);
+
+        auto str = (wchar_t*)calloc(len + 1, sizeof(wchar_t));
+
+        SendMessage(statusbar_hwnd, SB_GETTEXT, segment_index, (LPARAM)str);
+
+        section_text[section] = str;
+
+        free(str);
+    }
+
+    refresh_segments();
+
+    for (int i = 0; i < 255; ++i)
+    {
+        SendMessage(statusbar_hwnd, SB_SETTEXT, i, (LPARAM)L"");
+    }
+
+    for (const auto pair : section_text)
+    {
+        post(pair.second, pair.first);
+    }
+}
+
 void Statusbar::create()
 {
     ::create();
@@ -291,46 +330,15 @@ void Statusbar::create()
     Messenger::subscribe(Messenger::Message::SlotChanged, on_slot_changed);
     Messenger::subscribe(Messenger::Message::MultiFrameAdvanceCountChanged, on_multi_frame_advance_count_changed);
     Messenger::subscribe(Messenger::Message::SizeChanged, on_size_changed);
-    Messenger::subscribe(Messenger::Message::ConfigLoaded, [](std::any) {
-        std::unordered_map<Section, std::wstring> section_text;
-
-        for (int i = 0; i <= static_cast<int32_t>(Section::Slot); ++i)
-        {
-            const auto section = static_cast<Section>(i);
-
-            const auto segment_index = section_to_segment_index(section);
-
-            if (segment_index == SIZE_MAX)
-            {
-                continue;
-            }
-
-            const auto len = SendMessage(statusbar_hwnd, SB_GETTEXTLENGTH, segment_index, 0);
-
-            auto str = (wchar_t*)calloc(len + 1, sizeof(wchar_t));
-
-            SendMessage(statusbar_hwnd, SB_GETTEXT, segment_index, (LPARAM)str);
-
-            section_text[section] = str;
-
-            free(str);
-        }
-
-        refresh_segments();
-
-        for (int i = 0; i < 255; ++i)
-        {
-            SendMessage(statusbar_hwnd, SB_SETTEXT, i, (LPARAM)L"");
-        }
-
-        for (const auto pair : section_text)
-        {
-            post(pair.second, pair.first);
-        }
-    });
+    Messenger::subscribe(Messenger::Message::ConfigLoaded, fix_segments);
 }
 
-void Statusbar::post(const std::wstring& text, Section section)
+HWND Statusbar::hwnd()
+{
+    return statusbar_hwnd;
+}
+
+void Statusbar::post(const std::wstring& text, const Section section)
 {
     const auto segment_index = section_to_segment_index(section);
 
@@ -340,9 +348,4 @@ void Statusbar::post(const std::wstring& text, Section section)
     }
 
     SendMessage(statusbar_hwnd, SB_SETTEXT, segment_index, (LPARAM)text.c_str());
-}
-
-HWND Statusbar::hwnd()
-{
-    return statusbar_hwnd;
 }
