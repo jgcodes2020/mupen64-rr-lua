@@ -29,7 +29,6 @@ static LRESULT CALLBACK dlgproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
         SetDlgItemText(hwnd, IDC_SEEKER_START, L"Start");
         SetDlgItemText(hwnd, IDC_SEEKER_FRAME, g_config.seeker_value.c_str());
 
-        seeker.refresh_timer = SetTimer(hwnd, NULL, 1000 / 10, nullptr);
         SetFocus(GetDlgItem(hwnd, IDC_SEEKER_FRAME));
         break;
     case WM_DESTROY:
@@ -43,6 +42,7 @@ static LRESULT CALLBACK dlgproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
         SetDlgItemText(hwnd, IDC_SEEKER_STATUS, L"Seek completed");
         SetDlgItemText(hwnd, IDC_SEEKER_START, L"Start");
         SetDlgItemText(hwnd, IDC_SEEKER_SUBTEXT, L"");
+        KillTimer(hwnd, seeker.refresh_timer);
         break;
     case WM_TIMER:
         {
@@ -51,8 +51,14 @@ static LRESULT CALLBACK dlgproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
                 break;
             }
             const core_vcr_seek_info info = g_core_ctx->vcr_get_seek_info();
-            // FIXME: Use info.seek_start_sample as the starting point for the percentage!!!
-            const auto str = std::format(L"Seeked {:.2f}%", static_cast<float>(info.current_sample) / static_cast<float>(info.seek_target_sample) * 100.0);
+
+            const float effective_progress = remap(
+            static_cast<float>(info.current_sample),
+            static_cast<float>(info.seek_start_sample),
+            static_cast<float>(info.seek_target_sample),
+            0.0f,
+            1.0f);
+            const auto str = std::format(L"Seeked {:.2f}%", effective_progress * 100.0);
             SetDlgItemText(hwnd, IDC_SEEKER_STATUS, str.c_str());
             break;
         }
@@ -87,6 +93,8 @@ static LRESULT CALLBACK dlgproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
                     SetDlgItemText(hwnd, IDC_SEEKER_SUBTEXT, L"");
                     break;
                 }
+
+                seeker.refresh_timer = SetTimer(hwnd, NULL, 1000 / 10, nullptr);
 
                 break;
             }
