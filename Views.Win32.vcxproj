@@ -243,7 +243,7 @@
         <ClInclude Include="lib\IIOHelperService.h" />
         <ClInclude Include="src\Views.Win32\MiscHelpers.h"/>
         <ClInclude Include="src\Views.Win32\ThreadPool.h" />
-        <ClInclude Include="src\Views.Win32\capture\encoders\AVIEncoder.h"/>
+        <ClInclude Include="src\Views.Win32\capture\encoders\VFWEncoder.h" />
         <ClInclude Include="src\Views.Win32\capture\encoders\Encoder.h"/>
         <ClInclude Include="src\Views.Win32\capture\encoders\FFmpegEncoder.h"/>
         <ClInclude Include="src\Views.Win32\capture\EncodingManager.h"/>
@@ -309,7 +309,7 @@
             <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
         </ClCompile>
         <ClCompile Include="src\Views.Win32\ThreadPool.cpp" />
-        <ClCompile Include="src\Views.Win32\capture\encoders\AVIEncoder.cpp" />
+        <ClCompile Include="src\Views.Win32\capture\encoders\VFWEncoder.cpp" />
         <ClCompile Include="src\Views.Win32\capture\encoders\FFmpegEncoder.cpp" />
         <ClCompile Include="src\Views.Win32\capture\EncodingManager.cpp" />
         <ClCompile Include="src\Views.Win32\capture\Resampler.cpp" />

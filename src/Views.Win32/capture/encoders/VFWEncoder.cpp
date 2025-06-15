@@ -10,10 +10,10 @@
 
 #include <capture/EncodingManager.h>
 #include <capture/Resampler.h>
-#include <capture/encoders/AVIEncoder.h>
+#include <capture/encoders/VFWEncoder.h>
 
 
-std::optional<std::wstring> AVIEncoder::start(Params params)
+std::optional<std::wstring> VFWEncoder::start(Params params)
 {
     if (!m_splitting)
     {
@@ -125,7 +125,7 @@ std::optional<std::wstring> AVIEncoder::start(Params params)
     return std::nullopt;
 }
 
-bool AVIEncoder::stop_impl(const bool fail_stop)
+bool VFWEncoder::stop_impl(const bool fail_stop)
 {
     write_sound(nullptr, 0, RESAMPLED_FREQ, RESAMPLED_FREQ * 2, TRUE, 16);
 
@@ -159,12 +159,12 @@ bool AVIEncoder::stop_impl(const bool fail_stop)
     return true;
 }
 
-bool AVIEncoder::stop()
+bool VFWEncoder::stop()
 {
     return this->stop_impl(false);
 }
 
-bool AVIEncoder::append_video(uint8_t* image)
+bool VFWEncoder::append_video(uint8_t* image)
 {
     if (g_config.synchronization_mode != static_cast<int>(EncodingManager::Sync::Audio) && g_config.synchronization_mode != static_cast<int>(EncodingManager::Sync::None))
     {
@@ -219,7 +219,7 @@ bool AVIEncoder::append_video(uint8_t* image)
     return result;
 }
 
-bool AVIEncoder::append_audio(uint8_t* audio, size_t length, uint8_t bitrate)
+bool VFWEncoder::append_audio(uint8_t* audio, size_t length, uint8_t bitrate)
 {
     const int write_size = m_params.arate * 2;
 
@@ -276,7 +276,7 @@ bool AVIEncoder::append_audio(uint8_t* audio, size_t length, uint8_t bitrate)
     return true;
 }
 
-bool AVIEncoder::write_sound(uint8_t* buf, int len, const int min_write_size, const int max_write_size, const BOOL force, uint8_t bitrate)
+bool VFWEncoder::write_sound(uint8_t* buf, int len, const int min_write_size, const int max_write_size, const BOOL force, uint8_t bitrate)
 {
     if ((len <= 0 && !force) || len > max_write_size)
         return false;
@@ -339,7 +339,7 @@ bool AVIEncoder::write_sound(uint8_t* buf, int len, const int min_write_size, co
     return true;
 }
 
-bool AVIEncoder::append_video_impl(uint8_t* image)
+bool VFWEncoder::append_video_impl(uint8_t* image)
 {
     LONG written_len;
     BOOL ret = AVIStreamWrite(m_compressed_video_stream, m_frame++, 1, image, m_info_hdr.biSizeImage, AVIIF_KEYFRAME, NULL, &written_len);
@@ -347,7 +347,7 @@ bool AVIEncoder::append_video_impl(uint8_t* image)
     return !ret;
 }
 
-bool AVIEncoder::save_options() const
+bool VFWEncoder::save_options() const
 {
     FILE* f = nullptr;
     if (fopen_s(&f, "avi.cfg", "wb"))
@@ -378,7 +378,7 @@ bool AVIEncoder::save_options() const
     return true;
 }
 
-bool AVIEncoder::load_options()
+bool VFWEncoder::load_options()
 {
     FILE* f = nullptr;
     if (fopen_s(&f, "avi.cfg", "rb"))

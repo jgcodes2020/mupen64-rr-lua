@@ -10,7 +10,7 @@
 
 #include <Vfw.h>
 
-class AVIEncoder final : public Encoder {
+class VFWEncoder final : public Encoder {
 public:
     std::optional<std::wstring> start(Params params) override;
     bool stop() override;

@@ -10,7 +10,7 @@
 #include <DialogService.h>
 #include <Messenger.h>
 #include <capture/EncodingManager.h>
-#include <capture/encoders/AVIEncoder.h>
+#include <capture/encoders/VFWEncoder.h>
 #include <capture/encoders/Encoder.h>
 #include <capture/encoders/FFmpegEncoder.h>
 #include <components/Dispatcher.h>
@@ -338,7 +338,7 @@ namespace EncodingManager
         switch (encoder_type)
         {
         case t_config::EncoderType::VFW:
-            m_encoder = std::make_unique<AVIEncoder>();
+            m_encoder = std::make_unique<VFWEncoder>();
             break;
         case t_config::EncoderType::FFmpeg:
             m_encoder = std::make_unique<FFmpegEncoder>();
