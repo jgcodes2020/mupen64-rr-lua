@@ -74,7 +74,7 @@ EXPORT core_result CALL core_create(core_params* params, core_ctx** ctx)
     g_ctx.SP_IMEM = SP_IMEM;
     g_ctx.PIF_RAM = PIF_RAM;
     CORE_RDRAM = rdram;
-    
+
     g_ctx.vr_byteswap = rom_byteswap;
     g_ctx.vr_get_rom_path = vr_get_rom_path;
     g_ctx.vr_get_lag_count = [] {
@@ -139,7 +139,7 @@ EXPORT core_result CALL core_create(core_params* params, core_ctx** ctx)
     g_ctx.dbg_get_rsp_enabled = dbg_get_rsp_enabled;
     g_ctx.dbg_set_rsp_enabled = dbg_set_rsp_enabled;
     g_ctx.dbg_disassemble = dbg_disassemble;
-    
+
     *ctx = &g_ctx;
 
     return Res_Ok;

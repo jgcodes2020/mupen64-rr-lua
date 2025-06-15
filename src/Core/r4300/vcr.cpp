@@ -1520,7 +1520,7 @@ core_result vcr_begin_seek_impl(std::wstring str, bool pause_at_end, bool resume
         }
 
         vcr.seek_start_sample = 0;
-        
+
         g_core->log_trace(L"[VCR] vcr_begin_seek_impl: playback, slow path");
 
         const auto result = g_ctx.vcr_start_playback(vcr.movie_path);
@@ -1545,7 +1545,7 @@ core_result vcr_begin_seek_impl(std::wstring str, bool pause_at_end, bool resume
         }
 
         const auto target_sample = warp_modify ? vcr.warp_modify_first_difference_frame : frame;
-        
+
         // All seek savestates after the target frame need to be purged, as the user will invalidate them by overwriting inputs prior to them
         if (!g_core->cfg->vcr_readonly)
         {
@@ -1568,7 +1568,7 @@ core_result vcr_begin_seek_impl(std::wstring str, bool pause_at_end, bool resume
         const auto closest_key = vcr_find_closest_savestate_before_frame(target_sample);
 
         vcr.seek_start_sample = closest_key;
-        
+
         g_core->log_info(std::format(L"[VCR] Seeking backwards during recording to frame {}, loading closest savestate at {}...", target_sample, closest_key));
         vcr.seek_savestate_loading = true;
 

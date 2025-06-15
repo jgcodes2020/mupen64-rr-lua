@@ -321,7 +321,7 @@ namespace EncodingManager
         {
             return false;
         }
-        
+
         std::lock_guard lock(m_mutex);
 
         g_view_logger->info("[EncodingManager]: Starting capture at {} x {}...", m_video_width, m_video_height);

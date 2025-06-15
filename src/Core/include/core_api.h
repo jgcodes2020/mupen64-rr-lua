@@ -193,7 +193,7 @@ struct core_params {
     core_plugin_funcs plugin_funcs;
 
     core_controller controls[4]{};
-    
+
     /**
      * \brief Logs the specified message at the trace level.
      */
@@ -435,7 +435,7 @@ struct core_ctx {
      * \brief Starts frame advancing the specified amount of frames.
      */
     std::function<void(size_t)> vr_frame_advance;
-    
+
     /**
      * \brief Sets the fast-forward state.
      */
