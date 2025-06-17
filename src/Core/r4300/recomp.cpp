@@ -193,9 +193,6 @@ static void RBREAK()
 static void RSYNC()
 {
     dst->ops = SYNC;
-#ifdef LUA_BREAKPOINTSYNC_INTERP
-    dst->f.stype = (src >> 6) & 0x1F;
-#endif
     if (dynacore)
         gensync();
 }
@@ -2509,10 +2506,6 @@ void init_block(int32_t* source, precomp_block* block)
             dst->addr = block->start + i * 4;
             dst->reg_cache_infos.need_map = 0;
             dst->local_addr = code_length;
-#ifdef EMU64_DEBUG
-            if (dynacore)
-                gendebug();
-#endif
             RNOTCOMPILED();
         }
         init_length = code_length;
@@ -2682,10 +2675,6 @@ void recompile_block(int32_t* source, precomp_block* block, uint32_t func)
         dst->addr = block->start + i * 4;
         dst->reg_cache_infos.need_map = 0;
         dst->local_addr = code_length;
-#ifdef EMU64_DEBUG
-        if (dynacore)
-            gendebug();
-#endif
         RFIN_BLOCK();
         i++;
         if (i < length - 1 + (length >> 2)) // useful when last opcode is a jump
@@ -2694,10 +2683,6 @@ void recompile_block(int32_t* source, precomp_block* block, uint32_t func)
             dst->addr = block->start + i * 4;
             dst->reg_cache_infos.need_map = 0;
             dst->local_addr = code_length;
-#ifdef EMU64_DEBUG
-            if (dynacore)
-                gendebug();
-#endif
             RFIN_BLOCK();
             i++;
         }

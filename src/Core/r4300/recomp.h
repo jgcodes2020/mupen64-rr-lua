@@ -46,9 +46,6 @@ typedef struct _precomp_instr {
             unsigned char fs;
             unsigned char fd;
         } cf;
-#ifdef LUA_BREAKPOINTSYNC_INTERP
-        unsigned char stype;
-#endif
     } f;
 
     uint32_t addr;

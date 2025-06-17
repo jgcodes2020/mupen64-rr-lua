@@ -3394,68 +3394,27 @@ void write_rom()
 
 void read_pif()
 {
-#ifdef EMU64_DEBUG
-    if ((*address_low > 0x7FF) || (*address_low < 0x7C0))
-    {
-        g_core->log_info(L"error in reading a word in PIF");
-        *rdword = 0;
-        return;
-    }
-#endif
     *rdword = sl(*((uint32_t*)(PIF_RAMb + (address & 0x7FF) - 0x7C0)));
 }
 
 void read_pifb()
 {
-#ifdef EMU64_DEBUG
-    if ((*address_low > 0x7FF) || (*address_low < 0x7C0))
-    {
-        g_core->log_info(L"error in reading a byte in PIF");
-        *rdword = 0;
-        return;
-    }
-#endif
     *rdword = *(PIF_RAMb + ((address & 0x7FF) - 0x7C0));
 }
 
 void read_pifh()
 {
-#ifdef EMU64_DEBUG
-    if ((*address_low > 0x7FF) || (*address_low < 0x7C0))
-    {
-        g_core->log_info(L"error in reading a hword in PIF");
-        *rdword = 0;
-        return;
-    }
-#endif
-    *rdword = (*(PIF_RAMb + ((address & 0x7FF) - 0x7C0)) << 8) |
-    *(PIF_RAMb + (((address + 1) & 0x7FF) - 0x7C0));
-    ;
+    *rdword = (*(PIF_RAMb + ((address & 0x7FF) - 0x7C0)) << 8) | *(PIF_RAMb + (((address + 1) & 0x7FF) - 0x7C0));
 }
 
 void read_pifd()
 {
-#ifdef EMU64_DEBUG
-    if ((*address_low > 0x7FF) || (*address_low < 0x7C0))
-    {
-        g_core->log_info(L"error in reading a double word in PIF");
-        *rdword = 0;
-        return;
-    }
-#endif
     *rdword = ((uint64_t)sl(*((uint32_t*)(PIF_RAMb + (address & 0x7FF) - 0x7C0))) << 32) |
     sl(*((uint32_t*)(PIF_RAMb + ((address + 4) & 0x7FF) - 0x7C0)));
 }
 
 void write_pif()
 {
-#ifdef EMU64_DEBUG
-    if ((*address_low > 0x7FF) || (*address_low < 0x7C0))
-    {
-        g_core->log_info(L"error in writing a word in PIF");
-        return;
-    }
-#endif
     *((uint32_t*)(PIF_RAMb + (address & 0x7FF) - 0x7C0)) = sl(word);
     if ((address & 0x7FF) == 0x7FC)
     {
@@ -3472,13 +3431,6 @@ void write_pif()
 
 void write_pifb()
 {
-#ifdef EMU64_DEBUG
-    if ((*address_low > 0x7FF) || (*address_low < 0x7C0))
-    {
-        g_core->log_info(L"error in writing a byte in PIF");
-        return;
-    }
-#endif
     *(PIF_RAMb + (address & 0x7FF) - 0x7C0) = g_byte;
     if ((address & 0x7FF) == 0x7FF)
     {
@@ -3495,13 +3447,6 @@ void write_pifb()
 
 void write_pifh()
 {
-#ifdef EMU64_DEBUG
-    if ((*address_low > 0x7FF) || (*address_low < 0x7C0))
-    {
-        g_core->log_info(L"error in writing a hword in PIF");
-        return;
-    }
-#endif
     *(PIF_RAMb + (address & 0x7FF) - 0x7C0) = hword >> 8;
     *(PIF_RAMb + ((address + 1) & 0x7FF) - 0x7C0) = hword & 0xFF;
     if ((address & 0x7FF) == 0x7FE)
@@ -3519,13 +3464,6 @@ void write_pifh()
 
 void write_pifd()
 {
-#ifdef EMU64_DEBUG
-    if ((*address_low > 0x7FF) || (*address_low < 0x7C0))
-    {
-        g_core->log_info(L"error in writing a double word in PIF");
-        return;
-    }
-#endif
     *((uint32_t*)(PIF_RAMb + (address & 0x7FF) - 0x7C0)) =
     sl((uint32_t)(dword >> 32));
     *((uint32_t*)(PIF_RAMb + (address & 0x7FF) - 0x7C0)) =

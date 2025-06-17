@@ -102,11 +102,7 @@ void SYSCALL()
 
 void SYNC()
 {
-#ifdef LUA_BREAKPOINTSYNC_INTERP
-    LuaBreakpointSyncInterp();
-#else
     PC++;
-#endif
 }
 
 void MFHI()

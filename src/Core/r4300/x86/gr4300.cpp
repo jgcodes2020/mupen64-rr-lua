@@ -108,16 +108,10 @@ void gendelayslot()
 
 void genni()
 {
-#ifdef EMU64_DEBUG
-    gencallinterp((uint32_t)NI, 0);
-#endif
 }
 
 void genreserved()
 {
-#ifdef EMU64_DEBUG
-    gencallinterp((uint32_t)RESERVED, 0);
-#endif
 }
 
 void genfin_block()
