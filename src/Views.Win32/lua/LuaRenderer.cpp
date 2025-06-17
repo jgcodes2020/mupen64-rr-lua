@@ -221,7 +221,8 @@ void LuaRenderer::create_renderer(t_lua_rendering_context* ctx, t_lua_environmen
 
     if (!g_config.lazy_renderer_init)
     {
-        LuaRenderer::ensure_d2d_renderer_created(ctx);
+        ensure_d2d_renderer_created(ctx);
+        mark_gdi_content_present(ctx);
     }
 
     create_loadscreen(ctx);
