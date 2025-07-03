@@ -86,6 +86,12 @@
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectName)-x64-release</TargetName>
   </PropertyGroup>
   
+  <ItemDefinitionGroup>
+    <ClCompile>
+        <AdditionalOptions>/Ob3</AdditionalOptions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+    
   <ItemDefinitionGroup Condition="'$(Platform)'=='Win32'">
     <ClCompile>
       <AdditionalIncludeDirectories>src/Core;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>

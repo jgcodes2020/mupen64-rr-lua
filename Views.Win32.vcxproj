@@ -109,7 +109,11 @@
     <PropertyGroup>
         <GenerateManifest>false</GenerateManifest>
     </PropertyGroup>
+    
     <ItemDefinitionGroup>
+        <ClCompile>
+            <AdditionalOptions>/Ob3</AdditionalOptions>
+        </ClCompile>
         <Link>
             <LinkIncremental>true</LinkIncremental>
             <GenerateDebugInformation>true</GenerateDebugInformation>
