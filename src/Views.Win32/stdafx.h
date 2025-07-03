@@ -4,6 +4,10 @@
  * SPDX-License-Identifier: GPL-2.0-or-later
  */
 
+#ifdef _MSC_VER
+#define _MSVC_STL_HARDENING 1
+#endif
+
 #define SPDLOG_LEVEL_NAMES {"🔍", "🪲", "ℹ️", "⚠️", "❌", "💥", ""}
 
 #include <Core/stdafx.h>

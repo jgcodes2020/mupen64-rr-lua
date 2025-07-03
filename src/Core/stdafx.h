@@ -4,6 +4,10 @@
  * SPDX-License-Identifier: GPL-2.0-or-later
  */
 
+#ifdef _MSC_VER
+#define _MSVC_STL_HARDENING 1
+#endif
+
 #include <algorithm>
 #include <any>
 #include <atomic>
