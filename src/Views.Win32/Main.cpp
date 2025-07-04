@@ -30,8 +30,9 @@
 #include <components/Seeker.h>
 #include <components/Statusbar.h>
 #include <components/UpdateChecker.h>
+#include <components/LuaDialog.h>
 #include <lua/LuaCallbacks.h>
-#include <lua/LuaConsole.h>
+#include <lua/LuaManager.h>
 #include <lua/LuaRenderer.h>
 #include <ThreadPool.h>
 #include <spdlog/sinks/basic_file_sink.h>
@@ -76,11 +77,6 @@ bool g_fast_forward;
 bool fullscreen{};
 
 ULONG_PTR gdi_plus_token;
-
-/**
- * \brief List of lua environment map keys running before emulation stopped
- */
-std::vector<HWND> g_previously_running_luas;
 
 std::shared_ptr<Plugin> g_video_plugin;
 std::shared_ptr<Plugin> g_audio_plugin;
@@ -613,12 +609,10 @@ void on_task_changed(std::any data)
 
 void on_emu_stopping(std::any)
 {
-    // Remember all running lua scripts' HWNDs
-    for (const auto& lua : g_lua_environments)
-    {
-        g_previously_running_luas.push_back(lua->hwnd);
-    }
-    g_main_window_dispatcher->invoke(lua_stop_all_scripts);
+    g_main_window_dispatcher->invoke([] {
+        LuaDialog::store_running_scripts();
+        LuaDialog::stop_all();
+    });
 }
 
 void on_emu_launched_changed(std::any data)
@@ -652,13 +646,7 @@ void on_emu_launched_changed(std::any data)
                 RecentMenu::add(g_config.recent_rom_paths, rom_path.wstring(), g_config.is_recent_rom_paths_frozen, ID_RECENTROMS_FIRST, g_recent_roms_menu);
             }
 
-            for (const HWND hwnd : g_previously_running_luas)
-            {
-                // click start button
-                SendMessage(hwnd, WM_COMMAND, MAKEWPARAM(IDC_BUTTON_LUASTATE, BN_CLICKED), (LPARAM)GetDlgItem(hwnd, IDC_BUTTON_LUASTATE));
-            }
-
-            g_previously_running_luas.clear();
+            LuaDialog::load_running_scripts();
         }
 
         if (!value && previous_value)
@@ -985,7 +973,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
             }
             else if (extension == ".lua")
             {
-                lua_create_and_run(path.wstring().c_str());
+                LuaDialog::start_and_add_if_needed(path);
             }
             break;
         }
@@ -1204,7 +1192,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
     case WM_CLOSE:
         if (confirm_user_exit())
         {
-            lua_close_all_scripts();
+            LuaDialog::close_all();
+
             std::thread([] {
                 g_core_ctx->vr_close_rom(true);
                 g_main_window_dispatcher->invoke([] {
@@ -1371,14 +1360,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
                     }
                 }
                 break;
-            case IDM_LOAD_LUA:
-                {
-                    lua_create();
-                }
+            case IDM_SHOW_LUA_MANAGER:
+                LuaDialog::show();
                 break;
-
             case IDM_CLOSE_ALL_LUA:
-                lua_close_all_scripts();
+                LuaDialog::close_all();
                 break;
             case IDM_DEBUG_WARP_MODIFY:
                 {
@@ -1966,7 +1952,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
                     if (path.empty())
                         break;
 
-                    lua_create_and_run(path);
+                    LuaDialog::start_and_add_if_needed(path);
                 }
                 break;
             }
@@ -2408,7 +2394,7 @@ int CALLBACK WinMain(const HINSTANCE hInstance, HINSTANCE, LPSTR, const int nSho
     Gdiplus::GdiplusStartupInput startup_input;
     GdiplusStartup(&gdi_plus_token, &startup_input, NULL);
 
-    lua_init();
+    LuaManager::init();
 
     CrashManager::init();
     MGECompositor::init();

@@ -10,7 +10,7 @@ namespace LuaCore::Global
 {
     static int print(lua_State* L)
     {
-        auto lua = get_lua_class(L);
+        auto lua = LuaManager::get_environment_for_state(L);
 
         const int nargs = lua_gettop(L);
 
@@ -40,25 +40,25 @@ namespace LuaCore::Global
                     str = str.substr(1, str.size() - 2);
                 }
 
-                print_con(lua->hwnd, str);
+                lua->print(str);
             }
             else
             {
-                print_con(lua->hwnd, L"???");
+                lua->print(L"???");
             }
             lua_pop(L, 2);
 
             if (i < nargs)
-                print_con(lua->hwnd, L"\t");
+                lua->print(L"\t");
         }
 
-        print_con(lua->hwnd, L"\r\n");
+        lua->print(L"\r\n");
         return 0;
     }
 
     static int tostringexs(lua_State* L)
     {
-        auto lua = get_lua_class(L);
+        auto lua = LuaManager::get_environment_for_state(L);
 
         const int nargs = lua_gettop(L);
 

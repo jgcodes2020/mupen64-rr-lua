@@ -1,7 +1,7 @@
 ﻿#include "stdafx.h"
 #include <DialogService.h>
 #include <components/Statusbar.h>
-#include <lua/LuaConsole.h>
+#include <lua/LuaManager.h>
 #include <lua/LuaRenderer.h>
 #include <lua/presenters/DCompPresenter.h>
 #include <lua/presenters/GDIPresenter.h>
@@ -12,6 +12,7 @@ const auto D2D_OVERLAY_CLASS = L"lua_d2d_overlay";
 const auto GDI_OVERLAY_CLASS = L"lua_gdi_overlay";
 
 static bool d2d_drawing = false;
+static HBRUSH g_alpha_mask_brush = CreateSolidBrush(LuaRenderer::LUA_GDI_COLOR_MASK);
 
 static LRESULT CALLBACK d2d_overlay_wndproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
@@ -55,7 +56,7 @@ static LRESULT CALLBACK d2d_overlay_wndproc(HWND hwnd, UINT msg, WPARAM wparam, 
 
             if (!success)
             {
-                destroy_lua_environment(lua);
+                LuaManager::destroy_environment(lua);
             }
 
             return 0;
@@ -90,7 +91,7 @@ static LRESULT CALLBACK gdi_overlay_wndproc(HWND hwnd, UINT msg, WPARAM wparam, 
 
             if (!success)
             {
-                destroy_lua_environment(lua);
+                LuaManager::destroy_environment(lua);
             }
 
             return 0;
@@ -330,4 +331,9 @@ void LuaRenderer::loadscreen_reset(t_lua_rendering_context* ctx)
 {
     destroy_loadscreen(ctx);
     create_loadscreen(ctx);
+}
+
+HBRUSH LuaRenderer::alpha_mask_brush()
+{
+    return g_alpha_mask_brush;
 }

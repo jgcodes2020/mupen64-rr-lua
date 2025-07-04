@@ -1,4 +1,10 @@
-﻿#pragma once
+﻿/*
+ * Copyright (c) 2025, Mupen64 maintainers, contributors, and original authors (Hacktarux, ShadowPrince, linker).
+ *
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ */
+
+#pragma once
 
 #include <lua/presenters/Presenter.h>
 
@@ -65,7 +71,9 @@ struct t_lua_rendering_context {
  */
 struct t_lua_environment {
     std::filesystem::path path;
-    HWND hwnd;
     lua_State* L;
     t_lua_rendering_context rctx;
+
+    std::function<void()> destroyed{};
+    std::function<void(const std::wstring& path)> print{};
 };

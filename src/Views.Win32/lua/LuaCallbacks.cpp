@@ -6,7 +6,7 @@
 
 #include "stdafx.h"
 #include <lua/LuaCallbacks.h>
-#include <lua/LuaConsole.h>
+#include <lua/LuaManager.h>
 
 // OPTIMIZATION: If no lua scripts are running, skip the deeper lua path
 // This is an unsynchronized access to the map from the emu thread!
@@ -60,7 +60,7 @@ static std::function<int(lua_State*)> get_function_for_callback(const LuaCallbac
 
 core_buttons LuaCallbacks::get_last_controller_data(int index)
 {
-    return last_controller_data[index];
+    return g_last_controller_data[index];
 }
 
 void LuaCallbacks::call_window_message(void* wnd, unsigned int msg, unsigned int w, long l)
@@ -90,7 +90,7 @@ void LuaCallbacks::call_input(core_buttons* input, int index)
 {
     // NOTE: Special callback, we store the input data for all scripts to access via joypad.get(n)
     // If they request a change via joypad.set(n, input), we change the input
-    last_controller_data[index] = *input;
+    g_last_controller_data[index] = *input;
 
     RET_IF_EMPTY;
 
@@ -100,11 +100,11 @@ void LuaCallbacks::call_input(core_buttons* input, int index)
         g_input_count++;
     });
 
-    if (overwrite_controller_data[index])
+    if (g_overwrite_controller_data[index])
     {
-        *input = new_controller_data[index];
-        last_controller_data[index] = *input;
-        overwrite_controller_data[index] = false;
+        *input = g_new_controller_data[index];
+        g_last_controller_data[index] = *input;
+        g_overwrite_controller_data[index] = false;
     }
 }
 
@@ -190,7 +190,7 @@ bool invoke_callbacks_with_key_impl(const t_lua_environment& lua, const std::fun
         if (function(lua.L))
         {
             const char* str = lua_tostring(lua.L, -1);
-            print_con(lua.hwnd, io_service.string_to_wstring(str) + L"\r\n");
+            lua.print(io_service.string_to_wstring(str) + L"\r\n");
             g_view_logger->info("Lua error: {}", str);
             return false;
         }
@@ -225,7 +225,7 @@ void LuaCallbacks::invoke_callbacks_with_key_on_all_instances(callback_key key)
 
     while (!destruction_queue.empty())
     {
-        destroy_lua_environment(destruction_queue.front());
+        LuaManager::destroy_environment(destruction_queue.front());
         destruction_queue.pop();
     }
 }

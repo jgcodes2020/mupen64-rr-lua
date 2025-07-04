@@ -5,11 +5,11 @@
  */
 
 #include "stdafx.h"
-#include <ThreadPool.h>
 #include <Config.h>
 #include <Messenger.h>
+#include <ThreadPool.h>
+#include <components/LuaDialog.h>
 #include <components/Runner.h>
-#include <lua/LuaConsole.h>
 
 static int32_t last_selected_id = -1;
 
@@ -33,7 +33,7 @@ static void run_auto(const int id, const std::filesystem::path& path)
         });
         break;
     case IDC_LIST_SCRIPTS:
-        lua_create_and_run(path);
+        LuaDialog::start_and_add_if_needed(path);
         break;
     default:
         break;

@@ -47,6 +47,8 @@ extern "C" {
 #include <commdlg.h>
 #include <unordered_set>
 #include <stacktrace>
+#include <expected>
+#include <ranges>
 
 #include <Loggers.h>
 #include <MiscHelpers.h>
@@ -54,3 +56,4 @@ extern "C" {
 #include <lua/LuaTypes.h>
 #include <Config.h>
 #include <IIOHelperService.h>
+#include <ResizeAnchor.h>
