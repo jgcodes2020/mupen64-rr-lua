@@ -8,7 +8,7 @@
 #include <ThreadPool.h>
 #include <BS_thread_pool.hpp>
 
-static BS::thread_pool pool{};
+static BS::thread_pool pool(4);
 static std::unordered_set<size_t> pending_keys{};
 static std::mutex mtx{};
 
