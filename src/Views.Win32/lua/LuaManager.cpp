@@ -20,6 +20,7 @@ size_t g_input_count{};
 std::string g_mupen_api_lua_code{};
 std::string g_inspect_lua_code{};
 std::string g_shims_lua_code{};
+std::string g_sandbox_lua_code{};
 
 std::vector<t_lua_environment*> g_lua_environments{};
 std::unordered_map<lua_State*, t_lua_environment*> g_lua_env_map{};
@@ -67,6 +68,7 @@ void LuaManager::init()
     g_mupen_api_lua_code = load_resource_as_string(IDR_API_LUA_FILE, MAKEINTRESOURCE(TEXTFILE));
     g_inspect_lua_code = load_resource_as_string(IDR_INSPECT_LUA_FILE, MAKEINTRESOURCE(TEXTFILE));
     g_shims_lua_code = load_resource_as_string(IDR_SHIMS_LUA_FILE, MAKEINTRESOURCE(TEXTFILE));
+    g_sandbox_lua_code = load_resource_as_string(IDR_SANDBOX_LUA_FILE, MAKEINTRESOURCE(TEXTFILE));
 }
 
 t_lua_environment* LuaManager::get_environment_for_state(lua_State* lua_state)
@@ -78,7 +80,7 @@ t_lua_environment* LuaManager::get_environment_for_state(lua_State* lua_state)
     return g_lua_env_map[lua_state];
 }
 
-std::expected<t_lua_environment*, std::wstring> LuaManager::create_environment(const std::filesystem::path& path, const std::function<void()>& destroyed_callback, const std::function<void(const std::wstring& path)>& print_callback)
+std::expected<t_lua_environment*, std::wstring> LuaManager::create_environment(const std::filesystem::path& path, const bool trusted, const std::function<void()>& destroyed_callback, const std::function<void(const std::wstring& path)>& print_callback)
 {
     assert(is_on_gui_thread());
 
@@ -100,40 +102,42 @@ std::expected<t_lua_environment*, std::wstring> LuaManager::create_environment(c
 
     bool has_error = false;
 
+    if (luaL_dostring(lua->L, g_mupen_api_lua_code.c_str()))
     {
-        ScopeTimer timer("mupenapi.lua injection", g_view_logger.get());
-        if (luaL_dostring(lua->L, g_mupen_api_lua_code.c_str()))
-        {
-            // Shouldn't happen...
-            has_error = true;
-        }
+        has_error = true;
+        goto fail;
     }
 
     LuaRegistry::register_functions(lua->L);
 
+    if (luaL_dostring(lua->L, g_inspect_lua_code.c_str()))
     {
-        ScopeTimer timer("inspect.lua injection", g_view_logger.get());
-        if (luaL_dostring(lua->L, g_inspect_lua_code.c_str()))
+        has_error = true;
+        goto fail;
+    }
+
+    if (luaL_dostring(lua->L, g_shims_lua_code.c_str()))
+    {
+        has_error = true;
+        goto fail;
+    }
+
+    if (!trusted)
+    {
+        if (luaL_dostring(lua->L, g_sandbox_lua_code.c_str()))
         {
-            // Shouldn't happen...
             has_error = true;
+            goto fail;
         }
     }
 
-    {
-        ScopeTimer timer("shims.lua injection", g_view_logger.get());
-        if (luaL_dostring(lua->L, g_shims_lua_code.c_str()))
-        {
-            // Shouldn't happen...
-            has_error = true;
-        }
-    }
-
+    // NOTE: We don't want to reach luaL_dofile if the prelude scripts failed, as that would potentially compromise security (if the sandbox script fails for example).
     if (luaL_dofile(lua->L, lua->path.string().c_str()))
     {
         has_error = true;
     }
 
+fail:
     if (has_error)
     {
         g_lua_environments.pop_back();
