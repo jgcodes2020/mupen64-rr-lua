@@ -543,7 +543,7 @@ void LuaDialog::start_and_add_if_needed(const std::filesystem::path& path)
     const auto existing_ctx = std::ranges::find_if(
     g_lua_instance_wnd_ctxs,
     [&](const auto& ctx) {
-        return ctx->typed_path == path;
+        return ctx->typed_path == path && ctx->env == nullptr;
     });
 
     if (existing_ctx == g_lua_instance_wnd_ctxs.end())
