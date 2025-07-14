@@ -890,7 +890,7 @@ std::filesystem::path get_app_full_path()
     }
 
     app_path.resize(app_path_len);
-    
+
     IIOHelperService::t_path_segment_info info;
     io_service.get_path_segment_info(app_path, info);
 
