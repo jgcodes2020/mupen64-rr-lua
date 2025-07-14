@@ -8,7 +8,6 @@
 #include <Core/r4300/vcr.h>
 #include <Core/r4300/r4300.h>
 
-extern t_vcr_state vcr;
 static core_cfg cfg{};
 static core_params params{};
 static core_ctx* ctx = nullptr;
@@ -27,6 +26,23 @@ static void prepare_test()
     };
     params.plugin_funcs.input_set_keys = [](int32_t, core_buttons) {
     };
+}
+
+/**
+ * \brief Checks whether the VCR lock is held by trying to grab it from a separate thread.
+ */
+static bool is_vcr_lock_held()
+{
+    bool unlocked;
+    std::thread([&] {
+        unlocked = vcr_mtx.try_lock();
+        if (unlocked)
+        {
+            vcr_mtx.unlock();
+        }
+    })
+    .join();
+    return !unlocked;
 }
 
 #pragma region Integration
@@ -644,6 +660,171 @@ TEST_CASE("input_buffer_doesnt_change_if_seeking_while_recording", "vcr_unfreeze
     REQUIRE(vcr.current_sample == 0);
 }
 
-// TODO: More tests for vcr_unfreeze!
+// TODO: More coverage for vcr_unfreeze!
+
+/*
+ * Tests that vcr_on_controller_poll unlocks the VCR mutex during the input callback when idle.
+ * This is important to avoid deadlocks when the input callback dispatches synchronous calls to other threads that also try to lock the VCR mutex.
+ */
+TEST_CASE("mutex_unlocked_during_input_callback_called_while_idle", "vcr_on_controller_poll")
+{
+    prepare_test();
+    params.callbacks.input = [&](core_buttons* input, int index) {
+        REQUIRE(!is_vcr_lock_held());
+    };
+    core_create(&params, &ctx);
+
+    core_buttons input{};
+    vcr_on_controller_poll(0, &input);
+}
+
+/*
+ * Tests that vcr_on_controller_poll unlocks the VCR mutex during the input callback when recording (standard appending path).
+ * This is important to avoid deadlocks when the input callback dispatches synchronous calls to other threads that also try to lock the VCR mutex.
+ */
+TEST_CASE("mutex_unlocked_during_input_callback_called_while_recording_1", "vcr_on_controller_poll")
+{
+    prepare_test();
+    params.callbacks.input = [&](core_buttons* input, int index) {
+        REQUIRE(!is_vcr_lock_held());
+    };
+
+    const auto inputs = std::vector<core_buttons>{
+    {1},
+    {2},
+    {3},
+    {4}};
+
+    core_create(&params, &ctx);
+
+    vcr.inputs = inputs;
+    vcr.hdr.length_samples = inputs.size();
+    vcr.hdr.controller_flags = CONTROLLER_X_PRESENT(0);
+    vcr.task = task_recording;
+    vcr.current_sample = 4;
+
+    core_buttons input{};
+    vcr_on_controller_poll(0, &input);
+}
+
+/*
+ * Tests that vcr_on_controller_poll unlocks the VCR mutex during the input callback when recording (pseudo-playback path).
+ * This is important to avoid deadlocks when the input callback dispatches synchronous calls to other threads that also try to lock the VCR mutex.
+ */
+TEST_CASE("mutex_unlocked_during_input_callback_called_while_recording_2", "vcr_on_controller_poll")
+{
+    prepare_test();
+    params.callbacks.input = [&](core_buttons* input, int index) {
+        REQUIRE(!is_vcr_lock_held());
+    };
+
+    const auto inputs = std::vector<core_buttons>{
+    {1},
+    {2},
+    {3},
+    {4}};
+
+    core_create(&params, &ctx);
+
+    vcr.inputs = inputs;
+    vcr.hdr.length_samples = inputs.size();
+    vcr.hdr.controller_flags = CONTROLLER_X_PRESENT(0);
+    vcr.task = task_recording;
+    vcr.current_sample = 2;
+
+    core_buttons input{};
+    vcr_on_controller_poll(0, &input);
+}
+
+/*
+ * Tests that vcr_on_controller_poll unlocks the VCR mutex during the input callback when playing back.
+ * This is important to avoid deadlocks when the input callback dispatches synchronous calls to other threads that also try to lock the VCR mutex.
+ */
+TEST_CASE("mutex_unlocked_during_input_callback_called_while_playback", "vcr_on_controller_poll")
+{
+    prepare_test();
+    params.callbacks.input = [&](core_buttons* input, int index) {
+        REQUIRE(!is_vcr_lock_held());
+    };
+
+    const auto inputs = std::vector<core_buttons>{
+    {1},
+    {2},
+    {3},
+    {4}};
+
+    core_create(&params, &ctx);
+
+    vcr.inputs = inputs;
+    vcr.hdr.length_samples = inputs.size();
+    vcr.hdr.controller_flags = CONTROLLER_X_PRESENT(0);
+    vcr.task = task_playback;
+    vcr.current_sample = 3;
+
+    core_buttons input{};
+    vcr_on_controller_poll(0, &input);
+}
+
+
+/*
+ * Tests that stopping the VCR during an input callback while recording does not perform any recording work.
+ */
+TEST_CASE("stopping_vcr_during_input_callback_while_recording_doesnt_do_recording_work", "vcr_on_controller_poll")
+{
+    prepare_test();
+    params.callbacks.input = [&](core_buttons* input, int index) {
+        vcr_stop_all();
+    };
+
+    const auto inputs = std::vector<core_buttons>{
+    {1},
+    {2},
+    {3},
+    {4}};
+
+    core_create(&params, &ctx);
+
+    vcr.inputs = inputs;
+    vcr.hdr.length_samples = inputs.size();
+    vcr.hdr.controller_flags = CONTROLLER_X_PRESENT(0);
+    vcr.task = task_recording;
+    vcr.current_sample = 4;
+
+    core_buttons input{};
+    vcr_on_controller_poll(0, &input);
+
+    REQUIRE(vcr.task == task_idle);
+    REQUIRE(vcr.hdr.length_samples == inputs.size());
+    REQUIRE(vcr.current_sample == 4);
+}
+
+/*
+ * Tests that the VCR mutex is unlocked during callbacks invoked when calling vcr_stop_all with playback task.
+ */
+TEST_CASE("mutex_unlocked_during_callbacks_with_playback_task", "vcr_stop_all")
+{
+    prepare_test();
+
+    bool task_changed_called = false;
+    params.callbacks.task_changed = [&](auto) {
+        task_changed_called = true;
+        REQUIRE(!is_vcr_lock_held());
+    };
+
+    bool stop_movie_called = false;
+    params.callbacks.stop_movie = [&] {
+        stop_movie_called = true;
+        REQUIRE(!is_vcr_lock_held());
+    };
+
+    core_create(&params, &ctx);
+
+    vcr.task = task_playback;
+
+    vcr_stop_all();
+
+    REQUIRE(task_changed_called);
+    REQUIRE(stop_movie_called);
+}
 
 #pragma endregion

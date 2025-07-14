@@ -44,6 +44,8 @@ struct vcr_freeze_info {
     std::vector<core_buttons> input_buffer{};
 };
 
+extern t_vcr_state vcr;
+extern std::mutex vcr_mtx;
 
 /**
  * \brief Notifies VCR engine about controller being polled
