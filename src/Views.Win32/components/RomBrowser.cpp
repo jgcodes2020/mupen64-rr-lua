@@ -50,7 +50,7 @@ namespace RomBrowser
         std::vector<std::wstring> filtered_rom_paths;
 
         std::ranges::copy_if(rom_paths, std::back_inserter(filtered_rom_paths), [](std::wstring val) {
-            wchar_t c_extension[260] = {0};
+            wchar_t c_extension[_MAX_EXT] = {0};
             if (_wsplitpath_s(val.c_str(), nullptr, 0, nullptr, 0, nullptr, 0, c_extension, _countof(c_extension)))
             {
                 return false;

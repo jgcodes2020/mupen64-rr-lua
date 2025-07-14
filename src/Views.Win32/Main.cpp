@@ -559,9 +559,10 @@ void update_titlebar()
 
     if (g_core_ctx->vcr_get_task() != task_idle)
     {
-        wchar_t movie_filename[MAX_PATH] = {0};
-        _wsplitpath_s(g_core_ctx->vcr_get_path().wstring().c_str(), nullptr, 0, nullptr, 0, movie_filename, _countof(movie_filename), nullptr, 0);
-        text += std::format(L" - {}", movie_filename);
+        IIOHelperService::t_path_segment_info info;
+        io_service.get_path_segment_info(g_core_ctx->vcr_get_path(), info);
+
+        text += std::format(L" - {}", info.filename);
     }
 
     if (EncodingManager::is_capturing())
@@ -880,15 +881,20 @@ bool is_on_gui_thread()
 
 std::filesystem::path get_app_full_path()
 {
-    wchar_t ret[MAX_PATH] = {0};
-    wchar_t drive[_MAX_DRIVE], dirn[_MAX_DIR];
-    wchar_t path_buffer[_MAX_DIR];
-    GetModuleFileName(nullptr, path_buffer, std::size(path_buffer));
-    _wsplitpath_s(path_buffer, drive, _countof(drive), dirn, _countof(dirn), nullptr, 0, nullptr, 0);
-    StrCpy(ret, drive);
-    StrCat(ret, dirn);
+    std::wstring app_path(MAX_PATH, 0);
+    const DWORD app_path_len = GetModuleFileName(nullptr, app_path.data(), app_path.size());
 
-    return ret;
+    if (app_path_len == 0)
+    {
+        return L"";
+    }
+
+    app_path.resize(app_path_len);
+    
+    IIOHelperService::t_path_segment_info info;
+    io_service.get_path_segment_info(app_path, info);
+
+    return info.drive + info.dir;
 }
 
 t_plugin_discovery_result do_plugin_discovery()
@@ -1594,13 +1600,17 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
 
                     wchar_t proc_name[MAX_PATH] = {0};
                     GetModuleFileName(NULL, proc_name, MAX_PATH);
-                    _wsplitpath_s(proc_name, nullptr, 0, nullptr, 0, proc_name, _countof(proc_name), nullptr, 0);
 
-                    wchar_t stroop_c[1024] = {0};
-                    wsprintfW(stroop_c,
-                              L"<Emulator name=\"Mupen 5.0 RR\" processName=\"%s\" ramStart=\"%s\" endianness=\"little\" autoDetect=\"true\"/>",
-                              proc_name,
-                              ram_start);
+                    IIOHelperService::t_path_segment_info info;
+                    if (!io_service.get_path_segment_info(proc_name, info))
+                    {
+                        break;
+                    }
+
+                    const auto stroop_line = std::format(
+                    L"<Emulator name=\"Mupen 5.0 RR\" processName=\"{}\" ramStart=\"{}\" endianness=\"little\" autoDetect=\"true\"/>",
+                    info.filename,
+                    ram_start);
 
                     const auto str = std::format(L"The RAM start is {}.\r\nHow would you like to proceed?", ram_start);
 
@@ -1613,7 +1623,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
 
                     if (result == 0)
                     {
-                        copy_to_clipboard(g_main_hwnd, stroop_c);
+                        copy_to_clipboard(g_main_hwnd, stroop_line);
                     }
 
                     break;

@@ -127,30 +127,26 @@ std::filesystem::path find_accompanying_file_for_movie(std::filesystem::path pat
     // A.B.m64 -> A.st, A.B.st
     // A.B.C.m64->A.st, A.B.st, A.B.C.st
 
-    static wchar_t drive[_MAX_DRIVE] = {0};
-    static wchar_t dir[_MAX_DIR] = {0};
-    static wchar_t filename[_MAX_PATH] = {0};
-
-    memset(drive, 0, sizeof(drive));
-    memset(dir, 0, sizeof(dir));
-    memset(filename, 0, sizeof(filename));
-
-    _wsplitpath_s(path.wstring().c_str(), drive, _countof(drive), dir, _countof(dir), filename, _countof(filename), nullptr, 0);
+    IIOHelperService::t_path_segment_info info;
+    if (!g_core->io_service->get_path_segment_info(path, info))
+    {
+        return "";
+    }
 
     size_t i = 0;
     while (true)
     {
-        const auto result = g_core->io_service->str_nth_occurence(filename, L".", i + 1);
+        const auto result = g_core->io_service->str_nth_occurence(info.filename, L".", i + 1);
         std::wstring matched_filename;
 
         // Standard case, no st sharing
         if (result == std::wstring::npos)
         {
-            matched_filename = filename;
+            matched_filename = info.filename;
         }
         else
         {
-            matched_filename = std::wstring(filename).substr(0, result);
+            matched_filename = info.filename.substr(0, result);
         }
 
         std::wstring st;
@@ -158,7 +154,7 @@ std::filesystem::path find_accompanying_file_for_movie(std::filesystem::path pat
         for (const auto& ext : extensions)
         {
             // FIXME: Port this function to Unicode so we don't have to wstring_to_string the extension!!!
-            st = std::wstring(drive) + std::wstring(dir) + matched_filename + ext;
+            st = std::wstring(info.drive) + std::wstring(info.dir) + matched_filename + ext;
             if (std::filesystem::exists(st))
             {
                 return st;
@@ -927,13 +923,15 @@ std::filesystem::path get_path_for_new_movie(std::filesystem::path path, const s
         return path;
     }
 
-    wchar_t drive[_MAX_DRIVE]{};
-    wchar_t dir[_MAX_DIR]{};
-    _wsplitpath_s(path.wstring().c_str(), drive, _countof(drive), dir, _countof(dir), nullptr, 0, nullptr, 0);
+    IIOHelperService::t_path_segment_info info;
+    if (!g_core->io_service->get_path_segment_info(path, info))
+    {
+        return "";
+    }
 
-    auto stem = path.stem().wstring().substr(0, result);
+    const auto stem = path.stem().wstring().substr(0, result);
 
-    return std::wstring(drive) + std::wstring(dir) + stem + extension;
+    return info.drive + info.dir + stem + extension;
 }
 
 core_result vcr_start_record(std::filesystem::path path, uint16_t flags, std::string author, std::string description)

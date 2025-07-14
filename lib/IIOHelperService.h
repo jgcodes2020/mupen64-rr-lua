@@ -334,4 +334,51 @@ public:
 
         return ret;
     }
+
+    struct t_path_segment_info {
+        std::wstring drive{};
+        std::wstring dir{};
+        std::wstring filename{};
+        std::wstring ext{};
+    };
+
+    /**
+     * \brief Gets information about a path's segments.
+     * \param path The path to analyze.
+     * \param info The structure to fill with path segment information.
+     * \return Whether the operation succeeded.
+     */
+    virtual bool get_path_segment_info(const std::filesystem::path& path, t_path_segment_info& info)
+    {
+        info.drive = std::wstring(_MAX_DRIVE, 0);
+        info.dir = std::wstring(_MAX_DIR, 0);
+        info.filename = std::wstring(_MAX_FNAME, 0);
+        info.ext = std::wstring(_MAX_EXT, 0);
+
+        const auto result = !(bool)_wsplitpath_s(path.wstring().c_str(), info.drive.data(), info.drive.size(), info.dir.data(), info.dir.size(), info.filename.data(), info.filename.size(), info.ext.data(), info.ext.size());
+
+        if (!result)
+        {
+            return false;
+        }
+
+        auto trim_str = [](std::wstring& str) {
+            const size_t null_pos = str.find(L'\0');
+            if (null_pos != std::wstring::npos && null_pos > 0)
+            {
+                str.resize(null_pos);
+            }
+            else if (null_pos == 0)
+            {
+                str.clear();
+            }
+        };
+
+        trim_str(info.drive);
+        trim_str(info.dir);
+        trim_str(info.filename);
+        trim_str(info.ext);
+
+        return true;
+    }
 };
