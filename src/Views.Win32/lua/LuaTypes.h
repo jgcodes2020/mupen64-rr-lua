@@ -76,6 +76,7 @@ struct t_lua_environment {
     std::filesystem::path path;
     lua_State* L;
     t_lua_rendering_context rctx;
+    bool started{};
 
     destroying_func destroying{};
     print_func print{};
