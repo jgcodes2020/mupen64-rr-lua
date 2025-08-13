@@ -176,6 +176,14 @@ namespace Messenger
          * \brief The CPU resumed state has changed
          */
         DebuggerResumedChanged,
+
+        ActionRegistryChanged,
+
+        ActionDisplayNameChanged,
+
+        ActionEnabledChanged,
+
+        ActionActiveChanged,
     };
 
     using t_user_callback = std::function<void(std::any)>;

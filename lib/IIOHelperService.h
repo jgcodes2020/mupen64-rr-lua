@@ -171,22 +171,29 @@ public:
         return res;
     }
 
-    // FIXME: Use template...
-
     virtual std::vector<std::wstring> split_wstring(const std::wstring& s, const std::wstring& delimiter)
     {
-        size_t pos_start = 0, pos_end;
-        const size_t delim_len = delimiter.length();
         std::vector<std::wstring> res;
+        res.reserve(4);
+
+        if (delimiter.empty())
+        {
+            res.push_back(s);
+            return res;
+        }
+
+        size_t pos_start = 0;
+        size_t pos_end;
+        const size_t delim_len = delimiter.length();
 
         while ((pos_end = s.find(delimiter, pos_start)) != std::wstring::npos)
         {
-            std::wstring token = s.substr(pos_start, pos_end - pos_start);
+            res.emplace_back(s, pos_start, pos_end - pos_start);
             pos_start = pos_end + delim_len;
-            res.push_back(token);
         }
 
-        res.emplace_back(s.substr(pos_start));
+        res.emplace_back(s, pos_start, s.size() - pos_start);
+
         return res;
     }
 
@@ -204,6 +211,58 @@ public:
                 return;
             }
         }
+    }
+
+    /**
+     * \brief Removes leading whitespace from a string.
+     * \param str The string to trim.
+     * \return A new string with leading whitespace removed.
+     */
+    virtual std::wstring ltrim(const std::wstring& str)
+    {
+        std::wstring s = str;
+        s.erase(s.begin(), std::ranges::find_if(s, [](const wchar_t ch) {
+                    return !iswspace(ch);
+                }));
+        return s;
+    }
+
+    /**
+     * \brief Removes trailing whitespace from a string.
+     * \param str The string to trim.
+     * \return A new string with trailing whitespace removed.
+     */
+    virtual std::wstring rtrim(const std::wstring& str)
+    {
+        std::wstring s = str;
+        s.erase(std::find_if(s.rbegin(), s.rend(), [](const wchar_t ch) {
+                    return !iswspace(ch);
+                })
+                .base(),
+                s.end());
+        return s;
+    }
+
+    /**
+     * \brief Removes leading and trailing whitespace from a string.
+     * \param str The string to trim.
+     * \return A new string with leading and trailing whitespace removed.
+     */
+    virtual std::wstring trim(const std::wstring& str)
+    {
+        if (str.empty())
+            return {};
+
+        size_t start = 0;
+        size_t end = str.size();
+
+        while (start < end && iswspace(str[start]))
+            ++start;
+
+        while (end > start && iswspace(str[end - 1]))
+            --end;
+
+        return str.substr(start, end - start);
     }
 
     virtual size_t str_nth_occurence(const std::wstring& str, const std::wstring& searched, size_t nth)
@@ -333,6 +392,26 @@ public:
         }
 
         return ret;
+    }
+
+    /**
+     * \brief Joins a vector of strings into a single string with a specified delimiter.
+     * \param vec The vector of strings to join.
+     * \param delimiter The delimiter to use between the strings.
+     * \return A single string containing all elements of the vector separated by the delimiter.
+     */
+    virtual std::wstring join_wstring(const std::vector<std::wstring>& vec, const std::wstring& delimiter)
+    {
+        std::wostringstream s;
+        for (const auto& i : vec)
+        {
+            if (&i != &vec[0])
+            {
+                s << delimiter;
+            }
+            s << i;
+        }
+        return s.str();
     }
 
     struct t_path_segment_info {
