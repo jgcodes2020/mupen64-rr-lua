@@ -20,12 +20,4 @@ namespace ConfigDialog
      * \brief Shows the application settings dialog.
      */
     void show_app_settings();
-
-    /**
-     * \brief Shows the plugin settings dialog.
-     * \param plugin The plugin being configured.
-     * \param cfg The plugin configuration.
-     * \return Whether the user chose to save the settings.
-     */
-    bool show_plugin_settings(Plugin* plugin, core_plugin_cfg* cfg);
 } // namespace ConfigDialog
