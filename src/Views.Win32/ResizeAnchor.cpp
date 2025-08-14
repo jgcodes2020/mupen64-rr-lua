@@ -20,6 +20,82 @@ struct t_anchor_context {
     bool first_resize{};
 };
 
+static bool update_anchors(const HWND hwnd)
+{
+    if (!IsWindow(hwnd))
+    {
+        return false;
+    }
+
+    auto ctx = static_cast<t_anchor_context*>(GetProp(hwnd, CTX_PROP));
+
+    if (!ctx)
+    {
+        return false;
+    }
+
+    RECT wnd_rc{};
+    GetClientRect(hwnd, &wnd_rc);
+
+    for (const auto& anchor : ctx->anchors)
+    {
+        const auto anchor_hwnd = anchor.first;
+        const auto anchor_type = anchor.second;
+
+        RECT ctl_rc{};
+        auto update_ctl_rc = [&] {
+            GetWindowRect(anchor_hwnd, &ctl_rc);
+            MapWindowRect(HWND_DESKTOP, hwnd, &ctl_rc);
+        };
+
+        if (static_cast<bool>(anchor_type & AnchorFlags::Top) && static_cast<bool>(anchor_type & AnchorFlags::Bottom))
+        {
+            update_ctl_rc();
+            const auto dist = ctx->initial_rects[hwnd].bottom - ctx->initial_rects[anchor_hwnd].bottom;
+            SetWindowPos(anchor_hwnd, nullptr, 0, 0, ctl_rc.right - ctl_rc.left, (wnd_rc.bottom - dist) - ctl_rc.top, SWP_NOMOVE | SWP_NOZORDER);
+        }
+
+        if (!static_cast<bool>(anchor_type & AnchorFlags::Top) && static_cast<bool>(anchor_type & AnchorFlags::Bottom))
+        {
+            update_ctl_rc();
+            const auto dist = ctx->initial_rects[hwnd].bottom - ctx->initial_rects[anchor_hwnd].top;
+            SetWindowPos(anchor_hwnd, nullptr, ctl_rc.left, wnd_rc.bottom - dist, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+        }
+
+        if (static_cast<bool>(anchor_type & AnchorFlags::Left) && static_cast<bool>(anchor_type & AnchorFlags::Right))
+        {
+            update_ctl_rc();
+            const auto dist = ctx->initial_rects[hwnd].right - ctx->initial_rects[anchor_hwnd].right;
+            SetWindowPos(anchor_hwnd, nullptr, 0, 0, (wnd_rc.right - dist) - ctl_rc.left, ctl_rc.bottom - ctl_rc.top, SWP_NOMOVE | SWP_NOZORDER);
+        }
+
+        if (!static_cast<bool>(anchor_type & AnchorFlags::Left) && static_cast<bool>(anchor_type & AnchorFlags::Right))
+        {
+            update_ctl_rc();
+            const auto dist = ctx->initial_rects[hwnd].right - ctx->initial_rects[anchor_hwnd].left;
+            SetWindowPos(anchor_hwnd, nullptr, wnd_rc.right - dist, ctl_rc.top, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+        }
+
+        const bool invalidate = static_cast<bool>(anchor_type & AnchorFlags::Invalidate);
+        const bool erase = static_cast<bool>(anchor_type & AnchorFlags::Erase);
+        if (invalidate || erase)
+        {
+            UINT flags{};
+            if (invalidate)
+            {
+                flags |= RDW_INVALIDATE;
+            }
+            if (erase)
+            {
+                flags |= RDW_ERASE;
+            }
+            RedrawWindow(anchor_hwnd, nullptr, nullptr, flags);
+        }
+    }
+
+    return true;
+}
+
 static LRESULT CALLBACK wnd_subclass_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam, UINT_PTR sId, DWORD_PTR dwRefData)
 {
     auto ctx = static_cast<t_anchor_context*>(GetProp(hwnd, CTX_PROP));
@@ -27,67 +103,8 @@ static LRESULT CALLBACK wnd_subclass_proc(HWND hwnd, UINT msg, WPARAM wParam, LP
     switch (msg)
     {
     case WM_SIZE:
-        {
-            RECT wnd_rc{};
-            GetClientRect(hwnd, &wnd_rc);
-
-            for (const auto& anchor : ctx->anchors)
-            {
-                const auto anchor_hwnd = anchor.first;
-                const auto anchor_type = anchor.second;
-
-                RECT ctl_rc{};
-                auto update_ctl_rc = [&]() {
-                    GetWindowRect(anchor_hwnd, &ctl_rc);
-                    MapWindowRect(HWND_DESKTOP, hwnd, &ctl_rc);
-                };
-
-                if (static_cast<bool>(anchor_type & AnchorFlags::Top) && static_cast<bool>(anchor_type & AnchorFlags::Bottom))
-                {
-                    update_ctl_rc();
-                    const auto dist = ctx->initial_rects[hwnd].bottom - ctx->initial_rects[anchor_hwnd].bottom;
-                    SetWindowPos(anchor_hwnd, nullptr, 0, 0, ctl_rc.right - ctl_rc.left, (wnd_rc.bottom - dist) - ctl_rc.top, SWP_NOMOVE | SWP_NOZORDER);
-                }
-
-                if (!static_cast<bool>(anchor_type & AnchorFlags::Top) && static_cast<bool>(anchor_type & AnchorFlags::Bottom))
-                {
-                    update_ctl_rc();
-                    const auto dist = ctx->initial_rects[hwnd].bottom - ctx->initial_rects[anchor_hwnd].top;
-                    SetWindowPos(anchor_hwnd, nullptr, ctl_rc.left, wnd_rc.bottom - dist, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
-                }
-
-                if (static_cast<bool>(anchor_type & AnchorFlags::Left) && static_cast<bool>(anchor_type & AnchorFlags::Right))
-                {
-                    update_ctl_rc();
-                    const auto dist = ctx->initial_rects[hwnd].right - ctx->initial_rects[anchor_hwnd].right;
-                    SetWindowPos(anchor_hwnd, nullptr, 0, 0, (wnd_rc.right - dist) - ctl_rc.left, ctl_rc.bottom - ctl_rc.top, SWP_NOMOVE | SWP_NOZORDER);
-                }
-
-                if (!static_cast<bool>(anchor_type & AnchorFlags::Left) && static_cast<bool>(anchor_type & AnchorFlags::Right))
-                {
-                    update_ctl_rc();
-                    const auto dist = ctx->initial_rects[hwnd].right - ctx->initial_rects[anchor_hwnd].left;
-                    SetWindowPos(anchor_hwnd, nullptr, wnd_rc.right - dist, ctl_rc.top, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
-                }
-
-                const bool invalidate = static_cast<bool>(anchor_type & AnchorFlags::Invalidate);
-                const bool erase = static_cast<bool>(anchor_type & AnchorFlags::Erase);
-                if (invalidate || erase)
-                {
-                    UINT flags{};
-                    if (invalidate)
-                    {
-                        flags |= RDW_INVALIDATE;
-                    }
-                    if (erase)
-                    {
-                        flags |= RDW_ERASE;
-                    }
-                    RedrawWindow(anchor_hwnd, nullptr, nullptr, flags);
-                }
-            }
-            break;
-        }
+        update_anchors(hwnd);
+        break;
     case WM_NCDESTROY:
         RemoveWindowSubclass(hwnd, wnd_subclass_proc, sId);
         RemoveProp(hwnd, CTX_PROP);
@@ -136,6 +153,7 @@ bool ResizeAnchor::add_anchors(HWND hwnd, const std::vector<std::pair<HWND, Anch
     {
         auto ctx = static_cast<t_anchor_context*>(GetProp(hwnd, CTX_PROP));
         add_anchors(*ctx, anchors, replace_child_anchors);
+        update_anchors(hwnd);
         return true;
     }
 
@@ -154,6 +172,8 @@ bool ResizeAnchor::add_anchors(HWND hwnd, const std::vector<std::pair<HWND, Anch
 
     SetWindowSubclass(hwnd, wnd_subclass_proc, 0, 0);
 
+    update_anchors(hwnd);
+
     return true;
 }
 
@@ -168,6 +188,8 @@ bool ResizeAnchor::remove_anchor(HWND hwnd, HWND child_hwnd)
     std::erase_if(ctx->anchors, [&](const std::pair<HWND, AnchorFlags>& pair) {
         return pair.first == child_hwnd;
     });
+
+    update_anchors(hwnd);
 
     return true;
 }
