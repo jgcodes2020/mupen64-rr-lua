@@ -397,15 +397,20 @@ std::wstring ActionManager::get_display_name(const action_filter& filter, bool i
         }
         return name;
     }
-
+    
     const auto action = actions.front();
 
+    if (ignore_override)
+    {
+        return action->raw_name;
+    }
+    
     if (!action->display_name.has_value())
     {
         update_display_names({action});
     }
 
-    return ignore_override ? action->raw_name : action->display_name.value();
+    return action->display_name.value();
 }
 
 bool ActionManager::get_enabled(const action_path& path)
