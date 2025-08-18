@@ -193,7 +193,7 @@ static void prompt_plugin_change()
     if (result == 1)
     {
         g_config.settings_tab = 0;
-        ActionManager::invoke(L"Mupen64 > Options > Settings...");
+        ActionManager::invoke(AppActions::SETTINGS);
     }
 }
 
@@ -562,7 +562,7 @@ void on_script_started(std::any data)
 {
     g_main_window_dispatcher->invoke([=] {
         auto value = std::any_cast<std::filesystem::path>(data);
-        RecentMenu::add(L"Mupen64 > Lua Script > Recent Scripts ---", g_config.recent_lua_script_paths, value.wstring(), g_config.is_recent_scripts_frozen);
+        RecentMenu::add(AppActions::RECENT_SCRIPTS, g_config.recent_lua_script_paths, value.wstring(), g_config.is_recent_scripts_frozen);
     });
 }
 
@@ -582,7 +582,7 @@ void on_task_changed(std::any data)
 
         if ((vcr_is_task_recording(value) && !vcr_is_task_recording(previous_value)) || task_is_playback(value) && !task_is_playback(previous_value) && !g_core_ctx->vcr_get_path().empty())
         {
-            RecentMenu::add(L"Mupen64 > Movie > Recent Movies ---", g_config.recent_movie_paths, g_core_ctx->vcr_get_path().wstring(), g_config.is_recent_movie_paths_frozen);
+            RecentMenu::add(AppActions::RECENT_MOVIES, g_config.recent_movie_paths, g_core_ctx->vcr_get_path().wstring(), g_config.is_recent_movie_paths_frozen);
         }
 
         update_titlebar();
@@ -626,7 +626,7 @@ void on_emu_launched_changed(std::any data)
             const auto rom_path = g_core_ctx->vr_get_rom_path();
             if (!rom_path.empty())
             {
-                RecentMenu::add(L"Mupen64 > File > Recent ROMs ---", g_config.recent_rom_paths, rom_path.wstring(), g_config.is_recent_rom_paths_frozen);
+                RecentMenu::add(AppActions::RECENT_ROMS, g_config.recent_rom_paths, rom_path.wstring(), g_config.is_recent_rom_paths_frozen);
             }
 
             LuaDialog::load_running_scripts();

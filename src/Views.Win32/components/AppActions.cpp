@@ -269,13 +269,13 @@ static bool fastforward_active()
 static void gs_button_enable()
 {
     g_core_ctx->vr_set_gs_button(true);
-    ActionManager::notify_active_changed(L"Mupen64 > Emulation > GS Button ---");
+    ActionManager::notify_active_changed(AppActions::GS_BUTTON);
 }
 
 static void gs_button_disable()
 {
     g_core_ctx->vr_set_gs_button(false);
-    ActionManager::notify_active_changed(L"Mupen64 > Emulation > GS Button ---");
+    ActionManager::notify_active_changed(AppActions::GS_BUTTON);
 }
 
 static bool gs_button_active()
@@ -417,7 +417,7 @@ static void toggle_fullscreen()
 {
     g_view_plugin_funcs.video_change_window();
     g_main_wnd.fullscreen ^= true;
-    ActionManager::notify_active_changed(L"Mupen64 > Options > Full Screen ---");
+    ActionManager::notify_active_changed(AppActions::FULL_SCREEN);
 }
 
 static bool fullscreen_active()
@@ -568,7 +568,7 @@ static void toggle_readonly()
 static void toggle_wait_at_movie_end()
 {
     g_config.core.wait_at_movie_end ^= true;
-    ActionManager::notify_active_changed(L"Mupen64 > Movie > Wait at Movie End");
+    ActionManager::notify_active_changed(AppActions::WAIT_AT_MOVIE_END);
 }
 
 #pragma endregion
@@ -876,36 +876,36 @@ static void generate_path_recent_menu(const std::wstring& base_path, const Hotke
 void AppActions::init()
 {
     Messenger::subscribe(Messenger::Message::EmuLaunchedChanged, [](const auto&) {
-        ActionManager::notify_enabled_changed(L"Mupen64 > *");
+        ActionManager::notify_enabled_changed(std::format(L"{} *", APP));
     });
     Messenger::subscribe(Messenger::Message::EmuPausedChanged, [](const auto&) {
-        ActionManager::notify_active_changed(L"Mupen64 > Emulation > Pause");
+        ActionManager::notify_active_changed(PAUSE);
     });
     Messenger::subscribe(Messenger::Message::FastForwardNeedsUpdate, [](const auto&) {
-        ActionManager::notify_active_changed(L"Mupen64 > Emulation > Fast-Forward");
+        ActionManager::notify_active_changed(FAST_FORWARD);
     });
     Messenger::subscribe(Messenger::Message::CapturingChanged, [](const auto&) {
-        ActionManager::notify_enabled_changed(L"Mupen64 > Utilities > Video Capture > *");
+        ActionManager::notify_enabled_changed(std::format(L"{} *", VIDEO_CAPTURE));
     });
     Messenger::subscribe(Messenger::Message::StatusbarVisibilityChanged, [](const auto&) {
-        ActionManager::notify_active_changed(L"Mupen64 > Options > Statusbar ---");
+        ActionManager::notify_active_changed(STATUSBAR);
     });
     Messenger::subscribe(Messenger::Message::MovieLoopChanged, [](const auto&) {
-        ActionManager::notify_active_changed(L"Mupen64 > Movie > Loop Movie Playback");
+        ActionManager::notify_active_changed(LOOP_MOVIE_PLAYBACK);
     });
     Messenger::subscribe(Messenger::Message::ReadonlyChanged, [](const auto&) {
-        ActionManager::notify_active_changed(L"Mupen64 > Movie > Read-Only");
+        ActionManager::notify_active_changed(READONLY);
     });
     Messenger::subscribe(Messenger::Message::TaskChanged, [](const auto&) {
-        ActionManager::notify_enabled_changed(L"Mupen64 > Movie > Stop Movie");
-        ActionManager::notify_enabled_changed(L"Mupen64 > Movie > Create Movie Backup ---");
-        ActionManager::notify_enabled_changed(L"Mupen64 > Utilities > Seek To... ---");
+        ActionManager::notify_enabled_changed(STOP_MOVIE);
+        ActionManager::notify_enabled_changed(CREATE_MOVIE_BACKUP);
+        ActionManager::notify_enabled_changed(SEEK_TO);
     });
     Messenger::subscribe(Messenger::Message::SlotChanged, [](const auto&) {
-        ActionManager::notify_active_changed(L"Mupen64 > Emulation > Current State Slot > *");
+        ActionManager::notify_active_changed(std::format(L"{} *", SELECT_SLOT));
     });
     Messenger::subscribe(Messenger::Message::FullscreenChanged, [](const auto&) {
-        ActionManager::notify_enabled_changed(L"Mupen64 > Options > Full Screen ---");
+        ActionManager::notify_enabled_changed(FULL_SCREEN);
     });
 }
 
@@ -913,28 +913,28 @@ void AppActions::add()
 {
     ActionManager::begin_batch_work();
 
-    add_action(L"Mupen64 > File > Load ROM...", {.key = 'O', .ctrl = true}, load_rom);
-    add_action(L"Mupen64 > File > Close ROM", {.key = 'W', .ctrl = true}, close_rom, enable_when_emu_launched);
-    add_action(L"Mupen64 > File > Reset ROM", {.key = 'R', .ctrl = true}, reset_rom, enable_when_emu_launched);
-    add_action(L"Mupen64 > File > Refresh ROM List ---", {.key = VK_F5, .ctrl = true}, refresh_rombrowser);
-    generate_path_recent_menu(L"Mupen64 > File > Recent ROMs ---", {.key = 'O', .ctrl = true, .shift = true}, &g_config.recent_rom_paths, &g_config.is_recent_rom_paths_frozen, load_recent_rom);
-    add_action(L"Mupen64 > File > Exit", {.key = VK_F4, .alt = true}, exit_app);
+    add_action(LOAD_ROM, {.key = 'O', .ctrl = true}, load_rom);
+    add_action(CLOSE_ROM, {.key = 'W', .ctrl = true}, close_rom, enable_when_emu_launched);
+    add_action(RESET_ROM, {.key = 'R', .ctrl = true}, reset_rom, enable_when_emu_launched);
+    add_action(REFRESH_ROM_LIST, {.key = VK_F5, .ctrl = true}, refresh_rombrowser);
+    generate_path_recent_menu(RECENT_ROMS, {.key = 'O', .ctrl = true, .shift = true}, &g_config.recent_rom_paths, &g_config.is_recent_rom_paths_frozen, load_recent_rom);
+    add_action(EXIT, {.key = VK_F4, .alt = true}, exit_app);
 
-    add_action(L"Mupen64 > Emulation > Pause", {.key = VK_PAUSE}, pause_emu, enable_when_emu_launched);
-    add_action(L"Mupen64 > Emulation > Speed Down", {.key = VK_OEM_MINUS}, speed_down, enable_when_emu_launched);
-    add_action(L"Mupen64 > Emulation > Speed Up", {.key = VK_OEM_PLUS}, speed_up, enable_when_emu_launched);
-    add_action(L"Mupen64 > Emulation > Reset Speed", {.key = VK_OEM_PLUS, .ctrl = true}, speed_reset, enable_when_emu_launched);
-    add_action_with_up(L"Mupen64 > Emulation > Fast-Forward", {.key = VK_TAB}, fastforward_enable, fastforward_disable, enable_when_emu_launched, fastforward_active);
-    add_action_with_up(L"Mupen64 > Emulation > GS Button ---", {.key = 'G'}, gs_button_enable, gs_button_disable, enable_when_emu_launched, gs_button_active);
-    add_action(L"Mupen64 > Emulation > Frame Advance", {.key = VK_OEM_5}, frame_advance, enable_when_emu_launched);
-    add_action(L"Mupen64 > Emulation > Multi-Frame Advance", {.key = VK_OEM_5, .ctrl = true}, multi_frame_advance, enable_when_emu_launched);
-    add_action(L"Mupen64 > Emulation > Multi-Frame Advance +1", {.key = 'E', .ctrl = true}, multi_frame_advance_increment, enable_when_emu_launched);
-    add_action(L"Mupen64 > Emulation > Multi-Frame Advance -1", {.key = 'Q', .ctrl = true}, multi_frame_advance_decrement, enable_when_emu_launched);
-    add_action(L"Mupen64 > Emulation > Multi-Frame Advance Reset ---", {.key = 'E', .ctrl = true, .shift = true}, multi_frame_advance_reset, enable_when_emu_launched);
-    add_action(L"Mupen64 > Emulation > Save State > Save Current Slot", {.key = 'I'}, save_slot, enable_when_emu_launched);
-    add_action(L"Mupen64 > Emulation > Save State > Save as File... ---", {}, save_state_as, enable_when_emu_launched);
-    add_action(L"Mupen64 > Emulation > Load State > Load Current Slot", {.key = 'P'}, load_slot, enable_when_emu_launched);
-    add_action(L"Mupen64 > Emulation > Load State > Load from File... ---", {}, load_state_as, enable_when_emu_launched);
+    add_action(PAUSE, {.key = VK_PAUSE}, pause_emu, enable_when_emu_launched);
+    add_action(SPEED_DOWN, {.key = VK_OEM_MINUS}, speed_down, enable_when_emu_launched);
+    add_action(SPEED_UP, {.key = VK_OEM_PLUS}, speed_up, enable_when_emu_launched);
+    add_action(SPEED_RESET, {.key = VK_OEM_PLUS, .ctrl = true}, speed_reset, enable_when_emu_launched);
+    add_action_with_up(FAST_FORWARD, {.key = VK_TAB}, fastforward_enable, fastforward_disable, enable_when_emu_launched, fastforward_active);
+    add_action_with_up(GS_BUTTON, {.key = 'G'}, gs_button_enable, gs_button_disable, enable_when_emu_launched, gs_button_active);
+    add_action(FRAME_ADVANCE, {.key = VK_OEM_5}, frame_advance, enable_when_emu_launched);
+    add_action(MULTI_FRAME_ADVANCE, {.key = VK_OEM_5, .ctrl = true}, multi_frame_advance, enable_when_emu_launched);
+    add_action(MULTI_FRAME_ADVANCE_DECREMENT, {.key = 'E', .ctrl = true}, multi_frame_advance_increment, enable_when_emu_launched);
+    add_action(MULTI_FRAME_ADVANCE_INCREMENT, {.key = 'Q', .ctrl = true}, multi_frame_advance_decrement, enable_when_emu_launched);
+    add_action(MULTI_FRAME_ADVANCE_RESET, {.key = 'E', .ctrl = true, .shift = true}, multi_frame_advance_reset, enable_when_emu_launched);
+    add_action(SAVE_CURRENT_SLOT, {.key = 'I'}, save_slot, enable_when_emu_launched);
+    add_action(SAVE_STATE_FILE, {}, save_state_as, enable_when_emu_launched);
+    add_action(LOAD_CURRENT_SLOT, {.key = 'P'}, load_slot, enable_when_emu_launched);
+    add_action(LOAD_STATE_FILE, {}, load_state_as, enable_when_emu_launched);
     for (size_t i = 0; i < 10; ++i)
     {
         const int32_t save_key = i < 9 ? '1' + i : '0';
@@ -960,8 +960,9 @@ void AppActions::add()
             do_work(core_st_job_load);
         };
 
-        add_action(std::format(L"Mupen64 > Emulation > Save State > Save Slot {}", i + 1), {.key = save_key, .shift = true}, save, enable_when_emu_launched);
-        add_action(std::format(L"Mupen64 > Emulation > Load State > Load Slot {}", i + 1), {.key = load_key}, load, enable_when_emu_launched);
+        size_t visual_slot = i + 1;
+        add_action(std::vformat(SAVE_SLOT_X, std::make_wformat_args(visual_slot)), {.key = save_key, .shift = true}, save, enable_when_emu_launched);
+        add_action(std::vformat(LOAD_SLOT_X, std::make_wformat_args(visual_slot)), {.key = load_key}, load, enable_when_emu_launched);
     }
     for (size_t i = 0; i < 10; ++i)
     {
@@ -975,56 +976,58 @@ void AppActions::add()
             set_save_slot(i);
         };
 
-        add_action(std::format(L"Mupen64 > Emulation > Current State Slot > Slot {}", i + 1), {.key = key}, set_slot, enable_when_emu_launched, get_active);
+        size_t visual_slot = i + 1;
+        add_action(std::vformat(SELECT_SLOT_X, std::make_wformat_args(visual_slot)), {.key = key}, set_slot, enable_when_emu_launched, get_active);
     }
-    add_action(L"Mupen64 > Emulation > Undo Load State", {.key = 'Z', .ctrl = true}, undo_load_state, enable_when_emu_launched);
+    add_action(UNDO_LOAD_STATE, {.key = 'Z', .ctrl = true}, undo_load_state, enable_when_emu_launched);
 
 
-    add_action(L"Mupen64 > Options > Full Screen ---", {.key = VK_RETURN, .alt = true}, toggle_fullscreen, enable_when_emu_launched, fastforward_active);
-    add_action(L"Mupen64 > Options > Plugin Settings --- > Video Settings", {}, show_video_plugin_settings);
-    add_action(L"Mupen64 > Options > Plugin Settings --- > Audio Settings", {}, show_audio_plugin_settings);
-    add_action(L"Mupen64 > Options > Plugin Settings --- > Input Settings", {}, show_input_plugin_settings);
-    add_action(L"Mupen64 > Options > Plugin Settings --- > RSP Settings", {}, show_rsp_plugin_settings);
-    add_action(L"Mupen64 > Options > Statusbar ---", {.key = 'S', .alt = true}, toggle_statusbar, always_enabled, [] {
+    add_action(FULL_SCREEN, {.key = VK_RETURN, .alt = true}, toggle_fullscreen, enable_when_emu_launched, fastforward_active);
+    add_action(VIDEO_SETTINGS, {}, show_video_plugin_settings);
+    add_action(AUDIO_SETTINGS, {}, show_audio_plugin_settings);
+    add_action(INPUT_SETTINGS, {}, show_input_plugin_settings);
+    add_action(RSP_SETTINGS, {}, show_rsp_plugin_settings);
+    add_action(STATUSBAR, {.key = 'S', .alt = true}, toggle_statusbar, always_enabled, [] {
         return g_config.is_statusbar_enabled;
     });
-    add_action(L"Mupen64 > Options > Settings...", {.key = 'S', .ctrl = true}, show_settings_dialog);
+    add_action(SETTINGS, {.key = 'S', .ctrl = true}, show_settings_dialog);
 
-    add_action(L"Mupen64 > Movie > Start Movie Recording", {.key = 'R', .ctrl = true, .shift = true}, start_movie_recording, enable_when_emu_launched);
-    add_action(L"Mupen64 > Movie > Start Movie Playback ---", {.key = 'P', .ctrl = true, .shift = true}, start_movie_playback);
-    add_action(L"Mupen64 > Movie > Stop Movie", {.key = 'C', .ctrl = true, .shift = true}, stop_movie, enable_when_emu_launched_and_vcr_active);
-    add_action(L"Mupen64 > Movie > Create Movie Backup ---", {.key = 'B', .ctrl = true, .shift = true}, create_movie_backup, enable_when_emu_launched_and_vcr_active);
-    generate_path_recent_menu(L"Mupen64 > Movie > Recent Movies ---", {.key = 'T', .ctrl = true, .shift = true}, &g_config.recent_movie_paths, &g_config.is_recent_movie_paths_frozen, load_recent_movie);
-    add_action(L"Mupen64 > Movie > Loop Movie Playback", {.key = 'L', .shift = true}, toggle_movie_loop, always_enabled, [] {
+    add_action(START_MOVIE_RECORDING, {.key = 'R', .ctrl = true, .shift = true}, start_movie_recording, enable_when_emu_launched);
+    add_action(START_MOVIE_PLAYBACK, {.key = 'P', .ctrl = true, .shift = true}, start_movie_playback);
+    add_action(STOP_MOVIE, {.key = 'C', .ctrl = true, .shift = true}, stop_movie, enable_when_emu_launched_and_vcr_active);
+    add_action(CREATE_MOVIE_BACKUP, {.key = 'B', .ctrl = true, .shift = true}, create_movie_backup, enable_when_emu_launched_and_vcr_active);
+    generate_path_recent_menu(RECENT_MOVIES, {.key = 'T', .ctrl = true, .shift = true}, &g_config.recent_movie_paths, &g_config.is_recent_movie_paths_frozen, load_recent_movie);
+    add_action(LOOP_MOVIE_PLAYBACK, {.key = 'L', .shift = true}, toggle_movie_loop, always_enabled, [] {
         return g_config.core.is_movie_loop_enabled;
     });
-    add_action(L"Mupen64 > Movie > Read-Only", {.key = 'R', .shift = true}, toggle_readonly, always_enabled, [] {
+    add_action(READONLY, {.key = 'R', .shift = true}, toggle_readonly, always_enabled, [] {
         return g_config.core.vcr_readonly;
     });
-    add_action(L"Mupen64 > Movie > Wait at Movie End", {}, toggle_wait_at_movie_end, always_enabled, [] {
+    add_action(WAIT_AT_MOVIE_END, {}, toggle_wait_at_movie_end, always_enabled, [] {
         return g_config.core.wait_at_movie_end;
     });
 
-    add_action(L"Mupen64 > Utilities > Command Palette", {.key = 'P', .ctrl = true}, show_command_palette);
-    add_action(L"Mupen64 > Utilities > Show RAM Start", {}, show_ram_start);
-    add_action(L"Mupen64 > Utilities > Statistics", {}, show_statistics);
-    add_action(L"Mupen64 > Utilities > Debugger", {}, show_debugger, enable_when_emu_launched);
-    add_action(L"Mupen64 > Utilities > Cheats", {}, show_cheat_dialog, enable_when_emu_launched);
-    add_action(L"Mupen64 > Utilities > Piano Roll", {}, show_piano_roll, enable_when_emu_launched);
-    add_action(L"Mupen64 > Utilities > Seek To... ---", {}, show_seek_dialog, enable_when_emu_launched_and_vcr_active);
-    add_action(L"Mupen64 > Utilities > Start Trace Logger...", {}, start_tracelog, enable_when_emu_launched_and_core_is_pure_interpreter);
-    add_action(L"Mupen64 > Utilities > Stop Trace Logger ---", {}, stop_tracelog, enable_when_tracelog_active);
-    add_action(L"Mupen64 > Utilities > Take Screenshot ---", {.key = VK_F12}, screenshot, enable_when_emu_launched);
-    add_action(L"Mupen64 > Utilities > Video Capture > Start Capture...", {}, start_capture_normal, enable_when_emu_launched);
-    add_action(L"Mupen64 > Utilities > Video Capture > Start Capture from Preset... ---", {}, start_capture_from_preset, enable_when_emu_launched);
-    add_action(L"Mupen64 > Utilities > Video Capture > Stop Capture", {}, stop_capture, enable_when_emu_launched_and_capturing);
 
-    add_action(L"Mupen64 > Help > Check for Updates", {}, check_for_updates_manual);
-    add_action(L"Mupen64 > Help > About Mupen64", {}, show_about_dialog);
+    add_action(COMMAND_PALETTE, {.key = 'P', .ctrl = true}, show_command_palette);
+    add_action(RAMSTART, {}, show_ram_start);
+    add_action(STATISTICS, {}, show_statistics);
+    add_action(DEBUGGER, {}, show_debugger, enable_when_emu_launched);
+    add_action(CHEATS, {}, show_cheat_dialog, enable_when_emu_launched);
+    add_action(PIANO_ROLL, {}, show_piano_roll, enable_when_emu_launched);
+    add_action(SEEK_TO, {}, show_seek_dialog, enable_when_emu_launched_and_vcr_active);
+    add_action(START_TRACE_LOGGER, {}, start_tracelog, enable_when_emu_launched_and_core_is_pure_interpreter);
+    add_action(STOP_TRACE_LOGGER, {}, stop_tracelog, enable_when_tracelog_active);
+    add_action(SCREENSHOT, {.key = VK_F12}, screenshot, enable_when_emu_launched);
+    add_action(VIDEO_CAPTURE_START, {}, start_capture_normal, enable_when_emu_launched);
+    add_action(VIDEO_CAPTURE_START_PRESET, {}, start_capture_from_preset, enable_when_emu_launched);
+    add_action(VIDEO_CAPTURE_STOP, {}, stop_capture, enable_when_emu_launched_and_capturing);
 
-    add_action(L"Mupen64 > Lua Script > New Instance... ---", {.key = 'N', .ctrl = true}, show_lua_dialog);
-    generate_path_recent_menu(L"Mupen64 > Lua Script > Recent Scripts ---", {.key = 'K', .ctrl = true, .shift = true}, &g_config.recent_lua_script_paths, &g_config.is_recent_scripts_frozen, load_recent_script);
-    add_action(L"Mupen64 > Lua Script > Close All", {.key = 'W', .ctrl = true, .shift = true}, close_all_lua_scripts);
+    add_action(CHECK_FOR_UPDATES, {}, check_for_updates_manual);
+    add_action(ABOUT, {}, show_about_dialog);
+
+    add_action(NEW_INSTANCE, {.key = 'N', .ctrl = true}, show_lua_dialog);
+    generate_path_recent_menu(RECENT_SCRIPTS, {.key = 'K', .ctrl = true, .shift = true}, &g_config.recent_lua_script_paths, &g_config.is_recent_scripts_frozen, load_recent_script);
+    add_action(CLOSE_ALL, {.key = 'W', .ctrl = true, .shift = true}, close_all_lua_scripts);
 
     ActionManager::end_batch_work();
 
