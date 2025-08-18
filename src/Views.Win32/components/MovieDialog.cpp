@@ -404,7 +404,7 @@ MovieDialog::t_result MovieDialog::show(bool readonly)
     is_closing = false;
 
     DialogBox(g_app_instance,
-              MAKEINTRESOURCE(IDD_MOVIE_PLAYBACK_DIALOG),
+              MAKEINTRESOURCE(IDD_MOVIE_DIALOG),
               g_main_hwnd,
               (DLGPROC)dlgproc);
 
