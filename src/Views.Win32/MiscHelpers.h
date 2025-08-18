@@ -89,6 +89,27 @@ private:
     HWND m_hwnd{};
     bool m_prev_enabled{};
 };
+
+static void runtime_assert_fail(const std::wstring& message)
+{
+#if defined(_DEBUG)
+    __debugbreak();
+#endif
+    DialogService::show_dialog(message.c_str(), L"Failed Runtime Assertion", fsvc_error);
+    std::terminate();
+}
+
+#define runtime_assert(condition, message) \
+    do                                     \
+    {                                      \
+        if (!(condition))                  \
+        {                                  \
+            runtime_assert_fail(message);  \
+        }                                  \
+    }                                      \
+    while (0)
+
+
 static RECT get_window_rect_client_space(HWND parent, HWND child)
 {
     RECT offset_client = {0};
@@ -419,6 +440,35 @@ static T remap(const T value, const T from1, const T to1, const T from2, const T
 }
 
 /**
+ * \brief Limits a value to a specific range, wrapping around if it exceeds the bounds.
+ * \param value The value to limit.
+ * \param min The lower bound.
+ * \param max The upper bound.
+ * \return The value, limited to the specified range.
+ */
+template <typename T>
+static T wrapping_clamp(const T value, T min, T max)
+{
+    static_assert(std::is_integral_v<T>, L"wrapping_clamp only supports integral types");
+
+    if (min == max)
+    {
+        return min;
+    }
+
+    if (min > max)
+    {
+        std::swap(min, max);
+    }
+
+    const T range = max - min + 1;
+    T offset = (value - min) % range;
+    if (offset < 0)
+        offset += range;
+    return min + offset;
+}
+
+/**
  * \brief Formats a duration into a string of format HH:MM:SS
  * \param seconds The duration in seconds
  * \return The formatted duration
@@ -503,21 +553,28 @@ static std::wstring format_short(const uint64_t value)
     return str;
 }
 
-static void runtime_assert_fail(const std::wstring& message)
+/**
+ * \brief Ensures that the specified index in the listbox is visible.
+ * \param hwnd The handle to the listbox.
+ * \param index The index to ensure is visible.
+ */
+static void listbox_ensure_visible(const HWND hwnd, const int32_t index)
 {
-#if defined(_DEBUG)
-    __debugbreak();
-#endif
-    DialogService::show_dialog(message.c_str(), L"Failed Runtime Assertion", fsvc_error);
-    std::terminate();
-}
+    const int sel = ListBox_GetCurSel(hwnd);
 
-#define runtime_assert(condition, message) \
-    do                                     \
-    {                                      \
-        if (!(condition))                  \
-        {                                  \
-            runtime_assert_fail(message);  \
-        }                                  \
-    }                                      \
-    while (0)
+    if (sel == LB_ERR)
+        return;
+
+    const int top = ListBox_GetTopIndex(hwnd);
+
+    RECT rc;
+    GetClientRect(hwnd, &rc);
+
+    const int item_height = ListBox_GetItemHeight(hwnd, 0);
+    const int visible_count = (rc.bottom - rc.top) / item_height;
+
+    if (sel < top || sel >= top + visible_count)
+    {
+        ListBox_SetTopIndex(hwnd, sel);
+    }
+}
