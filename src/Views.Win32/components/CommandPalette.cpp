@@ -530,3 +530,8 @@ void CommandPalette::show()
     const HWND hwnd = CreateDialog(g_app_instance, MAKEINTRESOURCE(IDD_COMMAND_PALETTE), g_main_hwnd, command_palette_proc);
     ShowWindow(hwnd, SW_SHOW);
 }
+
+HWND CommandPalette::hwnd()
+{
+    return g_ctx.hwnd;
+}

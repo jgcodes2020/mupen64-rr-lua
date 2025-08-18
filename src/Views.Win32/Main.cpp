@@ -17,13 +17,12 @@
 #include <components/AppActions.h>
 #include <components/Benchmark.h>
 #include <components/CLI.h>
-#include <components/Cheats.h>
+#include <components/CommandPalette.h>
 #include <components/Compare.h>
 #include <components/ConfigDialog.h>
 #include <components/CoreDbg.h>
 #include <components/CrashManager.h>
 #include <components/Dispatcher.h>
-#include <components/FilePicker.h>
 #include <components/HotkeyTracker.h>
 #include <components/LuaDialog.h>
 #include <components/MGECompositor.h>
@@ -1439,6 +1438,22 @@ void set_cwd()
     g_view_logger->info(L"cwd: {}", cwd);
 }
 
+/**
+ * \brief Calls IsDialogMessage for problematic modeless child dialogs with no message loops of their own.
+ */
+static bool is_dialog_message(MSG* msg)
+{
+    if (IsWindow(LuaDialog::hwnd()) && IsDialogMessage(LuaDialog::hwnd(), msg))
+    {
+        return true;
+    }
+    if (IsWindow(CommandPalette::hwnd()) && IsDialogMessage(CommandPalette::hwnd(), msg))
+    {
+        return true;
+    }
+    return false;
+}
+
 int CALLBACK WinMain(const HINSTANCE hInstance, HINSTANCE, LPSTR, const int nShowCmd)
 {
 #ifdef _DEBUG
@@ -1566,6 +1581,11 @@ int CALLBACK WinMain(const HINSTANCE hInstance, HINSTANCE, LPSTR, const int nSho
             {
                 while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
                 {
+                    if (is_dialog_message(&msg))
+                    {
+                        continue;
+                    }
+
                     TranslateMessage(&msg);
                     DispatchMessage(&msg);
                 }
@@ -1576,6 +1596,11 @@ int CALLBACK WinMain(const HINSTANCE hInstance, HINSTANCE, LPSTR, const int nSho
         MsgWaitForMultipleObjects(0, nullptr, FALSE, INFINITE, QS_ALLEVENTS | QS_ALLINPUT);
         while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
         {
+            if (is_dialog_message(&msg))
+            {
+                continue;
+            }
+
             TranslateMessage(&msg);
             DispatchMessage(&msg);
         }

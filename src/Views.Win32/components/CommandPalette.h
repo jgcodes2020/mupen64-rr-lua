@@ -15,4 +15,9 @@ namespace CommandPalette
      * \brief Shows the command palette.
      */
     void show();
+
+    /**
+     * \brief Gets the HWND of the command palette window. Might be invalid.
+     */
+    HWND hwnd();
 } // namespace CommandPalette
