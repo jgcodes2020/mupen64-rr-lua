@@ -64,17 +64,17 @@ namespace AppActions
     const std::wstring READONLY = APP + L"Movie > Read-Only";
     const std::wstring WAIT_AT_MOVIE_END = APP + L"Movie > Wait at Movie End";
 
-    const std::wstring COMMAND_PALETTE = APP + L"Utilities > Command Palette";
-    const std::wstring RAMSTART = APP + L"Utilities > Show RAM Start";
-    const std::wstring STATISTICS = APP + L"Utilities > Statistics";
-    const std::wstring DEBUGGER = APP + L"Utilities > Debugger";
-    const std::wstring CHEATS = APP + L"Utilities > Cheats";
+    const std::wstring COMMAND_PALETTE = APP + L"Utilities > Command Palette ---";
     const std::wstring PIANO_ROLL = APP + L"Utilities > Piano Roll";
-    const std::wstring SEEK_TO = APP + L"Utilities > Seek To... ---";
+    const std::wstring CHEATS = APP + L"Utilities > Cheats";
+    const std::wstring SEEK_TO = APP + L"Utilities > Seek...";
+    const std::wstring USAGE_STATISTICS = APP + L"Utilities > Usage Statistics ---";
+    const std::wstring CORE_INFORMATION = APP + L"Utilities > Core Information";
+    const std::wstring DEBUGGER = APP + L"Utilities > Debugger";
     const std::wstring START_TRACE_LOGGER = APP + L"Utilities > Start Trace Logger...";
     const std::wstring STOP_TRACE_LOGGER = APP + L"Utilities > Stop Trace Logger ---";
-    const std::wstring SCREENSHOT = APP + L"Utilities > Take Screenshot ---";
     const std::wstring VIDEO_CAPTURE = APP + L"Utilities > Video Capture > ";
+    const std::wstring SCREENSHOT = VIDEO_CAPTURE + L"Take Screenshot ---";
     const std::wstring VIDEO_CAPTURE_START = VIDEO_CAPTURE + L"Start Capture...";
     const std::wstring VIDEO_CAPTURE_START_PRESET = VIDEO_CAPTURE + L"Start Capture from Preset... ---";
     const std::wstring VIDEO_CAPTURE_STOP = VIDEO_CAPTURE + L"Stop Capture";

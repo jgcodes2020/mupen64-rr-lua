@@ -602,7 +602,7 @@ static void show_ram_start()
     VIEW_DLG_RAMSTART,
     {L"Copy STROOP config line", L"Close"},
     str.c_str(),
-    L"Show RAM Start",
+    L"Core Information",
     fsvc_information);
 
     if (result == 0)
@@ -1009,12 +1009,12 @@ void AppActions::add()
 
 
     add_action(COMMAND_PALETTE, {.key = 'P', .ctrl = true}, show_command_palette);
-    add_action(RAMSTART, {}, show_ram_start);
-    add_action(STATISTICS, {}, show_statistics);
-    add_action(DEBUGGER, {}, show_debugger, enable_when_emu_launched);
-    add_action(CHEATS, {}, show_cheat_dialog, enable_when_emu_launched);
     add_action(PIANO_ROLL, {}, show_piano_roll, enable_when_emu_launched);
+    add_action(CHEATS, {}, show_cheat_dialog, enable_when_emu_launched);
     add_action(SEEK_TO, {}, show_seek_dialog, enable_when_emu_launched_and_vcr_active);
+    add_action(USAGE_STATISTICS, {}, show_statistics);
+    add_action(CORE_INFORMATION, {}, show_ram_start);
+    add_action(DEBUGGER, {}, show_debugger, enable_when_emu_launched);
     add_action(START_TRACE_LOGGER, {}, start_tracelog, enable_when_emu_launched_and_core_is_pure_interpreter);
     add_action(STOP_TRACE_LOGGER, {}, stop_tracelog, enable_when_tracelog_active);
     add_action(SCREENSHOT, {.key = VK_F12}, screenshot, enable_when_emu_launched);
