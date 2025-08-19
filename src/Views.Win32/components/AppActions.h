@@ -56,7 +56,7 @@ namespace AppActions
     const std::wstring SETTINGS = APP + L"Options > Settings";
 
     const std::wstring START_MOVIE_RECORDING = APP + L"Movie > Start Movie Recording";
-    const std::wstring START_MOVIE_PLAYBACK = APP + L"Movie > Start Movie Playback";
+    const std::wstring START_MOVIE_PLAYBACK = APP + L"Movie > Start Movie Playback ---";
     const std::wstring STOP_MOVIE = APP + L"Movie > Stop Movie";
     const std::wstring CREATE_MOVIE_BACKUP = APP + L"Movie > Create Movie Backup ---";
     const std::wstring RECENT_MOVIES = APP + L"Movie > Recent Movies ---";
