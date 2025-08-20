@@ -148,7 +148,7 @@ static void prompt_plugin_change()
 
     if (result == 0)
     {
-        auto plugin_discovery_result = do_plugin_discovery();
+        auto plugin_discovery_result = PluginUtil::discover_plugins(get_plugins_directory());
 
         auto first_video_plugin = std::ranges::find_if(plugin_discovery_result.plugins, [](const auto& plugin) {
             return plugin->type() == plugin_video;
@@ -778,35 +778,6 @@ std::filesystem::path get_app_full_path()
     io_service.get_path_segment_info(app_path, info);
 
     return info.drive + info.dir;
-}
-
-t_plugin_discovery_result do_plugin_discovery()
-{
-    if (g_config.plugin_discovery_delayed)
-    {
-        Sleep(1000);
-    }
-
-    std::vector<std::unique_ptr<Plugin>> plugins;
-    const auto files = io_service.get_files_with_extension_in_directory(get_plugins_directory(), L"dll");
-
-    std::vector<std::pair<std::filesystem::path, std::wstring>> results;
-    for (const auto& file : files)
-    {
-        auto [result, plugin] = Plugin::create(file);
-
-        results.emplace_back(file, result);
-
-        if (!result.empty())
-            continue;
-
-        plugins.emplace_back(std::move(plugin));
-    }
-
-    return t_plugin_discovery_result{
-    .plugins = std::move(plugins),
-    .results = results,
-    };
 }
 
 void open_console()

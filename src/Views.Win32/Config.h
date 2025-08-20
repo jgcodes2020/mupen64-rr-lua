@@ -212,12 +212,7 @@ struct t_config {
     /// Whether a low-latency dispatcher implementation is used. Greatly improves performance when Lua scripts are running. Disable if you DirectInput-based plugins aren't working as expected.
     /// </summary>
     int32_t fast_dispatcher = 1;
-
-    /// <summary>
-    /// Whether the plugin discovery process is artificially lengthened.
-    /// </summary>
-    int32_t plugin_discovery_delayed;
-
+    
     /// <summary>
     /// The lua script path
     /// </summary>

@@ -552,7 +552,7 @@ Plugin* get_selected_plugin(const HWND hwnd, const int id)
 static void start_plugin_discovery(const HWND hwnd)
 {
     g_view_logger->trace("[ConfigDialog] start_plugin_discovery");
-    plugin_discovery_result = do_plugin_discovery();
+    plugin_discovery_result = PluginUtil::discover_plugins(get_plugins_directory());
 
     PostMessage(hwnd, WM_PLUGIN_DISCOVERY_FINISHED, 0, 0);
 }
@@ -1211,13 +1211,6 @@ void get_config_listview_items(std::vector<t_options_group>& groups, std::vector
     GENPROPS(int32_t, fast_dispatcher),
     },
 
-    t_options_item{
-    .type = t_options_item::Type::Bool,
-    .group_id = debug_group.id,
-    .name = L"Delay Plugin Discovery",
-    .tooltip = L"Whether the plugin discovery process is artificially lengthened.\nDo not enable unless you are debugging the plugin discovery system or its surrounding components.",
-    GENPROPS(int32_t, plugin_discovery_delayed),
-    },
     t_options_item{
     .type = t_options_item::Type::Bool,
     .group_id = debug_group.id,

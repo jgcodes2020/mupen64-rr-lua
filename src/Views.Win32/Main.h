@@ -6,9 +6,7 @@
 
 #pragma once
 
-#include <spdlog/logger.h>
 #include <components/Dispatcher.h>
-#include <Plugin.h>
 
 #define CURRENT_VERSION L"1.3.0"
 
@@ -106,28 +104,7 @@ bool is_on_gui_thread();
  */
 bool show_error_dialog_for_result(core_result result, void* hwnd = nullptr);
 
-/**
- * Represents the result of a plugin discovery operation.
- */
-typedef struct
-{
-    /**
-     * The discovered plugins matching the plugin API surface.
-     */
-    std::vector<std::unique_ptr<Plugin>> plugins;
-
-    /**
-     * Vector of discovered plugins and their results.
-     */
-    std::vector<std::pair<std::filesystem::path, std::wstring>> results;
-
-} t_plugin_discovery_result;
-
-/**
- * Performs a plugin discovery operation.
- */
-t_plugin_discovery_result do_plugin_discovery();
-
+std::filesystem::path get_plugins_directory();
 std::filesystem::path get_saves_directory();
 
 void set_cwd();

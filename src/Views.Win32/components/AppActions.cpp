@@ -9,6 +9,7 @@
 #include <DialogService.h>
 #include <Messenger.h>
 #include <ThreadPool.h>
+#include <Plugin.h>
 #include <capture/EncodingManager.h>
 #include <components/AboutDialog.h>
 #include <components/AppActions.h>

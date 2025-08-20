@@ -417,7 +417,7 @@ void Plugin::config()
             DialogService::show_dialog(std::format(L"'{}' has no configuration.", io_service.string_to_wstring(this->name())).c_str(), L"Plugin", fsvc_error, g_hwnd_plug);
             goto cleanup;
         }
-        
+
         dll_config(g_hwnd_plug);
 
     cleanup:
@@ -637,4 +637,28 @@ void setup_dummy_info()
     dummy_rsp_info.process_alist_list = g_core.plugin_funcs.audio_process_alist;
     dummy_rsp_info.process_rdp_list = g_core.plugin_funcs.video_process_rdp_list;
     dummy_rsp_info.show_cfb = g_core.plugin_funcs.video_show_cfb;
+}
+
+t_plugin_discovery_result PluginUtil::discover_plugins(const std::filesystem::path& directory)
+{
+    std::vector<std::unique_ptr<Plugin>> plugins;
+    const auto files = io_service.get_files_with_extension_in_directory(directory, L"dll");
+
+    std::vector<std::pair<std::filesystem::path, std::wstring>> results;
+    for (const auto& file : files)
+    {
+        auto [result, plugin] = Plugin::create(file);
+
+        results.emplace_back(file, result);
+
+        if (!result.empty())
+            continue;
+
+        plugins.emplace_back(std::move(plugin));
+    }
+
+    return t_plugin_discovery_result{
+    .plugins = std::move(plugins),
+    .results = results,
+    };
 }

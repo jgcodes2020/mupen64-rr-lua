@@ -85,9 +85,39 @@ private:
     HMODULE m_module;
 };
 
+/**
+ * Represents the result of a plugin discovery operation.
+ */
+typedef struct
+{
+    /**
+     * The discovered plugins matching the plugin API surface.
+     */
+    std::vector<std::unique_ptr<Plugin>> plugins;
+
+    /**
+     * Vector of discovered plugins and their results.
+     */
+    std::vector<std::pair<std::filesystem::path, std::wstring>> results;
+
+} t_plugin_discovery_result;
+
 extern view_plugin_funcs g_view_plugin_funcs;
 
 /// <summary>
 /// Initializes dummy info used by per-plugin functions
 /// </summary>
 void setup_dummy_info();
+
+/**
+ * \brief A module providing utility functions related to plugins.
+ */
+namespace PluginUtil
+{
+    /**
+     * \brief Discovers plugins in the given directory.
+     * \param directory The directory to search for plugins in.
+     * \return The plugin discovery result.
+     */
+    t_plugin_discovery_result discover_plugins(const std::filesystem::path& directory);
+} // namespace PluginUtil
