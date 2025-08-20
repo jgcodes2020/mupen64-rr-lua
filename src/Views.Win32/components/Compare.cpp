@@ -28,12 +28,14 @@ void Compare::compare(size_t current_sample)
         return;
     }
 
+    const auto save_dir = Config::save_directory();
+
     if (compare_mode == 2)
     {
         if (current_sample > compare_interval * 2)
         {
-            const auto expected_path = get_saves_directory() / std::format(L"cmp_expected_{}.st", current_sample - compare_interval);
-            const auto actual_path = get_saves_directory() / std::format(L"cmp_actual_{}.st", current_sample - compare_interval);
+            const auto expected_path = save_dir / std::format(L"cmp_expected_{}.st", current_sample - compare_interval);
+            const auto actual_path = save_dir / std::format(L"cmp_actual_{}.st", current_sample - compare_interval);
 
             if (io_service.files_are_equal(expected_path, actual_path))
             {
@@ -45,13 +47,13 @@ void Compare::compare(size_t current_sample)
             }
         }
 
-        const auto actual_path = get_saves_directory() / std::format(L"cmp_actual_{}.st", current_sample);
+        const auto actual_path = save_dir / std::format(L"cmp_actual_{}.st", current_sample);
         g_core_ctx->st_do_file(actual_path.c_str(), core_st_job_save, nullptr, true);
 
         return;
     }
 
-    const auto path = get_saves_directory() / std::format(L"cmp_expected_{}.st", current_sample);
+    const auto path = save_dir / std::format(L"cmp_expected_{}.st", current_sample);
     g_core_ctx->st_do_file(path.c_str(), core_st_job_save, nullptr, true);
 }
 

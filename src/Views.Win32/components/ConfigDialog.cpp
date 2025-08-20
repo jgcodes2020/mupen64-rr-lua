@@ -552,7 +552,7 @@ Plugin* get_selected_plugin(const HWND hwnd, const int id)
 static void start_plugin_discovery(const HWND hwnd)
 {
     g_view_logger->trace("[ConfigDialog] start_plugin_discovery");
-    plugin_discovery_result = PluginUtil::discover_plugins(get_plugins_directory());
+    plugin_discovery_result = PluginUtil::discover_plugins(Config::plugin_directory());
 
     PostMessage(hwnd, WM_PLUGIN_DISCOVERY_FINISHED, 0, 0);
 }

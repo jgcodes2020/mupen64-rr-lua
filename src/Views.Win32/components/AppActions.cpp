@@ -88,16 +88,6 @@ void AppActions::load_rom_from_path(const std::wstring& path)
     });
 }
 
-std::filesystem::path get_screenshots_directory()
-{
-    if (g_config.is_default_screenshots_directory_used)
-    {
-        return g_main_wnd.app_path / L"screenshots\\";
-    }
-    return g_config.screenshots_directory;
-}
-
-
 #pragma region Action Callbacks
 
 static void stub()
@@ -678,7 +668,7 @@ static void show_piano_roll()
 
 static void screenshot()
 {
-    g_core.plugin_funcs.video_capture_screen(get_screenshots_directory().string().data());
+    g_core.plugin_funcs.video_capture_screen(Config::screenshot_directory().string().data());
 }
 
 static void start_capture(const bool ask_preset)

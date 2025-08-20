@@ -465,3 +465,39 @@ void Config::load()
 
     Messenger::broadcast(Messenger::Message::ConfigLoaded, nullptr);
 }
+
+std::filesystem::path Config::plugin_directory()
+{
+    if (g_config.is_default_plugins_directory_used)
+    {
+        return g_main_wnd.app_path / L"plugin\\";
+    }
+    return g_config.plugins_directory;
+}
+
+std::filesystem::path Config::save_directory()
+{
+    if (g_config.is_default_saves_directory_used)
+    {
+        return g_main_wnd.app_path / L"save\\";
+    }
+    return g_config.saves_directory;
+}
+
+std::filesystem::path Config::screenshot_directory()
+{
+    if (g_config.is_default_screenshots_directory_used)
+    {
+        return g_main_wnd.app_path / L"screenshots\\";
+    }
+    return g_config.screenshots_directory;
+}
+
+std::filesystem::path Config::backup_directory()
+{
+    if (g_config.is_default_backups_directory_used)
+    {
+        return "backups\\";
+    }
+    return g_config.backups_directory;
+}

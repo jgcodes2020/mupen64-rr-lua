@@ -212,7 +212,7 @@ struct t_config {
     /// Whether a low-latency dispatcher implementation is used. Greatly improves performance when Lua scripts are running. Disable if you DirectInput-based plugins aren't working as expected.
     /// </summary>
     int32_t fast_dispatcher = 1;
-    
+
     /// <summary>
     /// The lua script path
     /// </summary>
@@ -393,4 +393,24 @@ namespace Config
      * \brief Restores the config state from the config file.
      */
     void load();
+
+    /**
+     * \brief Gets the path to the plugin directory based on the current configuration.
+     */
+    std::filesystem::path plugin_directory();
+
+    /**
+     * \brief Gets the path to the save directory based on the current configuration.
+     */
+    std::filesystem::path save_directory();
+
+    /**
+     * \brief Gets the path to the screenshot directory based on the current configuration.
+     */
+    std::filesystem::path screenshot_directory();
+
+    /**
+     * \brief Gets the path to the backup directory based on the current configuration.
+     */
+    std::filesystem::path backup_directory();
 } // namespace Config

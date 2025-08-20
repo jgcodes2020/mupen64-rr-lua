@@ -104,9 +104,6 @@ bool is_on_gui_thread();
  */
 bool show_error_dialog_for_result(core_result result, void* hwnd = nullptr);
 
-std::filesystem::path get_plugins_directory();
-std::filesystem::path get_saves_directory();
-
 void set_cwd();
 
 std::filesystem::path get_st_with_slot_path(size_t slot);

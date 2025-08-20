@@ -148,7 +148,7 @@ static void prompt_plugin_change()
 
     if (result == 0)
     {
-        auto plugin_discovery_result = PluginUtil::discover_plugins(get_plugins_directory());
+        auto plugin_discovery_result = PluginUtil::discover_plugins(Config::plugin_directory());
 
         auto first_video_plugin = std::ranges::find_if(plugin_discovery_result.plugins, [](const auto& plugin) {
             return plugin->type() == plugin_video;
@@ -411,34 +411,17 @@ const wchar_t* get_status_text()
     return text;
 }
 
-std::filesystem::path get_plugins_directory()
-{
-    if (g_config.is_default_plugins_directory_used)
-    {
-        return g_main_wnd.app_path / L"plugin\\";
-    }
-    return g_config.plugins_directory;
-}
-
-std::filesystem::path get_backups_directory()
-{
-    if (g_config.is_default_backups_directory_used)
-    {
-        return "backups\\";
-    }
-    return g_config.backups_directory;
-}
 
 std::filesystem::path get_summercart_path()
 {
-    return get_saves_directory() / "card.vhd";
+    return Config::save_directory() / "card.vhd";
 }
 
 std::filesystem::path get_st_with_slot_path(const size_t slot)
 {
     const auto hdr = g_core_ctx->vr_get_rom_header();
     const auto fname = std::format(L"{} {}.st{}", io_service.string_to_wstring((const char*)hdr->nom), g_core_ctx->vr_country_code_to_country_name(hdr->Country_code), std::to_wstring(slot));
-    return get_saves_directory() / fname;
+    return Config::save_directory() / fname;
 }
 
 void st_callback_wrapper(const core_st_callback_info& info, const std::vector<uint8_t>&)
@@ -1022,15 +1005,6 @@ void on_new_frame()
 #endif
 }
 
-std::filesystem::path get_saves_directory()
-{
-    if (g_config.is_default_saves_directory_used)
-    {
-        return g_main_wnd.app_path / L"save\\";
-    }
-    return g_config.saves_directory;
-}
-
 bool load_plugins()
 {
     if (g_video_plugin.get() && g_audio_plugin.get() && g_input_plugin.get() && g_rsp_plugin.get() && g_video_plugin->path() == g_config.selected_video_plugin && g_audio_plugin->path() == g_config.selected_audio_plugin && g_input_plugin->path() == g_config.selected_input_plugin && g_rsp_plugin->path() == g_config.selected_rsp_plugin)
@@ -1329,8 +1303,8 @@ static core_result init_core()
     g_core.submit_task = [](const auto cb) {
         ThreadPool::submit_task(cb);
     };
-    g_core.get_saves_directory = get_saves_directory;
-    g_core.get_backups_directory = get_backups_directory;
+    g_core.get_saves_directory = Config::save_directory;
+    g_core.get_backups_directory = Config::backup_directory;
     g_core.get_summercart_path = get_summercart_path;
     g_core.show_multiple_choice_dialog = [](const std::string& id, const std::vector<std::wstring>& choices, const wchar_t* str, const wchar_t* title, core_dialog_type type) {
         return DialogService::show_multiple_choice_dialog(id, choices, str, title, type);
