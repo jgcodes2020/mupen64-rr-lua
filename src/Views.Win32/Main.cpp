@@ -1258,25 +1258,16 @@ static core_result init_core()
     g_core.load_screen = MGECompositor::load_screen;
     g_core.st_pre_callback = st_callback_wrapper;
     g_core.get_plugin_names = [](char* video, char* audio, char* input, char* rsp) {
-#define DO_COPY(type)                                                                                        \
-    if (type)                                                                                                \
-    {                                                                                                        \
-        if (g_##type##_plugin)                                                                               \
-        {                                                                                                    \
-            if (strncpy_s(type, 64 - 1, g_##type##_plugin->name().data(), g_##type##_plugin->name().size())) \
-            {                                                                                                \
-                g_view_logger->error("Failed to copy {} plugin name", #type);                                \
-            }                                                                                                \
-        }                                                                                                    \
-        else                                                                                                 \
-        {                                                                                                    \
-            g_view_logger->error("Tried to get {} plugin name while it wasn't loaded", #type);               \
-        }                                                                                                    \
-    }
-        DO_COPY(video)
-        DO_COPY(audio)
-        DO_COPY(input)
-        DO_COPY(rsp)
+        const auto copy = [&](const std::shared_ptr<Plugin>& plugin, char* type) {
+            runtime_assert(plugin.get(), L"Plugin not loaded");
+            const auto result = strncpy_s(type, 64 - 1, plugin->name().c_str(), plugin->name().size());
+            runtime_assert(!result, L"Plugin name copy failed");
+        };
+
+        copy(g_video_plugin, video);
+        copy(g_audio_plugin, audio);
+        copy(g_input_plugin, input);
+        copy(g_rsp_plugin, rsp);
     };
 
     g_core.plugin_funcs.video_extended_funcs = PluginUtil::video_extended_funcs();
