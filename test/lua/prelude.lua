@@ -17,7 +17,7 @@ local function trim_to_nth_last_component(path, n)
     return trimmed
 end
 
-local path_root = trim_to_nth_last_component(debug.getinfo(1).source:sub(2), 3)
+path_root = trim_to_nth_last_component(debug.getinfo(1).source:sub(2), 3)
 
 lib_path = path_root .. "\\lib\\"
 

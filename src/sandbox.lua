@@ -29,3 +29,10 @@ os.rename = function()
     warn_trust("os.rename")
     return false, nil
 end
+
+package.loadlib = function()
+    warn_trust("package.loadlib")
+    return nil
+end
+
+-- TODO: Proper sandboxing of `require`!
