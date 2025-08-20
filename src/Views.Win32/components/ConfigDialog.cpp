@@ -170,7 +170,7 @@ std::wstring t_options_item::get_value_name() const
             {
                 if (enum_value == pair.second)
                 {
-                    return name;
+                    return pair.first;
                 }
             }
 
