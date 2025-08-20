@@ -202,7 +202,7 @@ TEST_CASE("playback_returns_correct_input_3", "vcr_on_controller_poll")
 
     vcr_on_controller_poll(3, &input);
     REQUIRE(input.value == inputs[2].value);
-    
+
     vcr_on_controller_poll(0, &input);
     REQUIRE(input.value == inputs[3].value);
 
@@ -211,7 +211,7 @@ TEST_CASE("playback_returns_correct_input_3", "vcr_on_controller_poll")
 
     vcr_on_controller_poll(3, &input);
     REQUIRE(input.value == inputs[5].value);
-    
+
     vcr_on_controller_poll(0, &input);
     REQUIRE(input.value == inputs[6].value);
 
@@ -867,6 +867,40 @@ TEST_CASE("mutex_unlocked_during_input_callback_called_while_playback", "vcr_on_
     vcr_on_controller_poll(0, &input);
 }
 
+/*
+ * Tests that vcr_on_controller_poll unlocks the VCR mutex during the vr_pause_emu call.
+ * This is important to avoid deadlocks when the input callback dispatches synchronous calls to other threads that also try to lock the VCR mutex.
+ */
+TEST_CASE("mutex_unlocked_during_emu_pause_changed_callback_called_while_playback_and_waiting_at_end", "vcr_on_controller_poll")
+{
+    prepare_test();
+
+    bool called{};
+    params.callbacks.emu_paused_changed = [&](const bool&) {
+        called = true;
+        REQUIRE(!is_vcr_lock_held());
+    };
+
+    const auto inputs = std::vector<core_buttons>{
+        {1},
+        {2},
+        {3},
+        {4}};
+
+    core_create(&params, &ctx);
+    
+    cfg.wait_at_movie_end = true;
+    vcr.inputs = inputs;
+    vcr.hdr.length_samples = inputs.size();
+    vcr.hdr.controller_flags = CONTROLLER_X_PRESENT(0);
+    vcr.task = task_playback;
+    vcr.current_sample = 3;
+
+    core_buttons input{};
+    vcr_on_controller_poll(0, &input);
+
+    REQUIRE(called);
+}
 
 /*
  * Tests that stopping the VCR during an input callback while recording does not perform any recording work.
@@ -927,6 +961,75 @@ TEST_CASE("mutex_unlocked_during_callbacks_with_playback_task", "vcr_stop_all")
 
     REQUIRE(task_changed_called);
     REQUIRE(stop_movie_called);
+}
+
+/*
+ * Tests that vcr_on_controller_poll unlocks the VCR mutex during the vr_pause_emu call.
+ * This is important to avoid deadlocks when the input callback dispatches synchronous calls to other threads that also try to lock the VCR mutex.
+ */
+TEST_CASE("mutex_unlocked_during_emu_paused_changed_callback_when_seek_ends", "vcr_on_controller_poll")
+{
+    prepare_test();
+
+    bool called{};
+    params.callbacks.emu_paused_changed = [&](const bool&) {
+        called = true;
+        REQUIRE(!is_vcr_lock_held());
+    };
+
+    core_create(&params, &ctx);
+
+    const auto inputs = std::vector<core_buttons>{
+    {1},
+    {2},
+    {3}};
+    vcr.inputs = inputs;
+    vcr.hdr.length_samples = inputs.size();
+    vcr.hdr.controller_flags = CONTROLLER_X_PRESENT(0);
+    vcr.task = task_recording;
+    vcr.current_sample = 1;
+    vcr.seek_start_sample = 0;
+    vcr.seek_to_frame = std::make_optional(1);
+    vcr.seek_pause_at_end = true;
+
+    core_buttons input{};
+    vcr_on_controller_poll(0, &input);
+
+    REQUIRE(called);
+}
+
+
+/*
+ * Tests that vcr_on_vi unlocks the VCR mutex during the vr_pause_emu call.
+ * This is important to avoid deadlocks when the input callback dispatches synchronous calls to other threads that also try to lock the VCR mutex.
+ */
+TEST_CASE("mutex_unlocked_during_emu_paused_changed_callback", "vcr_on_vi")
+{
+    prepare_test();
+
+    bool called{};
+    params.callbacks.emu_paused_changed = [&](const bool&) {
+        called = true;
+        REQUIRE(!is_vcr_lock_held());
+    };
+
+    core_create(&params, &ctx);
+
+    cfg.pause_at_last_frame = true;
+
+    const auto inputs = std::vector<core_buttons>{
+    {1},
+    {2},
+    {3}};
+    vcr.inputs = inputs;
+    vcr.hdr.length_samples = inputs.size();
+    vcr.hdr.controller_flags = CONTROLLER_X_PRESENT(0);
+    vcr.task = task_playback;
+    vcr.current_sample = 3;
+
+    vcr_on_vi();
+
+    REQUIRE(called);
 }
 
 #pragma endregion

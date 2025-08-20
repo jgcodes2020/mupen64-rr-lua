@@ -707,6 +707,7 @@ void vcr_handle_playback(int32_t index, core_buttons* input)
 
     if (g_core->cfg->wait_at_movie_end && vcr.current_sample == (int32_t)vcr.hdr.length_samples - 1)
     {
+        vcr_anti_lock bypass;
         g_ctx.vr_pause_emu();
     }
 
@@ -811,6 +812,7 @@ void vcr_stop_seek_if_needed()
 
         if (vcr.seek_pause_at_end)
         {
+            vcr_anti_lock bypass;
             g_ctx.vr_pause_emu();
         }
     }
@@ -2018,6 +2020,7 @@ void vcr_on_vi()
 
     if (pausing_at_last || pausing_at_n)
     {
+        vcr_anti_lock bypass;
         g_ctx.vr_pause_emu();
     }
 
