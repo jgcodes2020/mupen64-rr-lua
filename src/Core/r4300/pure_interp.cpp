@@ -3135,7 +3135,7 @@ void prefetch()
         interp_addr = addr;
         return;
     }
-    if (g_ctx.vr_is_tracelog_active())
+    if (g_ctx.tl_active())
         tracelog_log_pure();
 }
 
@@ -3178,7 +3178,7 @@ void interprete_section(uint32_t addr)
     while (!stop && (addr >> 12) == (interp_addr >> 12))
     {
         prefetch();
-        if (g_ctx.vr_is_tracelog_active())
+        if (g_ctx.tl_active())
             tracelog_log_pure();
         PC->addr = interp_addr;
         interp_ops[((vr_op >> 26) & 0x3F)]();

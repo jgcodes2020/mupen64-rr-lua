@@ -442,11 +442,6 @@ struct core_ctx {
     std::function<void(bool)> vr_set_fast_forward;
 
     /**
-     * \brief Gets whether tracelogging is active.
-     */
-    std::function<bool()> vr_is_tracelog_active;
-
-    /**
      * \brief Gets the GS button state.
      */
     std::function<bool()> vr_get_gs_button;
@@ -667,6 +662,12 @@ struct core_ctx {
 #pragma endregion
 
 #pragma region Tracelog
+    
+    /**
+     * \brief Gets whether tracelogging is active.
+     */
+    std::function<bool()> tl_active;
+
     /**
      * \brief Starts trace logging to the specified file.
      * \param path The output path.

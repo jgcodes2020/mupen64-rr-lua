@@ -16,7 +16,7 @@ void tracelog_log_interp_ops();
  */
 void tracelog_log_pure();
 
-bool vr_is_tracelog_active();
+bool tl_active();
 
 void tl_start(std::filesystem::path path, bool binary, bool append);
 void tl_stop();

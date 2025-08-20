@@ -93,7 +93,6 @@ EXPORT core_result CALL core_create(core_params* params, core_ctx** ctx)
     g_ctx.vr_reset_rom = vr_reset_rom;
     g_ctx.vr_frame_advance = vr_frame_advance;
     g_ctx.vr_set_fast_forward = vr_set_fast_forward;
-    g_ctx.vr_is_tracelog_active = vr_is_tracelog_active;
     g_ctx.vr_get_gs_button = vr_get_gs_button;
     g_ctx.vr_set_gs_button = vr_set_gs_button;
     g_ctx.vr_get_vis_per_second = rom_get_vis_per_second;
@@ -126,6 +125,7 @@ EXPORT core_result CALL core_create(core_params* params, core_ctx** ctx)
     g_ctx.vcr_get_warp_modify_first_difference_frame = vcr_get_warp_modify_first_difference_frame;
     g_ctx.vcr_get_seek_savestate_frames = vcr_get_seek_savestate_frames;
     g_ctx.vcr_has_seek_savestate_at_frame = vcr_has_seek_savestate_at_frame;
+    g_ctx.tl_active = tl_active;
     g_ctx.tl_start = tl_start;
     g_ctx.tl_stop = tl_stop;
     g_ctx.st_do_file = st_do_file;

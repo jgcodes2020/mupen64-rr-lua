@@ -16,7 +16,7 @@ FILE* log_file;
 char traceLoggingBuf[0x10000];
 char* traceLoggingPointer = traceLoggingBuf;
 
-bool vr_is_tracelog_active()
+bool tl_active()
 {
     return enabled;
 }

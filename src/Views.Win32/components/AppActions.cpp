@@ -42,7 +42,7 @@ bool confirm_user_exit()
     std::vector<std::pair<bool, std::wstring>> messages = {
     {g_core_ctx->vcr_get_task() == task_recording, L"Movie recording"},
     {EncodingManager::is_capturing(), L"Capture"},
-    {g_core_ctx->vr_is_tracelog_active(), L"Trace logging"}};
+    {g_core_ctx->tl_active(), L"Trace logging"}};
 
     std::vector<std::wstring> active_messages;
     for (const auto& [is_active, msg] : messages)
@@ -616,7 +616,7 @@ static void show_statistics()
 
 static void stop_tracelog()
 {
-    if (g_core_ctx->vr_is_tracelog_active())
+    if (g_core_ctx->tl_active())
     {
         g_core_ctx->tl_stop();
     }
@@ -790,7 +790,7 @@ static bool enable_when_emu_launched_and_core_is_pure_interpreter()
 
 static bool enable_when_tracelog_active()
 {
-    return g_core_ctx->vr_is_tracelog_active();
+    return g_core_ctx->tl_active();
 }
 
 static bool always_enabled()
