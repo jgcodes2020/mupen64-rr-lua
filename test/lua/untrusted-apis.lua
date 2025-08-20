@@ -9,7 +9,7 @@
 dofile(debug.getinfo(1).source:sub(2):gsub("[^\\]+$", "") .. 'prelude.lua')
 
 -- Add libsocket to the cpath for the `require` test later.
-local libsocket_path = path_root .. "lib\\luasocket\\Win32\\"
+local libsocket_path = path_root .. "lib\\luasocket\\"
 local libsocket_dll_path = libsocket_path .. "socket\\core.dll"
 package.cpath = libsocket_path .. "?.dll;" .. package.cpath
 
