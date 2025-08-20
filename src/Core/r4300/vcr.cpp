@@ -745,7 +745,7 @@ void vcr_handle_playback(int32_t index, core_buttons* input)
     }
 
     // Use inputs from movie, also notify input plugin of override via setKeys
-    *input = vcr.inputs[vcr.current_sample + index];
+    *input = vcr.inputs[vcr.current_sample];
 
     // no readable code because 120 star tas can't get this right >:(
     if (input->value == 0xC000)

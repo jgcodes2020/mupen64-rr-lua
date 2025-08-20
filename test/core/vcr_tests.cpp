@@ -120,6 +120,108 @@ TEST_CASE("playback_returns_correct_input", "vcr_on_controller_poll")
     REQUIRE(input.value == inputs[2].value);
 }
 
+/*
+ * Tests that vcr_on_controller_poll returns the correct input for multiple controllers during playback.
+ */
+TEST_CASE("playback_returns_correct_input_2", "vcr_on_controller_poll")
+{
+    prepare_test();
+
+    core_create(&params, &ctx);
+
+    const auto inputs = std::vector<core_buttons>{
+    {0},
+    {0},
+    {1},
+    {1},
+    {2},
+    {2},
+    };
+
+    vcr.inputs = inputs;
+    vcr.hdr.length_samples = inputs.size();
+    vcr.hdr.controller_flags = CONTROLLER_X_PRESENT(0) | CONTROLLER_X_PRESENT(1);
+    vcr.task = task_playback;
+    vcr.current_sample = 0;
+
+    core_buttons input{};
+
+    vcr_on_controller_poll(0, &input);
+    REQUIRE(input.value == inputs[0].value);
+
+    vcr_on_controller_poll(1, &input);
+    REQUIRE(input.value == inputs[1].value);
+
+    vcr_on_controller_poll(0, &input);
+    REQUIRE(input.value == inputs[2].value);
+
+    vcr_on_controller_poll(1, &input);
+    REQUIRE(input.value == inputs[3].value);
+
+    vcr_on_controller_poll(0, &input);
+    REQUIRE(input.value == inputs[4].value);
+
+    vcr_on_controller_poll(1, &input);
+    REQUIRE(input.value == inputs[5].value);
+}
+
+/*
+ * Tests that vcr_on_controller_poll returns the correct input for multiple sparse controllers during playback.
+ */
+TEST_CASE("playback_returns_correct_input_3", "vcr_on_controller_poll")
+{
+    prepare_test();
+
+    core_create(&params, &ctx);
+
+    const auto inputs = std::vector<core_buttons>{
+    {0},
+    {0},
+    {0},
+    {1},
+    {1},
+    {1},
+    {2},
+    {2},
+    {2},
+    };
+
+    vcr.inputs = inputs;
+    vcr.hdr.length_samples = inputs.size();
+    vcr.hdr.controller_flags = CONTROLLER_X_PRESENT(0) | CONTROLLER_X_PRESENT(2) | CONTROLLER_X_PRESENT(3);
+    vcr.task = task_playback;
+    vcr.current_sample = 0;
+
+    core_buttons input{};
+
+    vcr_on_controller_poll(0, &input);
+    REQUIRE(input.value == inputs[0].value);
+
+    vcr_on_controller_poll(2, &input);
+    REQUIRE(input.value == inputs[1].value);
+
+    vcr_on_controller_poll(3, &input);
+    REQUIRE(input.value == inputs[2].value);
+    
+    vcr_on_controller_poll(0, &input);
+    REQUIRE(input.value == inputs[3].value);
+
+    vcr_on_controller_poll(2, &input);
+    REQUIRE(input.value == inputs[4].value);
+
+    vcr_on_controller_poll(3, &input);
+    REQUIRE(input.value == inputs[5].value);
+    
+    vcr_on_controller_poll(0, &input);
+    REQUIRE(input.value == inputs[6].value);
+
+    vcr_on_controller_poll(2, &input);
+    REQUIRE(input.value == inputs[7].value);
+
+    vcr_on_controller_poll(3, &input);
+    REQUIRE(input.value == inputs[8].value);
+}
+
 TEST_CASE("record_appends_input", "vcr_on_controller_poll")
 {
     prepare_test();
