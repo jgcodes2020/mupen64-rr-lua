@@ -17,7 +17,7 @@
  */
 namespace AppActions
 {
-    const std::wstring APP = L"Mupen64 >";
+    const std::wstring APP = L"Mupen64 > ";
 
     const std::wstring LOAD_ROM = APP + L"File > Load ROM...";
     const std::wstring CLOSE_ROM = APP + L"File > Close ROM";
@@ -43,7 +43,7 @@ namespace AppActions
     const std::wstring LOAD_STATE_FILE = APP + L"Emulation > Load State > Load from File... ---";
     const std::wstring SAVE_SLOT_X = APP + L"Emulation > Save State > Save Slot {}";
     const std::wstring LOAD_SLOT_X = APP + L"Emulation > Load State > Load Slot {}";
-    const std::wstring SELECT_SLOT = APP + L"Emulation > Current State Slot >";
+    const std::wstring SELECT_SLOT = APP + L"Emulation > Current State Slot > ";
     const std::wstring SELECT_SLOT_X = SELECT_SLOT + L"Slot {}";
     const std::wstring UNDO_LOAD_STATE = APP + L"Emulation > Undo Load State";
 
