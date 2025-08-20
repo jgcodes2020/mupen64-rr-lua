@@ -1399,6 +1399,61 @@ static bool is_dialog_message(MSG* msg)
     return false;
 }
 
+/**
+ * \brief Pumps messages while giving priority to dispatcher execution.
+ */
+static bool dispatcher_prioritized_message_pump(MSG* msg)
+{
+    const DWORD result = MsgWaitForMultipleObjectsEx(1, &dispatcher_event, INFINITE, QS_ALLEVENTS | QS_ALLINPUT, MWMO_ALERTABLE | MWMO_INPUTAVAILABLE);
+
+    if (result == WAIT_FAILED)
+    {
+        g_view_logger->critical("MsgWaitForMultipleObjects WAIT_FAILED");
+        return false;
+    }
+
+    if (result == WAIT_OBJECT_0 || WaitForSingleObjectEx(dispatcher_event, 0, FALSE) == WAIT_OBJECT_0)
+    {
+        g_main_window_dispatcher->execute();
+        SetEvent(dispatcher_done_event);
+    }
+
+    if (result == WAIT_OBJECT_0 + 1)
+    {
+        while (PeekMessage(msg, nullptr, 0, 0, PM_REMOVE))
+        {
+            if (is_dialog_message(msg))
+            {
+                continue;
+            }
+
+            TranslateMessage(msg);
+            DispatchMessage(msg);
+        }
+    }
+
+    return true;
+}
+
+/**
+ * \brief Pumps messages in the default order.
+ */
+static bool normal_message_pump(MSG* msg)
+{
+    MsgWaitForMultipleObjects(0, nullptr, FALSE, INFINITE, QS_ALLEVENTS | QS_ALLINPUT);
+    while (PeekMessage(msg, nullptr, 0, 0, PM_REMOVE))
+    {
+        if (is_dialog_message(msg))
+        {
+            continue;
+        }
+
+        TranslateMessage(msg);
+        DispatchMessage(msg);
+    }
+    return true;
+}
+
 int CALLBACK WinMain(const HINSTANCE hInstance, HINSTANCE, LPSTR, const int nShowCmd)
 {
 #ifdef _DEBUG
@@ -1503,51 +1558,20 @@ int CALLBACK WinMain(const HINSTANCE hInstance, HINSTANCE, LPSTR, const int nSho
     }
 
     MSG msg{};
-
     while (!g_exit)
     {
         if (g_config.fast_dispatcher)
         {
-            const DWORD result = MsgWaitForMultipleObjectsEx(1, &dispatcher_event, INFINITE, QS_ALLEVENTS | QS_ALLINPUT, MWMO_ALERTABLE | MWMO_INPUTAVAILABLE);
-
-            if (result == WAIT_FAILED)
+            if (!dispatcher_prioritized_message_pump(&msg))
             {
-                g_view_logger->critical("MsgWaitForMultipleObjects WAIT_FAILED");
                 break;
-            }
-
-            if (result == WAIT_OBJECT_0 || WaitForSingleObjectEx(dispatcher_event, 0, FALSE) == WAIT_OBJECT_0)
-            {
-                g_main_window_dispatcher->execute();
-                SetEvent(dispatcher_done_event);
-            }
-
-            if (result == WAIT_OBJECT_0 + 1)
-            {
-                while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
-                {
-                    if (is_dialog_message(&msg))
-                    {
-                        continue;
-                    }
-
-                    TranslateMessage(&msg);
-                    DispatchMessage(&msg);
-                }
             }
             continue;
         }
 
-        MsgWaitForMultipleObjects(0, nullptr, FALSE, INFINITE, QS_ALLEVENTS | QS_ALLINPUT);
-        while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
+        if (!normal_message_pump(&msg))
         {
-            if (is_dialog_message(&msg))
-            {
-                continue;
-            }
-
-            TranslateMessage(&msg);
-            DispatchMessage(&msg);
+            break;
         }
     }
 
