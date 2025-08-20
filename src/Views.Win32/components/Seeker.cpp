@@ -18,7 +18,7 @@ struct seeker_state {
 
 static seeker_state seeker{};
 
-static LRESULT CALLBACK dlgproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+static INT_PTR CALLBACK dlgproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
     switch (msg)
     {
@@ -32,6 +32,7 @@ static LRESULT CALLBACK dlgproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
         SetFocus(GetDlgItem(hwnd, IDC_SEEKER_FRAME));
         break;
     case WM_DESTROY:
+        EnableWindow(g_main_hwnd, TRUE);
         KillTimer(hwnd, seeker.refresh_timer);
         g_core_ctx->vcr_stop_seek();
         break;
@@ -111,22 +112,6 @@ static LRESULT CALLBACK dlgproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
     return FALSE;
 }
 
-void Seeker::show()
-{
-    // Let's not have 2 instances of a singleton...
-    if (seeker.hwnd)
-    {
-        return;
-    }
-
-    // We need to run the dialog on another thread, since we don't want to block the main one
-    std::thread([] {
-        DialogBox(g_app_instance, MAKEINTRESOURCE(IDD_SEEKER), g_main_hwnd, (DLGPROC)dlgproc);
-        seeker.hwnd = nullptr;
-    })
-    .detach();
-}
-
 void Seeker::init()
 {
     Messenger::subscribe(Messenger::Message::SeekCompleted, [](std::any) {
@@ -134,4 +119,16 @@ void Seeker::init()
             return;
         SendMessage(seeker.hwnd, WM_SEEK_COMPLETED, 0, 0);
     });
+}
+
+void Seeker::show()
+{
+    CreateDialog(g_app_instance, MAKEINTRESOURCE(IDD_SEEKER), g_main_hwnd, dlgproc);
+    EnableWindow(g_main_hwnd, FALSE);
+    ShowWindow(seeker.hwnd, SW_SHOW);
+}
+
+HWND Seeker::hwnd()
+{
+    return seeker.hwnd;
 }

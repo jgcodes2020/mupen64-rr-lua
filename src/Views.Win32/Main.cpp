@@ -1323,6 +1323,10 @@ static bool is_dialog_message(MSG* msg)
     {
         return true;
     }
+    if (IsWindow(Seeker::hwnd()) && IsDialogMessage(Seeker::hwnd(), msg))
+    {
+        return true;
+    }
     return false;
 }
 

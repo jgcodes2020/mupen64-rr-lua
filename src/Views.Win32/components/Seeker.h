@@ -17,4 +17,9 @@ namespace Seeker
      * \brief Shows the seeker dialog
      */
     void show();
+
+    /**
+     * \brief Gets the HWND of the seeker window. Might be invalid.
+     */
+    HWND hwnd();
 } // namespace Seeker
