@@ -11,26 +11,32 @@
 #define WM_DEBUGGER_CPU_STATE_UPDATED (WM_USER + 20)
 #define WM_DEBUGGER_RESUMED_UPDATED (WM_USER + 21)
 
-static std::atomic<HWND> g_hwnd{};
-static core_dbg_cpu_state g_cpu_state{};
+struct t_core_dbg_context {
+    HWND hwnd{};
+    HWND list_hwnd{};
+    core_dbg_cpu_state cpu{};
+};
+static t_core_dbg_context g_ctx{};
 
-INT_PTR CALLBACK dlgproc(HWND hwnd, UINT msg, WPARAM w_param, LPARAM l_param)
+
+INT_PTR CALLBACK dlgproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
     switch (msg)
     {
     case WM_INITDIALOG:
-        g_hwnd = hwnd;
+        g_ctx.hwnd = hwnd;
+        g_ctx.list_hwnd = GetDlgItem(g_ctx.hwnd, IDC_COREDBG_LIST);
+
         CheckDlgButton(hwnd, IDC_COREDBG_RSP_TOGGLE, 1);
         return TRUE;
     case WM_DESTROY:
-        g_hwnd = nullptr;
-        EndDialog(hwnd, LOWORD(w_param));
+        g_ctx.hwnd = nullptr;
         return TRUE;
     case WM_CLOSE:
-        EndDialog(hwnd, IDOK);
+        DestroyWindow(hwnd);
         break;
     case WM_COMMAND:
-        switch (LOWORD(w_param))
+        switch (LOWORD(wparam))
         {
         case IDC_COREDBG_CART_TILT:
             g_core_ctx->dbg_set_dma_read_enabled(!IsDlgButtonChecked(hwnd, IDC_COREDBG_CART_TILT));
@@ -50,24 +56,20 @@ INT_PTR CALLBACK dlgproc(HWND hwnd, UINT msg, WPARAM w_param, LPARAM l_param)
         break;
     case WM_DEBUGGER_CPU_STATE_UPDATED:
         {
-            HWND list_hwnd = GetDlgItem(g_hwnd, IDC_COREDBG_LIST);
+            char disasm[32] = {};
+            g_core_ctx->dbg_disassemble(disasm, g_ctx.cpu.opcode, g_ctx.cpu.address);
 
-            char disasm[32] = {0};
-            g_core_ctx->dbg_disassemble(disasm,
-                                        g_cpu_state.opcode,
-                                        g_cpu_state.address);
+            const auto str = std::format(L"{} ({:#08x}, {:#08x})", io_service.string_to_wstring(disasm), g_ctx.cpu.opcode, g_ctx.cpu.address);
+            ListBox_InsertString(g_ctx.list_hwnd, 0, str.c_str());
 
-            auto str = std::format(L"{} ({:#08x}, {:#08x})", io_service.string_to_wstring(disasm), g_cpu_state.opcode, g_cpu_state.address);
-            ListBox_InsertString(list_hwnd, 0, str.c_str());
-
-            if (ListBox_GetCount(list_hwnd) > 1024)
+            if (ListBox_GetCount(g_ctx.list_hwnd) > 1024)
             {
-                ListBox_DeleteString(list_hwnd, ListBox_GetCount(list_hwnd) - 1);
+                ListBox_DeleteString(g_ctx.list_hwnd, ListBox_GetCount(g_ctx.list_hwnd) - 1);
             }
             break;
         }
     case WM_DEBUGGER_RESUMED_UPDATED:
-        Button_SetText(GetDlgItem(g_hwnd, IDC_COREDBG_TOGGLEPAUSE), g_core_ctx->dbg_get_resumed() ? L"Pause" : L"Resume");
+        Button_SetText(GetDlgItem(g_ctx.hwnd, IDC_COREDBG_TOGGLEPAUSE), g_core_ctx->dbg_get_resumed() ? L"Pause" : L"Resume");
         break;
     default:
         return FALSE;
@@ -77,27 +79,25 @@ INT_PTR CALLBACK dlgproc(HWND hwnd, UINT msg, WPARAM w_param, LPARAM l_param)
 
 void CoreDbg::show()
 {
-    std::thread([] {
-        DialogBox(g_app_instance, MAKEINTRESOURCE(IDD_COREDBG), NULL, dlgproc);
-    })
-    .detach();
+    CreateDialog(g_app_instance, MAKEINTRESOURCE(IDD_COREDBG), g_main_hwnd, dlgproc);
+    ShowWindow(g_ctx.hwnd, SW_SHOW);
 }
 
 void CoreDbg::init()
 {
-    Messenger::subscribe(Messenger::Message::DebuggerCpuStateChanged, [](std::any data) {
-        g_cpu_state = *std::any_cast<core_dbg_cpu_state*>(data);
+    Messenger::subscribe(Messenger::Message::DebuggerCpuStateChanged, [](const std::any& data) {
+        g_ctx.cpu = *std::any_cast<core_dbg_cpu_state*>(data);
 
-        if (g_hwnd)
+        if (g_ctx.hwnd)
         {
-            SendMessage(g_hwnd, WM_DEBUGGER_CPU_STATE_UPDATED, 0, 0);
+            SendMessage(g_ctx.hwnd, WM_DEBUGGER_CPU_STATE_UPDATED, 0, 0);
         }
     });
 
-    Messenger::subscribe(Messenger::Message::DebuggerResumedChanged, [](std::any data) {
-        if (g_hwnd)
+    Messenger::subscribe(Messenger::Message::DebuggerResumedChanged, [](std::any) {
+        if (g_ctx.hwnd)
         {
-            SendMessage(g_hwnd, WM_DEBUGGER_RESUMED_UPDATED, 0, 0);
+            SendMessage(g_ctx.hwnd, WM_DEBUGGER_RESUMED_UPDATED, 0, 0);
         }
     });
 }
