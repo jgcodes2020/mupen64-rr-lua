@@ -120,4 +120,22 @@ namespace PluginUtil
      * \return The plugin discovery result.
      */
     t_plugin_discovery_result discover_plugins(const std::filesystem::path& directory);
+
+    /**
+     * \brief Gets the extended function set for video plugins.
+     */
+    core_plugin_extended_funcs video_extended_funcs();
+    /**
+     * \brief Gets the extended function set for audio plugins.
+     */
+    core_plugin_extended_funcs audio_extended_funcs();
+    /**
+     * \brief Gets the extended function set for input plugins.
+     */
+    core_plugin_extended_funcs input_extended_funcs();
+    /**
+     * \brief Gets the extended function set for RSP plugins.
+     */
+    core_plugin_extended_funcs rsp_extended_funcs();
+    
 } // namespace PluginUtil

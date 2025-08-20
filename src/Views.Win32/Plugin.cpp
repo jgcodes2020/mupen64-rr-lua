@@ -662,3 +662,39 @@ t_plugin_discovery_result PluginUtil::discover_plugins(const std::filesystem::pa
     .results = results,
     };
 }
+
+#define GEN_EXTENDED_FUNCS(logger) core_plugin_extended_funcs{ \
+.size = sizeof(core_plugin_extended_funcs),                    \
+.log_trace = [](const wchar_t* str) {                          \
+    logger->trace(str);                                        \
+},                                                             \
+.log_info = [](const wchar_t* str) {                           \
+    logger->info(str);                                         \
+},                                                             \
+.log_warn = [](const wchar_t* str) {                           \
+    logger->warn(str);                                         \
+},                                                             \
+.log_error = [](const wchar_t* str) {                          \
+    logger->error(str);                                        \
+},                                                             \
+};
+
+core_plugin_extended_funcs PluginUtil::video_extended_funcs()
+{
+    return GEN_EXTENDED_FUNCS(g_view_logger);
+}
+
+core_plugin_extended_funcs PluginUtil::audio_extended_funcs()
+{
+    return GEN_EXTENDED_FUNCS(g_audio_logger);
+}
+
+core_plugin_extended_funcs PluginUtil::input_extended_funcs()
+{
+    return GEN_EXTENDED_FUNCS(g_input_logger);
+}
+
+core_plugin_extended_funcs PluginUtil::rsp_extended_funcs()
+{
+    return GEN_EXTENDED_FUNCS(g_rsp_logger);
+}
