@@ -103,7 +103,7 @@ Mupen = {
     ---@alias VKeycode integer
     ---A virtual keycode.
     
-    ---@type table<string, VKeycode>
+    ---@enum VKeycodes
     -- A complete enum of Windows Virtual-Key codes.
     VKeycodes = {
         -- Mouse Buttons
