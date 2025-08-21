@@ -433,7 +433,7 @@ static INT_PTR CALLBACK command_palette_proc(const HWND hwnd, const UINT msg, co
                     COLORREF text_color;
                     HBRUSH bg_brush;
 
-                    if (pdis->itemState & ODS_SELECTED)
+                    if (pdis->itemState & ODS_SELECTED && action->selectable())
                     {
                         text_color = GetSysColor(COLOR_HIGHLIGHTTEXT);
                         bg_brush = GetSysColorBrush(COLOR_HIGHLIGHT);
