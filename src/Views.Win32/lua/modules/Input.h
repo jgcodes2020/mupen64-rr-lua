@@ -306,10 +306,37 @@ namespace LuaCore::Input
 
     static int LuaGetKeyNameText(lua_State* L)
     {
-        auto vk = luaL_checkinteger(L, 1);
+        const auto vk = luaL_checkinteger(L, 1);
 
-        wchar_t name[100] = {0};
-        GetKeyNameText(vk, name, std::size(name));
+        UINT scan_code = MapVirtualKeyEx(vk, MAPVK_VK_TO_VSC, GetKeyboardLayout(0));
+
+        // Add extended bit to scan code for certain keys which have a two-byte form
+        switch (vk)
+        {
+        case VK_LEFT:
+        case VK_UP:
+        case VK_RIGHT:
+        case VK_DOWN:
+        case VK_PRIOR:
+        case VK_NEXT:
+        case VK_END:
+        case VK_HOME:
+        case VK_INSERT:
+        case VK_DELETE:
+        case VK_DIVIDE:
+        case VK_NUMLOCK:
+            scan_code |= 0x100;
+            break;
+        default:
+            break;
+        }
+
+        TCHAR name[64]{};
+        if (!GetKeyNameText(scan_code << 16, name, sizeof(name) / sizeof(TCHAR)))
+        {
+            lua_pushnil(L);
+            return 1;
+        }
 
         lua_pushstring(L, io_service.wstring_to_string(name).c_str());
         return 1;
