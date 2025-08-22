@@ -1259,25 +1259,8 @@ def:
 
 apply:
 
-    const auto len = Edit_GetTextLength(hwnd) + 1;
-
-    if (len <= 0)
-    {
-        goto def;
-    }
-
-    auto str = static_cast<wchar_t*>(calloc(len, sizeof(wchar_t)));
-
-    if (!str)
-    {
-        goto def;
-    }
-
-    Edit_GetText(hwnd, str, len);
-
-    SendMessage(GetParent(hwnd), WM_EDIT_END, 0, (LPARAM)str);
-
-    free(str);
+    const auto text = get_window_text(hwnd).value_or(L"");
+    SendMessage(GetParent(hwnd), WM_EDIT_END, 0, (LPARAM)text.c_str());
 
     DestroyWindow(hwnd);
 
@@ -1309,16 +1292,12 @@ INT_PTR CALLBACK edit_string_dlgproc(HWND wnd, UINT msg, WPARAM wparam, LPARAM l
         {
         case IDOK:
             {
-                auto option_item = g_option_items[g_edit_option_item_index];
+                const auto& option_item = g_option_items[g_edit_option_item_index];
                 const auto edit_hwnd = GetDlgItem(wnd, IDC_TEXTBOX_LUAPROMPT);
 
-                auto len = Edit_GetTextLength(edit_hwnd) + 1;
-                auto str = static_cast<wchar_t*>(calloc(len, sizeof(wchar_t)));
-                Edit_GetText(edit_hwnd, str, len);
+                const auto str = get_window_text(edit_hwnd).value_or(L"");
 
-                option_item.current_value.set(std::wstring(str));
-
-                free(str);
+                option_item.current_value.set(str);
 
                 EndDialog(wnd, IDOK);
                 break;
@@ -1742,7 +1721,7 @@ void ConfigDialog::show_app_settings()
                 g_config.hotkeys[action] = Hotkey::t_hotkey{};
                 g_config.inital_hotkeys[action] = Hotkey::t_hotkey{};
             }
-            
+
             const t_options_item item = {
             .type = t_options_item::Type::Hotkey,
             .group_id = group.id,

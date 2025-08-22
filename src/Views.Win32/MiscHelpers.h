@@ -554,6 +554,38 @@ static std::wstring format_short(const uint64_t value)
 }
 
 /**
+ * \brief Gets the text of a window.
+ * \param hwnd The handle to the window.
+ * \return The text of the window, or an empty optional if the operation failed.
+ */
+static std::optional<std::wstring> get_window_text(const HWND hwnd)
+{
+    if (!IsWindow(hwnd))
+    {
+        return std::nullopt;
+    }
+
+    SetLastError(ERROR_SUCCESS);
+
+    auto len = GetWindowTextLength(hwnd) + 1;
+
+    if (len == 0)
+    {
+        if (GetLastError() != ERROR_SUCCESS)
+        {
+            return std::nullopt;
+        }
+        return L"";
+    }
+
+    std::wstring str(len + 1, L'\0');
+    const int actual_length = GetWindowText(hwnd, str.data(), len + 1);
+    str.resize(actual_length);
+
+    return str;
+}
+
+/**
  * \brief Ensures that the specified index in the listbox is visible.
  * \param hwnd The handle to the listbox.
  * \param index The index to ensure is visible.

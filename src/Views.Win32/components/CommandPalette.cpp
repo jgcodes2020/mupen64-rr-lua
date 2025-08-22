@@ -371,12 +371,10 @@ static INT_PTR CALLBACK command_palette_proc(const HWND hwnd, const UINT msg, co
             {
             case EN_CHANGE:
                 {
-                    wchar_t text[80]{};
-                    Edit_GetText(g_ctx.edit_hwnd, text, std::size(text));
-
-                    if (g_ctx.search_query != text)
+                    const auto query = get_window_text(g_ctx.edit_hwnd).value();
+                    if (g_ctx.search_query != query)
                     {
-                        g_ctx.search_query = text;
+                        g_ctx.search_query = query;
                         build_listbox();
                     }
                     break;

@@ -132,9 +132,9 @@ static void start(t_instance_context& ctx, const std::filesystem::path& path)
     }
 
     ctx.env = result.value();
-    
+
     const auto start_result = LuaManager::start_environment(result.value(), ctx.trusted());
-    
+
     if (!start_result.has_value())
     {
         ctx.env = nullptr;
@@ -299,9 +299,7 @@ static INT_PTR CALLBACK lua_instance_dialog_proc(HWND hwnd, UINT msg, WPARAM wpa
             }
         case IDC_START:
             {
-                wchar_t path[MAX_PATH]{};
-                Edit_GetText(GetDlgItem(ctx->hwnd, IDC_PATH), path, std::size(path));
-
+                const auto path = get_window_text(GetDlgItem(ctx->hwnd, IDC_PATH)).value();
                 start(*ctx, path);
                 break;
             }

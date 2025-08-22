@@ -95,11 +95,8 @@ static LRESULT CALLBACK dlgproc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
                 g_core_ctx->cht_get_list(cheats);
                 const bool prev_active = cheats[selected_index].active;
 
-                wchar_t code[4096] = {};
-                Edit_GetText(GetDlgItem(hwnd, IDC_EDIT_CHEAT), code, sizeof(code));
-
-                wchar_t name[256] = {};
-                Edit_GetText(GetDlgItem(hwnd, IDC_EDIT_CHEAT_NAME), name, sizeof(name));
+                const auto code = get_window_text(GetDlgItem(hwnd, IDC_EDIT_CHEAT)).value();
+                const auto name = get_window_text(GetDlgItem(hwnd, IDC_EDIT_CHEAT_NAME)).value();
 
                 core_cheat script;
 
