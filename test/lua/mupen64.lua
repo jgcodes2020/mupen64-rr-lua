@@ -40,6 +40,7 @@ lust.describe('mupen64', function()
 
     lust.describe('input', function()
         lust.describe('get_key_name_text', function()
+            -- NOTE: This test only works on an en-us locale.
             lust.it('returns_correct_value', function()
                 lust.expect(input.get_key_name_text(Mupen.VKeycodes.VK_1)).to.equal("1")
                 lust.expect(input.get_key_name_text(Mupen.VKeycodes.VK_RETURN)).to.equal("Enter")
