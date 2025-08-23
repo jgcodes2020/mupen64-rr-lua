@@ -362,6 +362,45 @@ lust.describe('mupen64', function()
             end)
         end)
 
+        lust.describe('get_activatability', function()
+            lust.after(function()
+                action.remove("Test > *")
+            end)
+            lust.it('errors_when_path_is_nil', function()
+                local func = function()
+                    action.get_activatability(nil)
+                end
+                lust.expect(func).to.fail()
+            end)
+            lust.it('errors_when_path_is_table', function()
+                local func = function()
+                    action.get_activatability({})
+                end
+                lust.expect(func).to.fail()
+            end)
+            lust.it('returns_false_when_action_doesnt_exist', function()
+                local result = action.get_activatability("Test > Something")
+                lust.expect(result).to.equal(false)
+            end)
+            lust.it('returns_true_when_get_active_callback_present', function()
+                action.add({
+                    path = "Test > Something",
+                    get_active = function()
+                        return true
+                    end
+                })
+                local result = action.get_activatability("Test > Something")
+                lust.expect(result).to.equal(true)
+            end)
+            lust.it('returns_false_when_get_active_callback_absent', function()
+                action.add({
+                    path = "Test > Something",
+                })
+                local result = action.get_activatability("Test > Something")
+                lust.expect(result).to.equal(false)
+            end)
+        end)
+
         lust.describe('get_actions_matching_filter', function()
             lust.after(function()
                 action.remove("Test > *")

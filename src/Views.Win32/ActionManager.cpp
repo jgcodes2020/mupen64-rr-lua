@@ -454,6 +454,19 @@ bool ActionManager::get_active(const action_path& path)
     return action->active.value();
 }
 
+bool ActionManager::get_activatability(const action_path& path)
+{
+    t_action* action = get_single_action_ptr_matching_path(path);
+
+    if (!action)
+    {
+        g_view_logger->error(L"ActionManager::get_action_activatability: '{}' didn't resolve to an action", path);
+        return false;
+    }
+
+    return action->params.get_active != nullptr;
+}
+
 void ActionManager::begin_batch_work()
 {
     g_mgr.batched_work = true;

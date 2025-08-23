@@ -245,6 +245,16 @@ namespace LuaCore::Action
         return 1;
     }
 
+    static int get_activatability(lua_State* L)
+    {
+        const auto path = luaL_checkwstring(L, 1);
+
+        const auto result = ActionManager::get_activatability(path);
+
+        lua_pushboolean(L, result);
+        return 1;
+    }
+
     static int get_actions_matching_filter(lua_State* L)
     {
         const auto filter = luaL_checkwstring(L, 1);

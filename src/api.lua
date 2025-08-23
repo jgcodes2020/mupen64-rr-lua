@@ -1597,6 +1597,11 @@ function action.notify_active_changed(filter) end
 ---@return string # The action's display name or an empty string if the display name couldn't be resolved.
 function action.get_display_name(filter, ignore_override) end
 
+---Gets whether an action has been registered with an active state callback.
+---@param path ActionPath A path.
+---@return boolean # The actions' activatability.
+function action.get_activatability(path) end
+
 ---Gets all action paths that match the specified filter.
 ---@param filter ActionFilter A filter.
 ---@return ActionPath[] # A collection of action paths that match the filter.

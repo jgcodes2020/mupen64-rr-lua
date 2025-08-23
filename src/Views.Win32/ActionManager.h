@@ -158,6 +158,13 @@ namespace ActionManager
     bool get_active(const action_path& path);
 
     /**
+     * \brief Gets whether an action has been registered with an active state callback.
+     * \param path A path.
+     * \return The actions' activatability.
+     */
+    bool get_activatability(const action_path& path);
+
+    /**
      * \brief Gets all action paths that match the specified filter.
      * \param filter A filter.
      * \return A collection of action paths that match the filter.
