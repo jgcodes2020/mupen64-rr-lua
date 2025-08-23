@@ -451,8 +451,17 @@ static INT_PTR CALLBACK command_palette_proc(const HWND hwnd, const UINT msg, co
                     int checkbox_width = 0;
                     if (action->activatable)
                     {
-                        const auto state_id = action->active ? CBS_CHECKEDNORMAL : CBS_UNCHECKEDNORMAL;
-                        
+                        int32_t state_id;
+                        if (action->enabled)
+                        {
+                            state_id = action->active ? CBS_CHECKEDNORMAL : CBS_UNCHECKEDNORMAL;
+                        }
+                        else
+                        {
+                            state_id = action->active ? CBS_CHECKEDDISABLED : CBS_UNCHECKEDDISABLED;
+                        }
+
+
                         SIZE checkbox_size{};
                         GetThemePartSize(g_ctx.button_theme, nullptr, BP_CHECKBOX, state_id, nullptr, TS_TRUE, &checkbox_size);
                         checkbox_width = checkbox_size.cx;
