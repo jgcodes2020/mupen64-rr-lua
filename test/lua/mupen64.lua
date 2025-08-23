@@ -362,6 +362,82 @@ lust.describe('mupen64', function()
             end)
         end)
 
+        lust.describe('get_enabled', function()
+            lust.after(function()
+                action.remove("Test > *")
+            end)
+            lust.it('errors_when_path_is_nil', function()
+                local func = function()
+                    action.get_enabled(nil)
+                end
+                lust.expect(func).to.fail()
+            end)
+            lust.it('errors_when_path_is_table', function()
+                local func = function()
+                    action.get_enabled({})
+                end
+                lust.expect(func).to.fail()
+            end)
+            lust.it('returns_false_when_action_doesnt_exist', function()
+                local result = action.get_enabled("Test > Something")
+                lust.expect(result).to.equal(false)
+            end)
+            lust.it('returns_enabled_state', function()
+                action.add({
+                    path = "Test > A",
+                    get_enabled = function()
+                        return true
+                    end
+                })
+                action.add({
+                    path = "Test > B",
+                    get_enabled = function()
+                        return false
+                    end
+                })
+                lust.expect(action.get_enabled("Test > A")).to.equal(true)
+                lust.expect(action.get_enabled("Test > B")).to.equal(false)
+            end)
+        end)
+
+        lust.describe('get_active', function()
+            lust.after(function()
+                action.remove("Test > *")
+            end)
+            lust.it('errors_when_path_is_nil', function()
+                local func = function()
+                    action.get_active(nil)
+                end
+                lust.expect(func).to.fail()
+            end)
+            lust.it('errors_when_path_is_table', function()
+                local func = function()
+                    action.get_active({})
+                end
+                lust.expect(func).to.fail()
+            end)
+            lust.it('returns_false_when_action_doesnt_exist', function()
+                local result = action.get_active("Test > Something")
+                lust.expect(result).to.equal(false)
+            end)
+            lust.it('returns_active_state', function()
+                action.add({
+                    path = "Test > A",
+                    get_active = function()
+                        return true
+                    end
+                })
+                action.add({
+                    path = "Test > B",
+                    get_active = function()
+                        return false
+                    end
+                })
+                lust.expect(action.get_active("Test > A")).to.equal(true)
+                lust.expect(action.get_active("Test > B")).to.equal(false)
+            end)
+        end)
+
         lust.describe('get_activatability', function()
             lust.after(function()
                 action.remove("Test > *")

@@ -146,21 +146,21 @@ namespace ActionManager
     /**
      * \brief Gets whether an action is enabled.
      * \param path A path.
-     * \return The actions' enabled state.
+     * \return The action's enabled state.
      */
     bool get_enabled(const action_path& path);
 
     /**
      * \brief Gets whether an action is active.
      * \param path A path.
-     * \return The actions' active state.
+     * \return The action's active state.
      */
     bool get_active(const action_path& path);
 
     /**
      * \brief Gets whether an action has been registered with an active state callback.
      * \param path A path.
-     * \return The actions' activatability.
+     * \return The action's activatability.
      */
     bool get_activatability(const action_path& path);
 

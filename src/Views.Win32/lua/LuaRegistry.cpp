@@ -230,6 +230,8 @@ const luaL_Reg ACTION_FUNCS[] = {
 {"notify_enabled_changed", LuaCore::Action::notify_enabled_changed},
 {"notify_active_changed", LuaCore::Action::notify_active_changed},
 {"get_display_name", LuaCore::Action::get_display_name},
+{"get_enabled", LuaCore::Action::get_enabled},
+{"get_active", LuaCore::Action::get_active},
 {"get_activatability", LuaCore::Action::get_activatability},
 {"get_actions_matching_filter", LuaCore::Action::get_actions_matching_filter},
 {"invoke", LuaCore::Action::invoke},
