@@ -1715,13 +1715,6 @@ void ConfigDialog::show_app_settings()
                 continue;
             }
 
-            // HACK: Add dummy options for actions that don't have a hotkey set. Note that this will also change the behaviour of ActionManager::associate_hotkey!
-            if (!g_config.hotkeys.contains(action))
-            {
-                g_config.hotkeys[action] = Hotkey::t_hotkey{};
-                g_config.inital_hotkeys[action] = Hotkey::t_hotkey{};
-            }
-
             const t_options_item item = {
             .type = t_options_item::Type::Hotkey,
             .group_id = group.id,

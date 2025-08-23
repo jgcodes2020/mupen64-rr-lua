@@ -292,6 +292,9 @@ bool ActionManager::add(const t_action_params& params)
     g_mgr.actions.emplace_back(action);
     g_mgr.filter_result_cache.clear();
 
+    g_config.hotkeys[normalized_path] = Hotkey::t_hotkey{};
+    g_config.inital_hotkeys[normalized_path] = Hotkey::t_hotkey{};
+
     if (!g_mgr.batched_work)
     {
         notify_action_registry_changed();
@@ -355,20 +358,22 @@ bool ActionManager::associate_hotkey(const action_path& path, const Hotkey::t_ho
 
     const auto normalized_path = action->params.path;
 
+    runtime_assert(g_config.hotkeys.contains(normalized_path) && g_config.inital_hotkeys.contains(normalized_path), L"Action didn't have a hotkey entry.");
+
+    const bool has_assignment = !g_config.hotkeys[normalized_path].is_nothing();
+
     if (overwrite_existing)
     {
-        if (!g_config.hotkeys.contains(normalized_path))
+        if (!has_assignment)
         {
-            g_view_logger->debug(L"ActionManager::associate_hotkey: Initial hotkey registered for '{}': {}.", normalized_path, hotkey.to_wstring());
             g_config.inital_hotkeys[normalized_path] = hotkey;
         }
 
-        g_view_logger->debug(L"ActionManager::associate_hotkey: Hotkey registered for '{}': {}.", normalized_path, hotkey.to_wstring());
         g_config.hotkeys[normalized_path] = hotkey;
     }
     else
     {
-        if (!g_config.hotkeys.contains(normalized_path))
+        if (!has_assignment)
         {
             g_config.hotkeys[normalized_path] = hotkey;
             g_config.inital_hotkeys[normalized_path] = hotkey;
@@ -377,7 +382,7 @@ bool ActionManager::associate_hotkey(const action_path& path, const Hotkey::t_ho
 
     if (!g_mgr.batched_work)
     {
-        Messenger::broadcast(Messenger::Message::ActionRegistryChanged, nullptr);
+        notify_action_registry_changed();
     }
 
     return true;
@@ -397,14 +402,14 @@ std::wstring ActionManager::get_display_name(const action_filter& filter, bool i
         }
         return name;
     }
-    
+
     const auto action = actions.front();
 
     if (ignore_override)
     {
         return action->raw_name;
     }
-    
+
     if (!action->display_name.has_value())
     {
         update_display_names({action});

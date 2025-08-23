@@ -40,7 +40,7 @@ t_listbox_item::t_listbox_item(const std::wstring& action, const std::wstring& g
 {
     path = action;
     group_name = group;
-    const auto hotkey = g_config.hotkeys.contains(action) ? g_config.hotkeys.at(action) : Hotkey::t_hotkey{};
+    const auto hotkey = g_config.hotkeys.at(action);
     if (!hotkey.is_nothing())
     {
         hotkey_display_name = hotkey.to_wstring();
@@ -289,7 +289,7 @@ static LRESULT CALLBACK keyboard_interaction_subclass_proc(HWND hwnd, UINT msg, 
                 break;
             }
 
-            Hotkey::t_hotkey hotkey = g_config.hotkeys.contains(item->path) ? g_config.hotkeys.at(item->path) : Hotkey::t_hotkey{};
+            Hotkey::t_hotkey hotkey = g_config.hotkeys.at(item->path);
             Hotkey::show_prompt(g_main_hwnd, std::format(L"Choose a hotkey for {}", item->display_name), hotkey);
             Hotkey::try_associate_hotkey(g_main_hwnd, item->path, hotkey);
 
