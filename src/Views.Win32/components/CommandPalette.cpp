@@ -16,6 +16,7 @@ struct t_listbox_item {
     std::wstring display_name{};
     bool enabled{};
     bool active{};
+    bool activatable{};
 
     t_listbox_item() = default;
     explicit t_listbox_item(const std::wstring& action, const std::wstring& group);
@@ -49,6 +50,7 @@ t_listbox_item::t_listbox_item(const std::wstring& action, const std::wstring& g
     display_name = ActionManager::get_display_name(action, true);
     enabled = ActionManager::get_enabled(action);
     active = ActionManager::get_active(action);
+    activatable = ActionManager::get_activatability(action);
 }
 
 bool t_listbox_item::selectable() const
@@ -447,17 +449,19 @@ static INT_PTR CALLBACK command_palette_proc(const HWND hwnd, const UINT msg, co
 
                     // 2. Draw the checkbox if applicable
                     int checkbox_width = 0;
-                    if (action->active)
+                    if (action->activatable)
                     {
+                        const auto state_id = action->active ? CBS_CHECKEDNORMAL : CBS_UNCHECKEDNORMAL;
+                        
                         SIZE checkbox_size{};
-                        GetThemePartSize(g_ctx.button_theme, nullptr, BP_CHECKBOX, CBS_CHECKEDNORMAL, nullptr, TS_TRUE, &checkbox_size);
+                        GetThemePartSize(g_ctx.button_theme, nullptr, BP_CHECKBOX, state_id, nullptr, TS_TRUE, &checkbox_size);
                         checkbox_width = checkbox_size.cx;
 
                         RECT rc = pdis->rcItem;
                         rc.left += 12;
                         rc.right = rc.left + checkbox_width;
                         rc.bottom = rc.top + checkbox_width;
-                        DrawThemeBackground(g_ctx.button_theme, pdis->hDC, BP_CHECKBOX, CBS_CHECKEDNORMAL, &rc, nullptr);
+                        DrawThemeBackground(g_ctx.button_theme, pdis->hDC, BP_CHECKBOX, state_id, &rc, nullptr);
                     }
 
                     // 3. Draw the action and hotkey text if applicable
