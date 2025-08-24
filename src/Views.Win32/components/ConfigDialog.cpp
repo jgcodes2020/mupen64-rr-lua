@@ -13,6 +13,7 @@
 #include <capture/EncodingManager.h>
 #include <components/FilePicker.h>
 #include <components/SettingsListView.h>
+#include <components/TextEditDialog.h>
 #include <components/configdialog.h>
 #include <lua/LuaManager.h>
 
@@ -111,7 +112,7 @@ std::wstring t_options_item::get_friendly_info() const
     return str;
 }
 
-bool t_options_item::edit(HWND hwnd)
+bool t_options_item::edit(const HWND hwnd)
 {
     switch (type)
     {
@@ -122,13 +123,76 @@ bool t_options_item::edit(HWND hwnd)
             return true;
         }
     case Type::Number:
+        {
+            const auto value = std::get<int32_t>(current_value.get());
+            const auto result = TextEditDialog::show(std::to_wstring(value));
+            if (!result.has_value())
+            {
+                break;
+            }
+
+            try
+            {
+                const auto new_value = std::stoi(result.value());
+                current_value.set(new_value);
+                return true;
+            }
+            catch (...)
+            {
+            }
+        }
         break;
     case Type::Enum:
-        break;
+        {
+            // 1. Find the index of the currently selected item, while falling back to the first possible value if there's no match
+            int32_t val = possible_values[0].second;
+            for (const auto& [_, possible_value] : possible_values)
+            {
+                if (std::get<int32_t>(current_value.get()) == possible_value)
+                {
+                    val = possible_value;
+                    break;
+                }
+            }
+
+            // 2. Find the lowest and highest values in the vector
+            int32_t min_possible_value = INT32_MAX;
+            int32_t max_possible_value = INT32_MIN;
+            for (const auto& val : possible_values | std::views::values)
+            {
+                max_possible_value = std::max(val, max_possible_value);
+                min_possible_value = std::min(val, min_possible_value);
+            }
+
+            // 2. Bump it, wrapping around if needed
+            val++;
+            if (val > max_possible_value)
+            {
+                val = min_possible_value;
+            }
+
+            // 3. Apply the change
+            current_value.set(val);
+            return true;
+        }
     case Type::String:
+        {
+            const auto value = std::get<std::wstring>(current_value.get());
+            const auto result = TextEditDialog::show(value);
+            if (result.has_value())
+            {
+                current_value.set(result.value());
+                return true;
+            }
+        }
         break;
     case Type::Hotkey:
-        break;
+        {
+            auto hotkey = std::get<Hotkey::t_hotkey>(current_value.get());
+            Hotkey::show_prompt(hwnd, std::format(L"Choose a hotkey for {}", name), hotkey);
+            Hotkey::try_associate_hotkey(hwnd, name, hotkey, false);
+            return true;
+        }
     }
 
     return false;
@@ -1262,101 +1326,42 @@ bool begin_settings_lv_edit(HWND hwnd, int i)
         return false;
     }
 
-    // For bools, just flip the value...
-    if (option_item.type == t_options_item::Type::Bool)
+    // We use the default detached editing, except for numbers, which are edited inline.
+    if (option_item.type != t_options_item::Type::Number)
     {
-        option_item.current_value.set(!std::get<int32_t>(option_item.current_value.get()));
-    }
-
-    // For enums, cycle through the possible values
-    if (option_item.type == t_options_item::Type::Enum)
-    {
-        // 1. Find the index of the currently selected item, while falling back to the first possible value if there's no match
-        int32_t current_value = option_item.possible_values[0].second;
-        for (const auto& [_, possible_value] : option_item.possible_values)
-        {
-            if (std::get<int32_t>(option_item.current_value.get()) == possible_value)
-            {
-                current_value = possible_value;
-                break;
-            }
-        }
-
-        // 2. Find the lowest and highest values in the vector
-        int32_t min_possible_value = INT32_MAX;
-        int32_t max_possible_value = INT32_MIN;
-        for (const auto& [_, val] : option_item.possible_values)
-        {
-            max_possible_value = std::max(val, max_possible_value);
-            if (val < min_possible_value)
-            {
-                min_possible_value = val;
-            }
-        }
-
-        // 2. Bump it, wrapping around if needed
-        current_value++;
-        if (current_value > max_possible_value)
-        {
-            current_value = min_possible_value;
-        }
-
-        // 3. Apply the change
-        option_item.current_value.set(current_value);
-    }
-
-    // For strings, allow editing in a dialog (since it might be a multiline string and we can't really handle that below)
-    if (option_item.type == t_options_item::Type::String)
-    {
-        g_edit_option_item_index = i;
-        DialogBoxParam(g_app_instance, MAKEINTRESOURCE(IDD_LUAINPUTPROMPT), hwnd, edit_string_dlgproc, 0);
-    }
-
-    // For numbers, create a textbox over the value cell for inline editing
-    if (option_item.type == t_options_item::Type::Number)
-    {
-        if (g_edit_hwnd)
-        {
-            DestroyWindow(g_edit_hwnd);
-        }
-
-        g_edit_option_item_index = i;
-
-        RECT item_rect{};
-        ListView_GetSubItemRect(g_lv_hwnd, i, 1, LVIR_LABEL, &item_rect);
-
-        RECT lv_rect{};
-        GetClientRect(g_lv_hwnd, &lv_rect);
-
-        item_rect.right = lv_rect.right;
-
-        g_edit_hwnd = CreateWindowEx(WS_EX_CLIENTEDGE, L"EDIT", L"", WS_CHILD | WS_VISIBLE | WS_TABSTOP, item_rect.left, item_rect.top, item_rect.right - item_rect.left, item_rect.bottom - item_rect.top, hwnd, 0, g_app_instance, 0);
-
-        SendMessage(g_edit_hwnd, WM_SETFONT, (WPARAM)SendMessage(g_lv_hwnd, WM_GETFONT, 0, 0), 0);
-
-        SetWindowSubclass(g_edit_hwnd, inline_edit_subclass_proc, 0, 0);
-
-        const auto value = std::get<int32_t>(option_item.current_value.get());
-        Edit_SetText(g_edit_hwnd, std::to_wstring(value).c_str());
-
-        PostMessage(hwnd, WM_NEXTDLGCTL, (WPARAM)g_edit_hwnd, TRUE);
-    }
-
-    // For hotkeys, accept keyboard inputs
-    if (option_item.type == t_options_item::Type::Hotkey)
-    {
-        auto hotkey = std::get<Hotkey::t_hotkey>(option_item.current_value.get());
-
-        Hotkey::show_prompt(hwnd, std::format(L"Choose a hotkey for {}", option_item.name), hotkey);
-
-        advance_listview_selection(g_lv_hwnd);
-
-        Hotkey::try_associate_hotkey(hwnd, option_item.name, hotkey, false);
-
+        (void)option_item.edit(hwnd);
         ListView_RedrawItems(g_lv_hwnd, 0, ListView_GetItemCount(g_lv_hwnd));
+        return true;
     }
 
-    ListView_Update(g_lv_hwnd, i);
+    if (g_edit_hwnd)
+    {
+        DestroyWindow(g_edit_hwnd);
+    }
+
+    g_edit_option_item_index = i;
+
+    RECT item_rect{};
+    ListView_GetSubItemRect(g_lv_hwnd, i, 1, LVIR_LABEL, &item_rect);
+
+    RECT lv_rect{};
+    GetClientRect(g_lv_hwnd, &lv_rect);
+
+    item_rect.right = lv_rect.right;
+
+    g_edit_hwnd = CreateWindowEx(WS_EX_CLIENTEDGE, L"EDIT", L"", WS_CHILD | WS_VISIBLE | WS_TABSTOP, item_rect.left, item_rect.top, item_rect.right - item_rect.left, item_rect.bottom - item_rect.top, hwnd, 0, g_app_instance, 0);
+
+    SendMessage(g_edit_hwnd, WM_SETFONT, (WPARAM)SendMessage(g_lv_hwnd, WM_GETFONT, 0, 0), 0);
+
+    SetWindowSubclass(g_edit_hwnd, inline_edit_subclass_proc, 0, 0);
+
+    const auto value = std::get<int32_t>(option_item.current_value.get());
+    Edit_SetText(g_edit_hwnd, std::to_wstring(value).c_str());
+
+    PostMessage(hwnd, WM_NEXTDLGCTL, (WPARAM)g_edit_hwnd, TRUE);
+
+
+    ListView_RedrawItems(g_lv_hwnd, 0, ListView_GetItemCount(g_lv_hwnd));
     return true;
 }
 
@@ -1676,7 +1681,7 @@ std::vector<t_options_group> ConfigDialog::get_option_groups()
     {
         g_static_option_groups = get_static_option_groups();
     }
-    
+
     auto dynamic_option_groups = generate_hotkey_groups(g_static_option_groups.back().id + 1);
     for (auto& group : dynamic_option_groups)
     {
