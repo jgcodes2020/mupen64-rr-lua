@@ -42,6 +42,7 @@ struct t_command_palette_context {
     HWND listbox_hwnd{};
     HWND edit_hwnd{};
     bool closing{};
+    bool dont_close_on_focus_loss{};
     HTHEME button_theme{};
     std::wstring search_query{};
     std::vector<std::wstring> actions{};
@@ -131,7 +132,14 @@ static bool try_invoke(int32_t i)
 
     if (action->option_item)
     {
-        if (action->option_item->edit(g_ctx.hwnd))
+        // HACK: We want to keep the command palette open (in case the user cancels and wants to keep looking through the command palette) while editing the option, but we also want to prevent it from closing
+        EnableWindow(g_ctx.hwnd, false);
+        g_ctx.dont_close_on_focus_loss = true;
+        const auto confirmed = action->option_item->edit(g_ctx.hwnd);
+        g_ctx.dont_close_on_focus_loss = false;
+        EnableWindow(g_ctx.hwnd, true);
+
+        if (confirmed)
         {
             Config::apply_and_save();
             SendMessage(g_ctx.hwnd, WM_CLOSE, 0, 0);
@@ -495,7 +503,7 @@ static INT_PTR CALLBACK command_palette_proc(const HWND hwnd, const UINT msg, co
         }
         break;
     case WM_ACTIVATE:
-        if (wparam == WA_INACTIVE && !g_ctx.closing)
+        if (wparam == WA_INACTIVE && !g_ctx.closing && !g_ctx.dont_close_on_focus_loss)
         {
             PostMessage(hwnd, WM_CLOSE, 0, 0);
         }
