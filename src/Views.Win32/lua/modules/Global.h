@@ -117,6 +117,9 @@ namespace LuaCore::Global
         return 0;
     }
 
+    // NOTE: The default os.exit implementation calls C++ destructors before closing the main window (WM_CLOSE + WM_DESTROY),
+    // thereby ripping the program apart for the remaining section of time until the exit, which causes extremely unpredictable crashes and an impossible program state.
+    // We therefore use our own softer os.exit.
     static int Exit(lua_State* L)
     {
         // FIXME: Exit-code and close params are ignored

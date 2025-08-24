@@ -237,6 +237,9 @@ const luaL_Reg ACTION_FUNCS[] = {
 {"invoke", LuaCore::Action::invoke},
 {NULL, NULL}};
 
+const std::pair<std::string, lua_CFunction> OVERRIDE_FUNCS[] = {
+{"os.exit", LuaCore::Global::Exit}};
+
 // end lua funcs
 
 void register_as_package(lua_State* lua_state, const char* name, const luaL_Reg regs[])
@@ -253,6 +256,21 @@ void register_as_package(lua_State* lua_state, const char* name, const luaL_Reg 
     }
     luaL_newlib(lua_state, regs);
     lua_setglobal(lua_state, name);
+}
+    
+static void register_function(lua_State* L, const std::wstring& name, const lua_CFunction& func)
+{
+    const auto parts = io_service.split_string(name, L".");
+
+    runtime_assert(parts.size() == 2, L"Accessor invalid");
+
+    const auto namespace_name = io_service.wstring_to_string(parts.at(0));
+    const auto function_name = io_service.wstring_to_string(parts.at(1));
+
+    lua_getglobal(L, namespace_name.c_str());
+    lua_pushcfunction(L, func);
+    lua_setfield(L, -2, function_name.c_str());
+    lua_pop(L, 1);
 }
 
 void LuaRegistry::register_functions(lua_State* L)
@@ -272,11 +290,8 @@ void LuaRegistry::register_functions(lua_State* L)
     register_as_package(L, "avi", AVI_FUNCS);
     register_as_package(L, "hotkey", HOTKEY_FUNCS);
     register_as_package(L, "action", ACTION_FUNCS);
-
-    // NOTE: The default os.exit implementation calls C++ destructors before closing the main window (WM_CLOSE + WM_DESTROY),
-    // thereby ripping the program apart for the remaining section of time until the exit, which causes extremely unpredictable crashes and an impossible program state.
-    lua_getglobal(L, "os");
-    lua_pushcfunction(L, LuaCore::Global::Exit);
-    lua_setfield(L, -2, "exit");
-    lua_pop(L, 1);
+    for (const auto& [name, func] : OVERRIDE_FUNCS)
+    {
+        register_function(L, io_service.string_to_wstring(name), func);
+    }
 }
