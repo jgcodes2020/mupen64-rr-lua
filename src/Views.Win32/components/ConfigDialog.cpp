@@ -27,6 +27,7 @@ using t_options_item = ConfigDialog::t_options_item;
 t_plugin_discovery_result plugin_discovery_result;
 std::vector<t_options_group> g_option_groups;
 std::vector<t_options_item> g_option_items;
+static std::vector<t_options_group> g_static_option_groups;
 HWND g_lv_hwnd;
 HWND g_edit_hwnd;
 size_t g_edit_option_item_index;
@@ -742,7 +743,7 @@ INT_PTR CALLBACK plugins_cfg(const HWND hwnd, const UINT message, const WPARAM w
     return TRUE;
 }
 
-std::vector<t_options_group> get_config_listview_items()
+std::vector<t_options_group> get_static_option_groups()
 {
     size_t id = 0;
 
@@ -1671,13 +1672,16 @@ void ConfigDialog::show_app_settings()
 
 std::vector<t_options_group> ConfigDialog::get_option_groups()
 {
-    std::vector<t_options_group> option_groups = get_config_listview_items();
-
-    auto dynamic_option_groups = generate_hotkey_groups(option_groups.back().id + 1);
-
+    if (g_static_option_groups.empty())
+    {
+        g_static_option_groups = get_static_option_groups();
+    }
+    
+    auto dynamic_option_groups = generate_hotkey_groups(g_static_option_groups.back().id + 1);
     for (auto& group : dynamic_option_groups)
     {
         const auto actions = ActionManager::get_actions_matching_filter(std::format(L"{} > *", group.name));
+        group.items.reserve(group.items.size() + actions.size());
 
         for (const auto& action : actions)
         {
@@ -1720,6 +1724,9 @@ std::vector<t_options_group> ConfigDialog::get_option_groups()
         option_group.name = name;
     }
 
+    std::vector<t_options_group> option_groups;
+    option_groups.reserve(g_static_option_groups.size() + dynamic_option_groups.size());
+    option_groups.insert(option_groups.end(), g_static_option_groups.begin(), g_static_option_groups.end());
     option_groups.insert(option_groups.end(), dynamic_option_groups.begin(), dynamic_option_groups.end());
 
     // Arm all initial values
