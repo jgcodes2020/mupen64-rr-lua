@@ -291,7 +291,7 @@ static void build_listbox()
     for (auto& group : g_ctx.option_groups)
     {
         std::erase_if(group.items, [&](ConfigDialog::t_options_item& item) {
-            return !action_matches_query(t_listbox_item(&item, group), normalized_query);
+            return item.type == ConfigDialog::t_options_item::Type::Hotkey || !action_matches_query(t_listbox_item(&item, group), normalized_query);
         });
 
         if (group.items.empty())
