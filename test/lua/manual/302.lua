@@ -23,6 +23,8 @@
 -- - CPU: Intel i7 8700k
 -- - OS: Windows 10, 22H2
 
+dofile(debug.getinfo(1).source:sub(2):gsub("\\[^\\]+\\[^\\]+$", "") .. '\\test_prelude.lua')
+
 local once = false
 
 emu.atdrawd2d(function()

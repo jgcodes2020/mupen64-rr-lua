@@ -4,9 +4,16 @@
 -- SPDX-License-Identifier: GPL-2.0-or-later
 --
 
--- Tries to call APIs protected by the sandbox. Run this script in untrusted mode and verify that all assertions pass.
+-- Calls trust-protected APIs.
+--
+-- Start the script in untrusted mode, and ensure that:
+-- 1. All tests pass.
+--
+-- Start the script in trusted mode, and ensure that:
+-- 1. All tests pass.
+--
 
-dofile(debug.getinfo(1).source:sub(2):gsub("[^\\]+$", "") .. 'prelude.lua')
+dofile(debug.getinfo(1).source:sub(2):gsub("\\[^\\]+\\[^\\]+$", "") .. '\\test_prelude.lua')
 
 -- Add libsocket to the cpath for the `require` test later.
 local libsocket_path = path_root .. "lib\\luasocket\\"

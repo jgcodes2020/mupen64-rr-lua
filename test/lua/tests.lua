@@ -5,10 +5,11 @@
 --
 
 ---
---- Describes the testing suite for the Mupen64 Lua API.
+--- Describes the automated testing suite for the Mupen64 Lua API.
+--- Assumes an x86 Windows environment.
 ---
 
-dofile(debug.getinfo(1).source:sub(2):gsub("[^\\]+$", "") .. 'prelude.lua')
+dofile(debug.getinfo(1).source:sub(2):gsub("[^\\]+$", "") .. 'test_prelude.lua')
 
 lust.describe('mupen64', function()
     lust.describe('shims', function()

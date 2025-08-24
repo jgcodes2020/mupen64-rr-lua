@@ -4,7 +4,20 @@
 -- SPDX-License-Identifier: GPL-2.0-or-later
 --
 
+--
 -- Demonstrates the usage of the action API.
+-- Start the script, and ensure that:
+-- 1. There is a top-level menu popup titled "Action API Demo"
+-- 2. The menu hierarchy matches the action hierarchy
+-- 3. Pressing "Print 'Hello World!'" prints "Hello World!" to the console
+-- 4. Pressing "Change Name of This Action..." prompts for a new name and changes the name of that action.
+-- 5. The hotkey for "Change Name of This Action..." works (default Ctrl+U)
+-- 6. Pressing "Change Hotkey..." prompts for a new hotkey and changes the hotkey of "Change Name of This Action..."
+-- 7. Pressing "Click Child to Remove It > Item X" removes that action
+-- 8. Stopping the script removes the "Action API Demo" menu.
+--
+
+dofile(debug.getinfo(1).source:sub(2):gsub("\\[^\\]+\\[^\\]+$", "") .. '\\test_prelude.lua')
 
 local display_name = ""
 
