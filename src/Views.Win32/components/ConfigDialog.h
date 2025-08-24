@@ -12,21 +12,6 @@
 namespace ConfigDialog
 {
     /**
-     * Represents a group of options in the settings.
-     */
-    struct t_options_group {
-        /**
-         * The group's unique identifier.
-         */
-        size_t id;
-
-        /**
-         * The group's name.
-         */
-        std::wstring name;
-    };
-
-    /**
      * Represents a settings option.
      */
     struct t_options_item {
@@ -118,7 +103,7 @@ namespace ConfigDialog
          * \brief Gets neatly formatted information about the option.
          */
         std::wstring get_friendly_info() const;
-        
+
         /**
          * \brief Prompts the user to edit the option value.
          * \param hwnd The parent window handle for any dialogs spawned by this method.
@@ -128,13 +113,33 @@ namespace ConfigDialog
     };
 
     /**
+     * Represents a group of options in the settings.
+     */
+    struct t_options_group {
+        /**
+         * The group's unique identifier.
+         */
+        size_t id;
+
+        /**
+         * The group's name.
+         */
+        std::wstring name;
+
+        /**
+         * \brief The options that belong to this group.
+         */
+        std::vector<t_options_item> items{};
+    };
+
+    /**
      * \brief Shows the application settings dialog.
      */
     void show_app_settings();
 
     /**
-     * \brief Gets all option groups and items.
+     * \brief Gets all option groups.
      */
-    std::pair<std::vector<t_options_group>, std::vector<t_options_item>> get_option_groups_and_items();
+    std::vector<t_options_group> get_option_groups();
 
 } // namespace ConfigDialog

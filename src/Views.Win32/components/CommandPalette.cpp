@@ -23,19 +23,18 @@ struct t_listbox_item {
     std::wstring path{};
 
     // (only applicable if option)
-    std::wstring option_item_name{};
+    size_t parent_group_id{};
 
     // (only applicable if option)
-    size_t parent_group_id{};
+    ConfigDialog::t_options_item* option_item{};
 
     t_listbox_item() = default;
     explicit t_listbox_item(const std::wstring& group_name);
     explicit t_listbox_item(const std::wstring& action, const std::wstring& group);
-    explicit t_listbox_item(const ConfigDialog::t_options_item& item, const ConfigDialog::t_options_group& group);
+    explicit t_listbox_item(ConfigDialog::t_options_item* item, const ConfigDialog::t_options_group& group);
     explicit t_listbox_item(const ConfigDialog::t_options_group& options_group);
 
     [[nodiscard]] bool selectable() const;
-    [[nodiscard]] std::optional<ConfigDialog::t_options_item*> option_item() const;
 };
 
 struct t_command_palette_context {
@@ -47,7 +46,7 @@ struct t_command_palette_context {
     std::wstring search_query{};
     std::vector<std::wstring> actions{};
     std::vector<t_listbox_item> items{};
-    std::pair<std::vector<ConfigDialog::t_options_group>, std::vector<ConfigDialog::t_options_item>> option_groups_and_items{};
+    std::vector<ConfigDialog::t_options_group> option_groups{};
 };
 
 static t_command_palette_context g_ctx{};
@@ -75,20 +74,20 @@ t_listbox_item::t_listbox_item(const std::wstring& action, const std::wstring& g
     activatable = ActionManager::get_activatability(action);
 }
 
-t_listbox_item::t_listbox_item(const ConfigDialog::t_options_item& item, const ConfigDialog::t_options_group& options_group)
+t_listbox_item::t_listbox_item(ConfigDialog::t_options_item* item, const ConfigDialog::t_options_group& options_group)
 {
-    text = item.get_name();
+    text = item->get_name();
     parent_group_name = options_group.name;
-    hint_text = item.get_value_name();
-    enabled = !item.is_readonly();
+    hint_text = item->get_value_name();
+    enabled = !item->is_readonly();
     active = false;
     activatable = false;
-    option_item_name = item.name;
     parent_group_id = options_group.id;
+    option_item = item;
 
-    if (item.type == ConfigDialog::t_options_item::Type::Bool)
+    if (item->type == ConfigDialog::t_options_item::Type::Bool)
     {
-        active = std::get<int32_t>(item.current_value.get()) != 0;
+        active = std::get<int32_t>(item->current_value.get()) != 0;
         activatable = true;
         hint_text = L"";
     }
@@ -104,18 +103,6 @@ t_listbox_item::t_listbox_item(const ConfigDialog::t_options_group& options_grou
 bool t_listbox_item::selectable() const
 {
     return !is_group && enabled;
-}
-
-std::optional<ConfigDialog::t_options_item*> t_listbox_item::option_item() const
-{
-    auto found = std::ranges::find_if(g_ctx.option_groups_and_items.second, [&](const auto& item) {
-        return item.name == this->option_item_name && item.group_id == this->parent_group_id;
-    });
-    if (found != g_ctx.option_groups_and_items.second.end())
-    {
-        return &*found;
-    }
-    return std::nullopt;
 }
 
 /**
@@ -142,10 +129,11 @@ static bool try_invoke(int32_t i)
         return true;
     }
 
-    if (!action->option_item_name.empty())
+    if (action->option_item)
     {
-        if (action->option_item().value()->edit(g_ctx.hwnd))
+        if (action->option_item->edit(g_ctx.hwnd))
         {
+            Config::apply_and_save();
             SendMessage(g_ctx.hwnd, WM_CLOSE, 0, 0);
             return true;
         }
@@ -298,25 +286,24 @@ static void build_listbox()
     }
 
     // Add config groups and options
-    g_ctx.option_groups_and_items = ConfigDialog::get_option_groups_and_items();
+    g_ctx.option_groups = ConfigDialog::get_option_groups();
 
-    for (const auto& group : g_ctx.option_groups_and_items.first)
+    for (auto& group : g_ctx.option_groups)
     {
-        auto items = g_ctx.option_groups_and_items.second;
-        std::erase_if(items, [&](const ConfigDialog::t_options_item& item) {
-            return item.group_id != group.id || !action_matches_query(t_listbox_item(item, group), normalized_query);
+        std::erase_if(group.items, [&](ConfigDialog::t_options_item& item) {
+            return !action_matches_query(t_listbox_item(&item, group), normalized_query);
         });
 
-        if (items.empty())
+        if (group.items.empty())
         {
             continue;
         }
 
         g_ctx.items.emplace_back(group);
 
-        for (const auto& item : items)
+        for (auto& item : group.items)
         {
-            g_ctx.items.emplace_back(item, group);
+            g_ctx.items.emplace_back(&item, group);
         }
     }
 

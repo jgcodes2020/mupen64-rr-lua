@@ -742,7 +742,7 @@ INT_PTR CALLBACK plugins_cfg(const HWND hwnd, const UINT message, const WPARAM w
     return TRUE;
 }
 
-void get_config_listview_items(std::vector<t_options_group>& groups, std::vector<t_options_item>& options)
+std::vector<t_options_group> get_config_listview_items()
 {
     size_t id = 0;
 
@@ -782,7 +782,6 @@ void get_config_listview_items(std::vector<t_options_group>& groups, std::vector
     .id = id++,
     .name = L"Debug"};
 
-    groups = {interface_group, statusbar_group, seek_piano_roll_group, flow_group, capture_group, core_group, vcr_group, lua_group, debug_group};
 
 #define RPROP(T, x) t_options_item::t_readonly_property([] { \
     return g_default_config.x;                               \
@@ -797,51 +796,45 @@ void get_config_listview_items(std::vector<t_options_group>& groups, std::vector
 
 #define GENPROPS(T, x) .current_value = RWPROP(T, x), .default_value = RPROP(T, x)
 
-    options = {
-    t_options_item{
+
+    interface_group.items.emplace_back(t_options_item{
     .type = t_options_item::Type::Bool,
     .group_id = interface_group.id,
     .name = L"Pause when unfocused",
     .tooltip = L"Pause emulation when the main window isn't in focus.",
-    GENPROPS(int32_t, is_unfocused_pause_enabled),
-    },
-    t_options_item{
+    GENPROPS(int32_t, is_unfocused_pause_enabled)});
+    interface_group.items.emplace_back(t_options_item{
     .type = t_options_item::Type::Bool,
     .group_id = interface_group.id,
     .name = L"Automatic Update Checking",
     .tooltip = L"Enables automatic update checking. Requires an internet connection.",
-    GENPROPS(int32_t, automatic_update_checking),
-    },
-    t_options_item{
+    GENPROPS(int32_t, automatic_update_checking)});
+    interface_group.items.emplace_back(t_options_item{
     .type = t_options_item::Type::Bool,
     .group_id = interface_group.id,
     .name = L"Silent Mode",
     .tooltip = L"Suppresses all dialogs and chooses reasonable defaults for multiple-choice dialogs.\nCan cause data loss during normal usage; only enable in automation scenarios!",
-    GENPROPS(int32_t, silent_mode),
-    },
-    t_options_item{
+    GENPROPS(int32_t, silent_mode)});
+    interface_group.items.emplace_back(t_options_item{
     .type = t_options_item::Type::Bool,
     .group_id = interface_group.id,
     .name = L"Keep working directory",
     .tooltip = L"Keep the working directory specified by the caller program at startup.\nWhen disabled, mupen changes the working directory to its current path.",
-    GENPROPS(int32_t, keep_default_working_directory),
-    },
-    t_options_item{
+    GENPROPS(int32_t, keep_default_working_directory)});
+    interface_group.items.emplace_back(t_options_item{
     .type = t_options_item::Type::Bool,
     .group_id = interface_group.id,
     .name = L"Async Plugin Discovery",
     .tooltip = L"Whether plugins discovery is performed asynchronously. Removes potential waiting times in the config dialog.",
-    GENPROPS(int32_t, plugin_discovery_async),
-    },
-    t_options_item{
+    GENPROPS(int32_t, plugin_discovery_async)});
+    interface_group.items.emplace_back(t_options_item{
     .type = t_options_item::Type::Bool,
     .group_id = interface_group.id,
     .name = L"Auto-increment Slot",
     .tooltip = L"Automatically increment the save slot upon saving a state.",
-    GENPROPS(int32_t, increment_slot),
-    },
+    GENPROPS(int32_t, increment_slot)});
 
-    t_options_item{
+    statusbar_group.items.emplace_back(t_options_item{
     .type = t_options_item::Type::Enum,
     .group_id = statusbar_group.id,
     .name = L"Layout",
@@ -851,25 +844,27 @@ void get_config_listview_items(std::vector<t_options_group>& groups, std::vector
     std::make_pair(L"Classic", (int32_t)t_config::StatusbarLayout::Classic),
     std::make_pair(L"Modern", (int32_t)t_config::StatusbarLayout::Modern),
     std::make_pair(L"Modern+", (int32_t)t_config::StatusbarLayout::ModernWithReadOnly),
-    },
-    },
-    t_options_item{.type = t_options_item::Type::Bool, .group_id = statusbar_group.id, .name = L"Zero-index", .tooltip = L"Show indicies in the statusbar, such as VCR frame counts, relative to 0 instead of 1.", GENPROPS(int32_t, vcr_0_index)},
-    t_options_item{
+    }});
+    statusbar_group.items.emplace_back(t_options_item{
+    .type = t_options_item::Type::Bool,
+    .group_id = statusbar_group.id,
+    .name = L"Zero-index",
+    .tooltip = L"Show indicies in the statusbar, such as VCR frame counts, relative to 0 instead of 1.",
+    GENPROPS(int32_t, vcr_0_index)});
+    statusbar_group.items.emplace_back(t_options_item{
     .type = t_options_item::Type::Bool,
     .group_id = statusbar_group.id,
     .name = L"Scale down to fit window",
     .tooltip = L"Whether the statusbar is allowed to scale its segments down.",
-    GENPROPS(int32_t, statusbar_scale_down),
-    },
-    t_options_item{
+    GENPROPS(int32_t, statusbar_scale_down)});
+    statusbar_group.items.emplace_back(t_options_item{
     .type = t_options_item::Type::Bool,
     .group_id = statusbar_group.id,
     .name = L"Scale up to fill window",
     .tooltip = L"Whether the statusbar is allowed to scale its segments up.",
-    GENPROPS(int32_t, statusbar_scale_up),
-    },
+    GENPROPS(int32_t, statusbar_scale_up)});
 
-    t_options_item{
+    seek_piano_roll_group.items.emplace_back(t_options_item{
     .type = t_options_item::Type::Number,
     .group_id = seek_piano_roll_group.id,
     .name = L"Savestate Interval",
@@ -878,51 +873,51 @@ void get_config_listview_items(std::vector<t_options_group>& groups, std::vector
     .is_readonly = [] {
         return g_core_ctx->vcr_get_task() != task_idle;
     },
-    },
-    t_options_item{
+    });
+    seek_piano_roll_group.items.emplace_back(t_options_item{
     .type = t_options_item::Type::Number,
     .group_id = seek_piano_roll_group.id,
     .name = L"Savestate Max Count",
     .tooltip = L"The maximum amount of savestates to keep in memory for seeking.\nHigher numbers might cause an out of memory exception.",
     GENPROPS(int32_t, core.seek_savestate_max_count),
-    },
-    t_options_item{
+    });
+    seek_piano_roll_group.items.emplace_back(t_options_item{
     .type = t_options_item::Type::Bool,
     .group_id = seek_piano_roll_group.id,
     .name = L"Constrain edit to column",
     .tooltip = L"Whether piano roll edits are constrained to the column they started on.",
     GENPROPS(int32_t, piano_roll_constrain_edit_to_column),
-    },
-    t_options_item{
+    });
+    seek_piano_roll_group.items.emplace_back(t_options_item{
     .type = t_options_item::Type::Number,
     .group_id = seek_piano_roll_group.id,
     .name = L"History size",
     .tooltip = L"Maximum size of the history list.",
     GENPROPS(int32_t, piano_roll_undo_stack_size),
-    },
-    t_options_item{
+    });
+    seek_piano_roll_group.items.emplace_back(t_options_item{
     .type = t_options_item::Type::Bool,
     .group_id = seek_piano_roll_group.id,
     .name = L"Keep selection visible",
     .tooltip = L"Whether the piano roll will try to keep the selection visible.",
     GENPROPS(int32_t, piano_roll_keep_selection_visible),
-    },
-    t_options_item{
+    });
+    seek_piano_roll_group.items.emplace_back(t_options_item{
     .type = t_options_item::Type::Bool,
     .group_id = seek_piano_roll_group.id,
     .name = L"Keep playhead visible",
     .tooltip = L"Whether the piano roll will try to keep the playhead visible.",
     GENPROPS(int32_t, piano_roll_keep_playhead_visible),
-    },
+    });
 
-    t_options_item{
+    capture_group.items.emplace_back(t_options_item{
     .type = t_options_item::Type::Number,
     .group_id = capture_group.id,
     .name = L"Delay",
     .tooltip = L"Miliseconds to wait before capturing a frame. Useful for syncing with external programs.",
     GENPROPS(int32_t, capture_delay),
-    },
-    t_options_item{
+    });
+    capture_group.items.emplace_back(t_options_item{
     .type = t_options_item::Type::Enum,
     .group_id = capture_group.id,
     .name = L"Encoder",
@@ -935,8 +930,8 @@ void get_config_listview_items(std::vector<t_options_group>& groups, std::vector
     .is_readonly = [] {
         return EncodingManager::is_capturing();
     },
-    },
-    t_options_item{
+    });
+    capture_group.items.emplace_back(t_options_item{
     .type = t_options_item::Type::Enum,
     .group_id = capture_group.id,
     .name = L"Mode",
@@ -951,8 +946,8 @@ void get_config_listview_items(std::vector<t_options_group>& groups, std::vector
     .is_readonly = [] {
         return EncodingManager::is_capturing();
     },
-    },
-    t_options_item{
+    });
+    capture_group.items.emplace_back(t_options_item{
     .type = t_options_item::Type::Enum,
     .group_id = capture_group.id,
     .name = L"Sync",
@@ -966,8 +961,8 @@ void get_config_listview_items(std::vector<t_options_group>& groups, std::vector
     .is_readonly = [] {
         return EncodingManager::is_capturing();
     },
-    },
-    t_options_item{
+    });
+    capture_group.items.emplace_back(t_options_item{
     .type = t_options_item::Type::String,
     .group_id = capture_group.id,
     .name = L"FFmpeg Path",
@@ -976,8 +971,8 @@ void get_config_listview_items(std::vector<t_options_group>& groups, std::vector
     .is_readonly = [] {
         return EncodingManager::is_capturing();
     },
-    },
-    t_options_item{
+    });
+    capture_group.items.emplace_back(t_options_item{
     .type = t_options_item::Type::String,
     .group_id = capture_group.id,
     .name = L"FFmpeg Arguments",
@@ -986,9 +981,9 @@ void get_config_listview_items(std::vector<t_options_group>& groups, std::vector
     .is_readonly = [] {
         return EncodingManager::is_capturing();
     },
-    },
+    });
 
-    t_options_item{
+    core_group.items.emplace_back(t_options_item{
     .type = t_options_item::Type::Enum,
     .group_id = core_group.id,
     .name = L"Type",
@@ -1002,101 +997,101 @@ void get_config_listview_items(std::vector<t_options_group>& groups, std::vector
     .is_readonly = [] {
         return g_core_ctx->vr_get_launched();
     },
-    },
-    t_options_item{
+    });
+    core_group.items.emplace_back(t_options_item{
     .type = t_options_item::Type::Bool,
     .group_id = core_group.id,
     .name = L"Undo Savestate Load",
     .tooltip = L"Whether undo savestate load functionality is enabled.",
     GENPROPS(int32_t, core.st_undo_load),
-    },
-    t_options_item{
+    });
+    core_group.items.emplace_back(t_options_item{
     .type = t_options_item::Type::Number,
     .group_id = core_group.id,
     .name = L"Counter Factor",
     .tooltip = L"The CPU's counter factor.\nValues above 1 are effectively 'lagless'.",
     GENPROPS(int32_t, core.counter_factor),
-    },
-    t_options_item{
+    });
+    core_group.items.emplace_back(t_options_item{
     .type = t_options_item::Type::Number,
     .group_id = core_group.id,
     .name = L"Max Lag Frames",
     .tooltip = L"The maximum amount of lag frames before the core emits a warning\n0 - Disabled",
     GENPROPS(int32_t, core.max_lag),
-    },
-    t_options_item{
+    });
+    core_group.items.emplace_back(t_options_item{
     .type = t_options_item::Type::Bool,
     .group_id = core_group.id,
     .name = L"WiiVC Mode",
     .tooltip = L"Enables WiiVC emulation.",
     GENPROPS(int32_t, core.wii_vc_emulation),
-    },
-    t_options_item{
+    });
+    core_group.items.emplace_back(t_options_item{
     .type = t_options_item::Type::Bool,
     .group_id = core_group.id,
     .name = L"Emulate Float Crashes",
     .tooltip = L"Emulate float operation-related crashes which would also crash on real hardware",
     GENPROPS(int32_t, core.float_exception_emulation),
-    },
-    t_options_item{
+    });
+    core_group.items.emplace_back(t_options_item{
     .type = t_options_item::Type::Number,
     .group_id = core_group.id,
     .name = L"Fast-Forward Skip Frequency",
     .tooltip = L"Skip rendering every nth frame when in fast-forward mode.\n0 - Render nothing\n1 - Render every frame\nn - Render every nth frame",
     GENPROPS(int32_t, core.frame_skip_frequency),
-    },
-    t_options_item{
+    });
+    core_group.items.emplace_back(t_options_item{
     .type = t_options_item::Type::Bool,
     .group_id = core_group.id,
     .name = L"Emulate SD Card",
     .tooltip = L"Enable SD card emulation.\nRequires a VHD-formatted SD card file named card.vhd in the same folder as Mupen.",
     GENPROPS(int32_t, core.use_summercart),
-    },
-    t_options_item{
+    });
+    core_group.items.emplace_back(t_options_item{
     .type = t_options_item::Type::Bool,
     .group_id = core_group.id,
     .name = L"Instant Savestate Update",
     .tooltip = L"Saves and loads game graphics to savestates to allow instant graphics updates when loading savestates.\nGreatly increases savestate saving and loading time.",
     GENPROPS(int32_t, core.st_screenshot),
-    },
-    t_options_item{
+    });
+    core_group.items.emplace_back(t_options_item{
     .type = t_options_item::Type::Bool,
     .group_id = core_group.id,
     .name = L"Skip rendering lag",
     .tooltip = L"Prevents calls to updateScreen during lag.\nMight improve performance on some video plugins at the cost of stability.",
     GENPROPS(int32_t, core.skip_rendering_lag),
-    },
-    t_options_item{
+    });
+    core_group.items.emplace_back(t_options_item{
     .type = t_options_item::Type::Number,
     .group_id = core_group.id,
     .name = L"ROM Cache Size",
     .tooltip = L"Size of the ROM cache.\nImproves ROM loading performance at the cost of data staleness and high memory usage.\n0 - Disabled\nn - Maximum of n ROMs kept in cache",
     GENPROPS(int32_t, core.rom_cache_size),
-    },
+    });
 
-    t_options_item{
+    vcr_group.items.emplace_back(t_options_item{
     .type = t_options_item::Type::Bool,
     .group_id = vcr_group.id,
     .name = L"Movie Backups",
     .tooltip = L"Generate a backup of the currently recorded movie when loading a savestate.\nBackups are saved in the backups folder.",
     GENPROPS(int32_t, core.vcr_backups),
-    },
-    t_options_item{
+    });
+    vcr_group.items.emplace_back(t_options_item{
     .type = t_options_item::Type::Bool,
     .group_id = vcr_group.id,
     .name = L"Extended Movie Format",
     .tooltip = L"Whether movies are written using the new extended format.\nUseful when opening movies in external programs which don't handle the new format correctly.\nIf disabled, the extended format sections are set to 0.",
     GENPROPS(int32_t, core.vcr_write_extended_format),
-    },
-    t_options_item{
+    });
+    vcr_group.items.emplace_back(t_options_item{
     .type = t_options_item::Type::Bool,
     .group_id = vcr_group.id,
     .name = L"Record Resets",
     .tooltip = L"Record manually performed resets to the current movie.\nThese resets will be repeated when the movie is played back.",
     GENPROPS(int32_t, core.is_reset_recording_enabled),
-    },
+    });
 
-    t_options_item{
+    lua_group.items.emplace_back(t_options_item{
     .type = t_options_item::Type::Enum,
     .group_id = lua_group.id,
     .name = L"Presenter",
@@ -1109,8 +1104,8 @@ void get_config_listview_items(std::vector<t_options_group>& groups, std::vector
     .is_readonly = [] {
         return !g_lua_environments.empty();
     },
-    },
-    t_options_item{
+    });
+    lua_group.items.emplace_back(t_options_item{
     .type = t_options_item::Type::Bool,
     .group_id = lua_group.id,
     .name = L"Lazy Renderer Initialization",
@@ -1119,30 +1114,30 @@ void get_config_listview_items(std::vector<t_options_group>& groups, std::vector
     .is_readonly = [] {
         return !g_lua_environments.empty();
     },
-    },
-    t_options_item{
+    });
+    lua_group.items.emplace_back(t_options_item{
     .type = t_options_item::Type::Bool,
     .group_id = lua_group.id,
     .name = L"Fast Dispatcher",
     .tooltip = L"Enables a low-latency dispatcher implementation. Can improve performance with Lua scripts.\nDisable if the UI is stuttering heavily or if you're using a low-end machine.",
     GENPROPS(int32_t, fast_dispatcher),
-    },
+    });
 
-    t_options_item{
+    debug_group.items.emplace_back(t_options_item{
     .type = t_options_item::Type::Bool,
     .group_id = debug_group.id,
     .name = L"Audio Delay",
     .tooltip = L"Whether to delay audio interrupts.",
     GENPROPS(int32_t, core.is_audio_delay_enabled),
-    },
-    t_options_item{
+    });
+    debug_group.items.emplace_back(t_options_item{
     .type = t_options_item::Type::Bool,
     .group_id = debug_group.id,
     .name = L"Compiled Jump",
     .tooltip = L"Whether the Dynamic Recompiler core compiles jumps.",
     GENPROPS(int32_t, core.is_compiled_jump_enabled),
-    },
-    t_options_item{
+    });
+    debug_group.items.emplace_back(t_options_item{
     .type = t_options_item::Type::Bool,
     .group_id = debug_group.id,
     .name = L"Accurate C.EQ.S",
@@ -1151,8 +1146,9 @@ void get_config_listview_items(std::vector<t_options_group>& groups, std::vector
     .is_readonly = [] {
         return g_core_ctx->vr_get_launched();
     },
-    },
-    };
+    });
+
+    return {interface_group, statusbar_group, seek_piano_roll_group, flow_group, capture_group, core_group, vcr_group, lua_group, debug_group};
 }
 
 LRESULT CALLBACK inline_edit_subclass_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam, UINT_PTR id, DWORD_PTR ref_data)
@@ -1619,9 +1615,16 @@ static std::vector<t_options_group> generate_hotkey_groups(size_t base_id)
 
 void ConfigDialog::show_app_settings()
 {
-    const auto groups_and_items = get_option_groups_and_items();
-    g_option_groups = groups_and_items.first;
-    g_option_items = groups_and_items.second;
+    const auto groups = get_option_groups();
+    g_option_groups = groups;
+    g_option_items.clear();
+    for (const auto& group : groups)
+    {
+        for (const auto& item : group.items)
+        {
+            g_option_items.emplace_back(item);
+        }
+    }
 
     PROPSHEETPAGE psp[3] = {{0}};
     for (auto& i : psp)
@@ -1662,27 +1665,17 @@ void ConfigDialog::show_app_settings()
         g_config = g_prev_config;
     }
 
-    ActionManager::begin_batch_work();
-    for (const auto& [action, hotkey] : g_config.hotkeys)
-    {
-        ActionManager::associate_hotkey(action, hotkey, true);
-    }
-    ActionManager::end_batch_work();
-
-    Config::save();
+    Config::apply_and_save();
     Messenger::broadcast(Messenger::Message::ConfigLoaded, nullptr);
 }
 
-std::pair<std::vector<t_options_group>, std::vector<t_options_item>> ConfigDialog::get_option_groups_and_items()
+std::vector<t_options_group> ConfigDialog::get_option_groups()
 {
-    std::vector<t_options_group> option_groups;
-    std::vector<t_options_item> option_items;
-
-    get_config_listview_items(option_groups, option_items);
+    std::vector<t_options_group> option_groups = get_config_listview_items();
 
     auto dynamic_option_groups = generate_hotkey_groups(option_groups.back().id + 1);
 
-    for (const auto& group : dynamic_option_groups)
+    for (auto& group : dynamic_option_groups)
     {
         const auto actions = ActionManager::get_actions_matching_filter(std::format(L"{} > *", group.name));
 
@@ -1711,7 +1704,7 @@ std::pair<std::vector<t_options_group>, std::vector<t_options_item>> ConfigDialo
             }),
             };
 
-            option_items.emplace_back(item);
+            group.items.emplace_back(item);
         }
     }
 
@@ -1727,16 +1720,19 @@ std::pair<std::vector<t_options_group>, std::vector<t_options_item>> ConfigDialo
         option_group.name = name;
     }
 
-    // Arm all initial values
-    for (auto& option_item : option_items)
-    {
-        const auto initial_value = option_item.current_value.get();
-        option_item.initial_value = t_options_item::t_readonly_property([=] {
-            return initial_value;
-        });
-    }
-
     option_groups.insert(option_groups.end(), dynamic_option_groups.begin(), dynamic_option_groups.end());
 
-    return {option_groups, option_items};
+    // Arm all initial values
+    for (auto& option_group : option_groups)
+    {
+        for (auto& option_item : option_group.items)
+        {
+            const auto initial_value = option_item.current_value.get();
+            option_item.initial_value = t_options_item::t_readonly_property([=] {
+                return initial_value;
+            });
+        }
+    }
+
+    return option_groups;
 }

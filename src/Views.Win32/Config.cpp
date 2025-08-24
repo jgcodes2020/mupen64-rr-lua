@@ -447,6 +447,18 @@ void Config::save()
     file.write(ini, true);
 }
 
+void Config::apply_and_save()
+{
+    ActionManager::begin_batch_work();
+    for (const auto& [action, hotkey] : g_config.hotkeys)
+    {
+        ActionManager::associate_hotkey(action, hotkey, true);
+    }
+    ActionManager::end_batch_work();
+
+    save();
+}
+
 void Config::load()
 {
     if (!std::filesystem::exists(get_config_path()))
