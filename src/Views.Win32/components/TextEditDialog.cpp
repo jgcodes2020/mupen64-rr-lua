@@ -21,6 +21,9 @@ static INT_PTR CALLBACK about_dlg_proc(const HWND hwnd, const UINT message, cons
         SetWindowText(GetDlgItem(hwnd, IDC_TEXTBOX_LUAPROMPT), g_ctx.text.c_str());
         SetFocus(GetDlgItem(hwnd, IDC_TEXTBOX_LUAPROMPT));
         break;
+    case WM_DESTROY:
+        g_ctx.text = get_window_text(GetDlgItem(hwnd, IDC_TEXTBOX_LUAPROMPT)).value_or(L"");
+        break;
     case WM_CLOSE:
         EndDialog(hwnd, IDCLOSE);
         break;
