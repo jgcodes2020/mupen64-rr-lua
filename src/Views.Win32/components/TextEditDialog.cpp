@@ -9,6 +9,7 @@
 
 struct t_text_edit_dialog_context {
     std::wstring text{};
+    std::wstring caption{};
 };
 
 static t_text_edit_dialog_context g_ctx{};
@@ -18,6 +19,7 @@ static INT_PTR CALLBACK about_dlg_proc(const HWND hwnd, const UINT message, cons
     switch (message)
     {
     case WM_INITDIALOG:
+        SetWindowText(hwnd, g_ctx.caption.c_str());
         SetWindowText(GetDlgItem(hwnd, IDC_TEXTBOX_LUAPROMPT), g_ctx.text.c_str());
         SetFocus(GetDlgItem(hwnd, IDC_TEXTBOX_LUAPROMPT));
         break;
@@ -46,10 +48,11 @@ static INT_PTR CALLBACK about_dlg_proc(const HWND hwnd, const UINT message, cons
     return TRUE;
 }
 
-std::optional<std::wstring> TextEditDialog::show(std::wstring text)
+std::optional<std::wstring> TextEditDialog::show(const std::wstring& text, const std::wstring& caption)
 {
     g_ctx = {};
     g_ctx.text = std::move(text);
+    g_ctx.caption = std::move(caption);
 
     const auto result = DialogBox(g_app_instance, MAKEINTRESOURCE(IDD_LUAINPUTPROMPT), g_main_hwnd, about_dlg_proc);
 

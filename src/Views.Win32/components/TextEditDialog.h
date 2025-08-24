@@ -13,8 +13,9 @@ namespace TextEditDialog
 {
     /**
      * \brief Shows the about dialog with the specified text.
-     * \param text The text to display in the about dialog.
+     * \param text The text to display in the editbox.
+     * \param caption The caption of the dialog window.
      * \return The text if the user clicked OK, or std::nullopt if the user clicked Cancel.
      */
-    std::optional<std::wstring> show(std::wstring text);
+    std::optional<std::wstring> show(const std::wstring& text, const std::wstring& caption);
 } // namespace TextEditDialog
