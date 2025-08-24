@@ -280,6 +280,7 @@
         <ClInclude Include="src\Views.Win32\components\AppActions.h" />
         <ClInclude Include="src\Views.Win32\components\LuaDialog.h" />
         <ClInclude Include="src\Views.Win32\components\CommandPalette.h" />
+        <ClInclude Include="src\Views.Win32\components\TextEditDialog.h" />
         <ClInclude Include="src\Views.Win32\Main.h" />
         <ClInclude Include="src\Views.Win32\Config.h" />
         <ClInclude Include="src\Views.Win32\lua\LuaTypes.h" />
@@ -354,6 +355,7 @@
         <ClCompile Include="src\Views.Win32\components\AppActions.cpp" />
         <ClCompile Include="src\Views.Win32\components\LuaDialog.cpp" />
         <ClCompile Include="src\Views.Win32\components\CommandPalette.cpp"/>
+        <ClCompile Include="src\Views.Win32\components\TextEditDialog.cpp"/>
         <ClCompile Include="src\Views.Win32\Loggers.cpp"/>
         <ClCompile Include="src\Views.Win32\Main.cpp"/>
         <ClCompile Include="src\Views.Win32\lua\LuaManager.cpp" />

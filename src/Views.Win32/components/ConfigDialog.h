@@ -118,6 +118,13 @@ namespace ConfigDialog
          * \brief Gets neatly formatted information about the option.
          */
         std::wstring get_friendly_info() const;
+        
+        /**
+         * \brief Prompts the user to edit the option value.
+         * \param hwnd The parent window handle for any dialogs spawned by this method.
+         * \return Whether the user confirmed the edit.
+         */
+        bool edit(HWND hwnd);
     };
 
     /**

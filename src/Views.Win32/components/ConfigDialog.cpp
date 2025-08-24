@@ -110,6 +110,29 @@ std::wstring t_options_item::get_friendly_info() const
     return str;
 }
 
+bool t_options_item::edit(HWND hwnd)
+{
+    switch (type)
+    {
+    case Type::Bool:
+        {
+            const auto new_value = std::get<int32_t>(current_value.get()) == 0 ? 1 : 0;
+            current_value.set(new_value);
+            return true;
+        }
+    case Type::Number:
+        break;
+    case Type::Enum:
+        break;
+    case Type::String:
+        break;
+    case Type::Hotkey:
+        break;
+    }
+
+    return false;
+}
+
 INT_PTR CALLBACK plugin_discovery_dlgproc(HWND hwnd, UINT msg, WPARAM w_param, LPARAM l_param)
 {
     static HWND g_pldlv_hwnd;

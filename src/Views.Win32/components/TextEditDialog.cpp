@@ -1,0 +1,59 @@
+﻿/*
+ * Copyright (c) 2025, Mupen64 maintainers, contributors, and original authors (Hacktarux, ShadowPrince, linker).
+ *
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ */
+
+#include "stdafx.h"
+#include <components/TextEditDialog.h>
+
+struct t_text_edit_dialog_context {
+    std::wstring text{};
+};
+
+static t_text_edit_dialog_context g_ctx{};
+
+static INT_PTR CALLBACK about_dlg_proc(const HWND hwnd, const UINT message, const WPARAM w_param, LPARAM)
+{
+    switch (message)
+    {
+    case WM_INITDIALOG:
+        SetWindowText(GetDlgItem(hwnd, IDC_TEXTBOX_LUAPROMPT), g_ctx.text.c_str());
+        SetFocus(GetDlgItem(hwnd, IDC_TEXTBOX_LUAPROMPT));
+        break;
+    case WM_CLOSE:
+        EndDialog(hwnd, IDCLOSE);
+        break;
+    case WM_COMMAND:
+        switch (LOWORD(w_param))
+        {
+        case IDOK:
+            EndDialog(hwnd, IDOK);
+            break;
+        case IDCLOSE:
+            EndDialog(hwnd, IDCLOSE);
+            break;
+        default:
+            break;
+        }
+        break;
+    default:
+        return FALSE;
+    }
+    return TRUE;
+}
+
+std::optional<std::wstring> TextEditDialog::show(std::wstring text)
+{
+    g_ctx = {};
+    g_ctx.text = std::move(text);
+
+    const auto result = DialogBox(g_app_instance, MAKEINTRESOURCE(IDD_LUAINPUTPROMPT), g_main_hwnd, about_dlg_proc);
+
+    if (result == IDCANCEL)
+    {
+        return std::nullopt;
+    }
+
+    return g_ctx.text;
+}
