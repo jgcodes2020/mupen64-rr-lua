@@ -25,11 +25,11 @@ uint32_t virtual_to_physical_address(uint32_t addresse, int32_t w)
 {
     if (addresse >= 0x7f000000 && addresse < 0x80000000) // golden eye hack (it uses TLB a lot)
     {
-        if (ROM_HEADER.CRC1 == sl(0xDCBC50D1)) // US
+        if (ROM_HEADER.CRC1 == std::byteswap(0xDCBC50D1)) // US
             return 0xb0034b30 + (addresse & 0xFFFFFF);
-        if (ROM_HEADER.CRC1 == sl(0x0414CA61)) // E
+        if (ROM_HEADER.CRC1 == std::byteswap(0x0414CA61)) // E
             return 0xb00329f0 + (addresse & 0xFFFFFF);
-        if (ROM_HEADER.CRC1 == sl(0xA24F4CF1)) // J
+        if (ROM_HEADER.CRC1 == std::byteswap(0xA24F4CF1)) // J
             return 0xb0034b70 + (addresse & 0xFFFFFF);
     }
     if (w == 1)

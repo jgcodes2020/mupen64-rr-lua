@@ -8,6 +8,10 @@
 
 #include <include/core_types.h>
 
+#define S8 3
+#define S16 2
+#define Sh16 1
+
 int32_t init_memory();
 constexpr uint32_t ADDR_MASK = 0x7FFFFF;
 #define read_word_in_memory() readmem[address >> 16]()
@@ -54,27 +58,6 @@ extern core_ri_reg ri_register;
 extern core_ai_reg ai_register;
 extern core_dpc_reg dpc_register;
 extern core_dps_reg dps_register;
-
-#ifndef _BIG_ENDIAN
-#define sl(mot)                  \
-    (                            \
-    ((mot & 0x000000FF) << 24) | \
-    ((mot & 0x0000FF00) << 8) |  \
-    ((mot & 0x00FF0000) >> 8) |  \
-    ((mot & 0xFF000000) >> 24))
-
-#define S8 3
-#define S16 2
-#define Sh16 1
-
-#else
-
-#define sl(mot) mot
-#define S8 0
-#define S16 0
-#define Sh16 0
-
-#endif
 
 void read_nothing();
 void read_nothingh();

@@ -31,23 +31,13 @@ struct vhd {
     char pad[427];
 };
 
-#ifdef _BIG_ENDIAN
-#define vhd_16(val) (val)
-#define vhd_32(val) (val)
-#define vhd_64(val) (val)
-#else
-#define vhd_16(val) _byteswap_ushort(val)
-#define vhd_32(val) _byteswap_ulong(val)
-#define vhd_64(val) _byteswap_uint64(val)
-#endif
-
 static void vhd_copy(struct vhd* vhd, FILE* dst, FILE* src, void* buf, uint32_t n)
 {
     uint64_t len;
     fseek(src, -512, SEEK_END);
     fread(vhd, 1, sizeof(struct vhd), src);
     fseek(src, 0, SEEK_SET);
-    for (len = vhd_64(vhd->disk_size) / 512; len > 0; len -= n)
+    for (len = std::byteswap(vhd->disk_size) / 512; len > 0; len -= n)
     {
         if (n > len)
             n = len;
@@ -75,9 +65,9 @@ static int32_t sd_seek(FILE* fp, const wchar_t* caption)
         return sd_error(L"Read error.", caption);
     if (memcmp(vhd.cookie, "conectix", 8))
         return sd_error(L"Invalid VHD file.", caption);
-    if (vhd_32(vhd.type) != 2)
+    if (std::byteswap(vhd.type) != 2)
         return sd_error(L"Invalid VHD type: must be a fixed disk.", caption);
-    if ((int64_t)sector + count > vhd_64(vhd.disk_size) / 512)
+    if ((int64_t)sector + count > std::byteswap(vhd.disk_size) / 512)
         return -1;
     if (fseek(fp, 512 * (int64_t)sector, SEEK_SET))
         return sd_error(L"Seek(2) error.", caption);

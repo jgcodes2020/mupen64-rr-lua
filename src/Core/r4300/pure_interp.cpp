@@ -1051,19 +1051,9 @@ static void MTC0()
                 int32_t i;
                 for (i = 0; i < 32; i++)
                 {
-                    // reg_cop1_fgr_32[i]=reg_cop1_fgr_64[i]&0xFFFFFFFF;
-                    // if (i<16) reg_cop1_double[i*2]=(double*)&reg_cop1_fgr_32[i*2];
-                    // reg_cop1_double[i]=(double*)&reg_cop1_fgr_64[i & 0xFFFE];
                     if (!(i & 1))
                         reg_cop1_double[i] = (double*)&reg_cop1_fgr_64[i >> 1];
-                        // reg_cop1_double[i]=(double*)&reg_cop1_fgr_64[i];
-                        // reg_cop1_simple[i]=(float*)&reg_cop1_fgr_32[i];
-                        // reg_cop1_simple[i]=(float*)&reg_cop1_fgr_64[i & 0xFFFE]+(i&1);
-#ifndef _BIG_ENDIAN
                     reg_cop1_simple[i] = (float*)&reg_cop1_fgr_64[i >> 1] + (i & 1);
-#else
-                    reg_cop1_simple[i] = (float*)&reg_cop1_fgr_64[i >> 1] + (1 - (i & 1));
-#endif
                 }
             }
         }

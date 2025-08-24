@@ -19,6 +19,10 @@
 #include <r4300/vcr.h>
 #include <alloc.h>
 
+#ifdef _BIG_ENDIAN
+#error "Big Endian builds aren't supported"
+#endif
+
 std::thread emu_thread_handle;
 std::thread audio_thread_handle;
 

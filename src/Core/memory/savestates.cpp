@@ -485,7 +485,7 @@ void savestates_load_immediate_impl(const t_savestate_task& task)
     {
         g_core->log_warn(L"[ST] Finishing up DMA...");
         for (size_t i = 0; i < 64 / 4; i++)
-            rdram[si_register.si_dram_addr / 4 + i] = sl(PIF_RAM[i]);
+            rdram[si_register.si_dram_addr / 4 + i] = std::byteswap(PIF_RAM[i]);
         update_count();
         add_interrupt_event(SI_INT, 0x900);
         g_st_skip_dma = true;

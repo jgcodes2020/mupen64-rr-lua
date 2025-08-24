@@ -95,11 +95,7 @@ void MTC0()
                 {
                     if (!(i & 1))
                         reg_cop1_double[i] = (double*)&reg_cop1_fgr_64[i >> 1];
-#ifndef _BIG_ENDIAN
                     reg_cop1_simple[i] = (float*)&reg_cop1_fgr_64[i >> 1] + (i & 1);
-#else
-                    reg_cop1_simple[i] = (float*)&reg_cop1_fgr_64[i >> 1] + (1 - (i & 1));
-#endif
                 }
             }
         }

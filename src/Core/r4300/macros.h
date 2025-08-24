@@ -40,28 +40,11 @@
 #define core_cffs PC->f.cf.fs
 #define core_cffd PC->f.cf.fd
 
-// 32 bits macros
-#ifndef _BIG_ENDIAN
 #define rrt32 *((int32_t*)PC->f.r.rt)
 #define rrd32 *((int32_t*)PC->f.r.rd)
 #define rrs32 *((int32_t*)PC->f.r.rs)
 #define irs32 *((int32_t*)PC->f.i.rs)
 #define irt32 *((int32_t*)PC->f.i.rt)
-#else
-#define rrt32 *((int32_t*)PC->f.r.rt + 1)
-#define rrd32 *((int32_t*)PC->f.r.rd + 1)
-#define rrs32 *((int32_t*)PC->f.r.rs + 1)
-#define irs32 *((int32_t*)PC->f.i.rs + 1)
-#define irt32 *((int32_t*)PC->f.i.rt + 1)
-#endif
-
-#define check_PC                                   \
-    if (PC->addr == actual->fin)                   \
-    {                                              \
-        g_core->log_error(L"changement de block"); \
-        stop = 1;                                  \
-    }
-
 
 // cop0 macros
 #define core_Index reg_cop0[0]

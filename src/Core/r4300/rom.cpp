@@ -61,17 +61,17 @@ void print_rom_info()
 {
     g_core->log_info(L"--- Rom Info ---");
     g_core->log_info(std::format(L"{:#06x} {:#06x} {:#06x} {:#06x}", ROM_HEADER.init_PI_BSB_DOM1_LAT_REG, ROM_HEADER.init_PI_BSB_DOM1_PGS_REG, ROM_HEADER.init_PI_BSB_DOM1_PWD_REG, ROM_HEADER.init_PI_BSB_DOM1_PGS_REG2));
-    g_core->log_info(std::format(L"Clock rate: {:#06x}", sl((uint32_t)ROM_HEADER.ClockRate)));
-    g_core->log_info(std::format(L"Version: {:#06x}", sl((uint32_t)ROM_HEADER.Release)));
-    g_core->log_info(std::format(L"CRC: {:#06x} {:#06x}", sl((uint32_t)ROM_HEADER.CRC1), sl((uint32_t)ROM_HEADER.CRC2)));
+    g_core->log_info(std::format(L"Clock rate: {:#06x}", std::byteswap(ROM_HEADER.ClockRate)));
+    g_core->log_info(std::format(L"Version: {:#06x}", std::byteswap(ROM_HEADER.Release)));
+    g_core->log_info(std::format(L"CRC: {:#06x} {:#06x}", std::byteswap(ROM_HEADER.CRC1), std::byteswap(ROM_HEADER.CRC2)));
     g_core->log_info(std::format(L"Name: {}", g_core->io_service->string_to_wstring((char*)ROM_HEADER.nom)));
-    if (sl(ROM_HEADER.Manufacturer_ID) == 'N')
+    if (std::byteswap(ROM_HEADER.Manufacturer_ID) == 'N')
         g_core->log_info(L"Manufacturer: Nintendo");
     else
         g_core->log_info(std::format(L"Manufacturer: {:#06x}", ROM_HEADER.Manufacturer_ID));
     g_core->log_info(std::format(L"Cartridge ID: {:#06x}", ROM_HEADER.Cartridge_ID));
     g_core->log_info(std::format(L"Size: {}", rom_size));
-    g_core->log_info(std::format(L"PC: {:#06x}\n", sl((uint32_t)ROM_HEADER.PC)));
+    g_core->log_info(std::format(L"PC: {:#06x}\n", std::byteswap(ROM_HEADER.PC)));
     g_core->log_info(std::format(L"Country: {}", rom_country_code_to_country_name(ROM_HEADER.Country_code)));
     g_core->log_info(L"----------------");
 }
@@ -219,7 +219,7 @@ bool rom_load(std::filesystem::path path)
 
     auto roml = (uint32_t*)rom;
     for (size_t i = 0; i < (rom_size / 4); i++)
-        roml[i] = sl(roml[i]);
+        roml[i] = std::byteswap(roml[i]);
 
     switch (ROM_HEADER.Country_code & 0xFF)
     {

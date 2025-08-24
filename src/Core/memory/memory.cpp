@@ -48,12 +48,7 @@ unsigned char* PIF_RAMb = (unsigned char*)(PIF_RAM);
 
 // address : address of the read/write operation being done
 uint32_t address = 0;
-// *address_low = the lower 16 bit of the address :
-#ifdef _BIG_ENDIAN
-static uint16_t* address_low = (uint16_t*)(&address) + 1;
-#else
 static uint16_t* address_low = (uint16_t*)(&address);
-#endif
 
 // values that are being written are stored in these variables
 uint32_t word;
@@ -3394,7 +3389,7 @@ void write_rom()
 
 void read_pif()
 {
-    *rdword = sl(*((uint32_t*)(PIF_RAMb + (address & 0x7FF) - 0x7C0)));
+    *rdword = std::byteswap(*((uint32_t*)(PIF_RAMb + (address & 0x7FF) - 0x7C0)));
 }
 
 void read_pifb()
@@ -3409,13 +3404,13 @@ void read_pifh()
 
 void read_pifd()
 {
-    *rdword = ((uint64_t)sl(*((uint32_t*)(PIF_RAMb + (address & 0x7FF) - 0x7C0))) << 32) |
-    sl(*((uint32_t*)(PIF_RAMb + ((address + 4) & 0x7FF) - 0x7C0)));
+    *rdword = ((uint64_t)std::byteswap(*((uint32_t*)(PIF_RAMb + (address & 0x7FF) - 0x7C0))) << 32) |
+    std::byteswap(*((uint32_t*)(PIF_RAMb + ((address + 4) & 0x7FF) - 0x7C0)));
 }
 
 void write_pif()
 {
-    *((uint32_t*)(PIF_RAMb + (address & 0x7FF) - 0x7C0)) = sl(word);
+    *((uint32_t*)(PIF_RAMb + (address & 0x7FF) - 0x7C0)) = std::byteswap(word);
     if ((address & 0x7FF) == 0x7FC)
     {
         if (PIF_RAMb[0x3F] == 0x08)
@@ -3464,10 +3459,8 @@ void write_pifh()
 
 void write_pifd()
 {
-    *((uint32_t*)(PIF_RAMb + (address & 0x7FF) - 0x7C0)) =
-    sl((uint32_t)(dword >> 32));
-    *((uint32_t*)(PIF_RAMb + (address & 0x7FF) - 0x7C0)) =
-    sl((uint32_t)(dword & 0xFFFFFFFF));
+    *((uint32_t*)(PIF_RAMb + (address & 0x7FF) - 0x7C0)) = std::byteswap((uint32_t)(dword >> 32));
+    *((uint32_t*)(PIF_RAMb + (address & 0x7FF) - 0x7C0)) = std::byteswap((uint32_t)(dword & 0xFFFFFFFF));
     if ((address & 0x7FF) == 0x7F8)
     {
         if (PIF_RAMb[0x3F] == 0x08)

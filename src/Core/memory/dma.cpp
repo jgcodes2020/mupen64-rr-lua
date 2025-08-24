@@ -265,7 +265,7 @@ void dma_si_write()
         return;
     }
     for (int32_t i = 0; i < (64 / 4); i++)
-        PIF_RAM[i] = sl(rdram[si_register.si_dram_addr / 4 + i]);
+        PIF_RAM[i] = std::byteswap(rdram[si_register.si_dram_addr / 4 + i]);
     update_pif_write();
     update_count();
     add_interrupt_event(SI_INT, /*0x100*/ 0x900);
@@ -285,7 +285,7 @@ void dma_si_read()
         return;
     }
     for (int32_t i = 0; i < (64 / 4); i++)
-        rdram[si_register.si_dram_addr / 4 + i] = sl(PIF_RAM[i]);
+        rdram[si_register.si_dram_addr / 4 + i] = std::byteswap(PIF_RAM[i]);
     if (!g_st_skip_dma) // st already did this, see savestates.cpp, we still copy pif ram tho because it has new inputs
     {
         update_count();
