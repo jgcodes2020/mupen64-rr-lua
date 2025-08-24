@@ -481,6 +481,25 @@ static std::wstring format_duration(size_t seconds)
 }
 
 /**
+ * \brief Limits a wstring to a specific length, appending "..." if it exceeds the limit.
+ * \param input The input wstring.
+ * \param n The maximum length.
+ * \return The limited wstring.
+ */
+static std::wstring [[nodiscard]] limit_wstring(const std::wstring& input, const size_t n)
+{
+    if (input.size() <= n)
+    {
+        return input;
+    }
+    if (n <= 3)
+    {
+        return std::wstring(n, L'.');
+    }
+    return input.substr(0, n - 3) + L"...";
+}
+
+/**
  * \brief Loads a resource as a string.
  * \param id The resource id.
  * \param type The resource type.

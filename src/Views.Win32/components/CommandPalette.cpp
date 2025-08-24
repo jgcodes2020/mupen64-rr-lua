@@ -6,22 +6,36 @@
 
 #include "stdafx.h"
 #include <components/CommandPalette.h>
+#include <components/ConfigDialog.h>
 
 struct t_listbox_item {
-    bool is_group_header{};
-    std::wstring path{};
-    std::wstring group_name{};
-    std::wstring hotkey_display_name{};
+    bool is_group{};
+    std::wstring parent_group_name{};
 
-    std::wstring display_name{};
+    std::wstring text{};
+    std::wstring hint_text{};
+
     bool enabled{};
     bool active{};
     bool activatable{};
 
+    // (only applicable if action)
+    std::wstring path{};
+
+    // (only applicable if option)
+    std::wstring option_item_name{};
+
+    // (only applicable if option)
+    size_t parent_group_id{};
+
     t_listbox_item() = default;
+    explicit t_listbox_item(const std::wstring& group_name);
     explicit t_listbox_item(const std::wstring& action, const std::wstring& group);
+    explicit t_listbox_item(const ConfigDialog::t_options_item& item, const ConfigDialog::t_options_group& group);
+    explicit t_listbox_item(const ConfigDialog::t_options_group& options_group);
 
     [[nodiscard]] bool selectable() const;
+    [[nodiscard]] std::optional<ConfigDialog::t_options_item*> option_item() const;
 };
 
 struct t_command_palette_context {
@@ -33,35 +47,81 @@ struct t_command_palette_context {
     std::wstring search_query{};
     std::vector<std::wstring> actions{};
     std::vector<t_listbox_item> items{};
+    std::pair<std::vector<ConfigDialog::t_options_group>, std::vector<ConfigDialog::t_options_item>> option_groups_and_items{};
 };
 
 static t_command_palette_context g_ctx{};
 
+t_listbox_item::t_listbox_item(const std::wstring& group_name)
+{
+    is_group = true;
+    text = group_name;
+    enabled = true;
+}
+
 t_listbox_item::t_listbox_item(const std::wstring& action, const std::wstring& group)
 {
     path = action;
-    group_name = group;
+    parent_group_name = group;
     const auto hotkey = g_config.hotkeys.at(action);
     if (!hotkey.is_nothing())
     {
-        hotkey_display_name = hotkey.to_wstring();
+        hint_text = hotkey.to_wstring();
     }
 
-    display_name = ActionManager::get_display_name(action, true);
+    text = ActionManager::get_display_name(action, true);
     enabled = ActionManager::get_enabled(action);
     active = ActionManager::get_active(action);
     activatable = ActionManager::get_activatability(action);
 }
 
+t_listbox_item::t_listbox_item(const ConfigDialog::t_options_item& item, const ConfigDialog::t_options_group& options_group)
+{
+    text = item.get_name();
+    parent_group_name = options_group.name;
+    hint_text = item.get_value_name();
+    enabled = !item.is_readonly();
+    active = false;
+    activatable = false;
+    option_item_name = item.name;
+    parent_group_id = options_group.id;
+
+    if (item.type == ConfigDialog::t_options_item::Type::Bool)
+    {
+        active = std::get<int32_t>(item.current_value.get()) != 0;
+        activatable = true;
+        hint_text = L"";
+    }
+}
+
+t_listbox_item::t_listbox_item(const ConfigDialog::t_options_group& options_group)
+{
+    is_group = true;
+    text = options_group.name;
+    enabled = true;
+}
+
 bool t_listbox_item::selectable() const
 {
-    return !is_group_header && enabled;
+    return !is_group && enabled;
+}
+
+std::optional<ConfigDialog::t_options_item*> t_listbox_item::option_item() const
+{
+    auto found = std::ranges::find_if(g_ctx.option_groups_and_items.second, [&](const auto& item) {
+        return item.name == this->option_item_name && item.group_id == this->parent_group_id;
+    });
+    if (found != g_ctx.option_groups_and_items.second.end())
+    {
+        return &*found;
+    }
+    return std::nullopt;
 }
 
 /**
- * \brief Tries to invoke the action at the specified index. Closes the command palette if successful.
+ * \brief Tries to invoke the item at the specified index. Closes the command palette if successful.
  */
-static bool invoke_action_at_index(int32_t i)
+static bool try_invoke(int32_t i)
 {
     if (i == LB_ERR || i >= ListBox_GetCount(g_ctx.listbox_hwnd))
     {
@@ -70,17 +130,60 @@ static bool invoke_action_at_index(int32_t i)
 
     const auto action = reinterpret_cast<t_listbox_item*>(ListBox_GetItemData(g_ctx.listbox_hwnd, i));
 
-    if (action->is_group_header)
+    if (action->is_group)
     {
         return false;
     }
 
-    SendMessage(g_ctx.hwnd, WM_CLOSE, 0, 0);
+    if (!action->path.empty())
+    {
+        SendMessage(g_ctx.hwnd, WM_CLOSE, 0, 0);
+        ActionManager::invoke(action->path);
+        return true;
+    }
 
-    ActionManager::invoke(action->path);
+    if (!action->option_item_name.empty())
+    {
+        if (action->option_item().value()->edit(g_ctx.hwnd))
+        {
+            SendMessage(g_ctx.hwnd, WM_CLOSE, 0, 0);
+            return true;
+        }
+        return false;
+    }
 
     return true;
 }
+
+/**
+ * \brief Tries to change the hotkey of the item at the specified index. Closes the command palette if successful.
+ */
+static bool try_change_hotkey(int32_t i)
+{
+    if (i == LB_ERR || i >= ListBox_GetCount(g_ctx.listbox_hwnd))
+    {
+        return false;
+    }
+
+    const auto item = reinterpret_cast<t_listbox_item*>(ListBox_GetItemData(g_ctx.listbox_hwnd, i));
+
+    if (!item->selectable())
+    {
+        return false;
+    }
+
+    if (item->path.empty())
+    {
+        return false;
+    }
+
+    Hotkey::t_hotkey hotkey = g_config.hotkeys.at(item->path);
+    Hotkey::show_prompt(g_main_hwnd, std::format(L"Choose a hotkey for {}", item->text), hotkey);
+    Hotkey::try_associate_hotkey(g_main_hwnd, item->path, hotkey);
+
+    SendMessage(g_ctx.hwnd, WM_CLOSE, 0, 0);
+}
+
 
 /**
  * \brief Finds the index of the first selectable item in the item collection.
@@ -116,9 +219,9 @@ static void build_listbox()
             return true;
         }
 
-        const auto normalized_action = normalize(item.display_name);
-        const auto normalized_group_name = normalize(item.group_name);
-        const auto normalized_hotkey = normalize(item.hotkey_display_name);
+        const auto normalized_action = normalize(item.text);
+        const auto normalized_group_name = normalize(item.parent_group_name);
+        const auto normalized_hotkey = normalize(item.hint_text);
 
         const auto matches = normalized_action.contains(query) || normalized_group_name.contains(query) || normalized_hotkey.contains(query);
 
@@ -186,15 +289,34 @@ static void build_listbox()
             continue;
         }
 
-        t_listbox_item state{};
-        state.is_group_header = true;
-        state.display_name = name;
-        state.enabled = true;
-        g_ctx.items.push_back(state);
+        g_ctx.items.emplace_back(name);
 
         for (const auto& action : actions)
         {
             g_ctx.items.emplace_back(action, group);
+        }
+    }
+
+    // Add config groups and options
+    g_ctx.option_groups_and_items = ConfigDialog::get_option_groups_and_items();
+
+    for (const auto& group : g_ctx.option_groups_and_items.first)
+    {
+        auto items = g_ctx.option_groups_and_items.second;
+        std::erase_if(items, [&](const ConfigDialog::t_options_item& item) {
+            return item.group_id != group.id || !action_matches_query(t_listbox_item(item, group), normalized_query);
+        });
+
+        if (items.empty())
+        {
+            continue;
+        }
+
+        g_ctx.items.emplace_back(group);
+
+        for (const auto& item : items)
+        {
+            g_ctx.items.emplace_back(item, group);
         }
     }
 
@@ -273,29 +395,12 @@ static LRESULT CALLBACK keyboard_interaction_subclass_proc(HWND hwnd, UINT msg, 
         }
         if (wparam == VK_RETURN)
         {
-            invoke_action_at_index(ListBox_GetCurSel(g_ctx.listbox_hwnd));
+            try_invoke(ListBox_GetCurSel(g_ctx.listbox_hwnd));
             return FALSE;
         }
         if (wparam == VK_F2)
         {
-            const int32_t index = ListBox_GetCurSel(g_ctx.listbox_hwnd);
-            if (index == LB_ERR)
-            {
-                break;
-            }
-
-            const auto item = reinterpret_cast<t_listbox_item*>(ListBox_GetItemData(g_ctx.listbox_hwnd, index));
-
-            if (!item->selectable())
-            {
-                break;
-            }
-
-            Hotkey::t_hotkey hotkey = g_config.hotkeys.at(item->path);
-            Hotkey::show_prompt(g_main_hwnd, std::format(L"Choose a hotkey for {}", item->display_name), hotkey);
-            Hotkey::try_associate_hotkey(g_main_hwnd, item->path, hotkey);
-
-            SendMessage(g_ctx.hwnd, WM_CLOSE, 0, 0);
+            try_change_hotkey(ListBox_GetCurSel(g_ctx.listbox_hwnd));
             return FALSE;
         }
         break;
@@ -428,12 +533,12 @@ static INT_PTR CALLBACK command_palette_proc(const HWND hwnd, const UINT msg, co
             case ODA_SELECT:
             case ODA_DRAWENTIRE:
                 {
-                    const auto action = reinterpret_cast<t_listbox_item*>(ListBox_GetItemData(g_ctx.listbox_hwnd, pdis->itemID));
+                    const auto item = reinterpret_cast<t_listbox_item*>(ListBox_GetItemData(g_ctx.listbox_hwnd, pdis->itemID));
 
                     COLORREF text_color;
                     HBRUSH bg_brush;
 
-                    if (pdis->itemState & ODS_SELECTED && action->selectable())
+                    if (pdis->itemState & ODS_SELECTED && item->selectable())
                     {
                         text_color = GetSysColor(COLOR_HIGHLIGHTTEXT);
                         bg_brush = GetSysColorBrush(COLOR_HIGHLIGHT);
@@ -449,16 +554,16 @@ static INT_PTR CALLBACK command_palette_proc(const HWND hwnd, const UINT msg, co
 
                     // 2. Draw the checkbox if applicable
                     int checkbox_width = 0;
-                    if (action->activatable)
+                    if (item->activatable)
                     {
                         int32_t state_id;
-                        if (action->enabled)
+                        if (item->enabled)
                         {
-                            state_id = action->active ? CBS_CHECKEDNORMAL : CBS_UNCHECKEDNORMAL;
+                            state_id = item->active ? CBS_CHECKEDNORMAL : CBS_UNCHECKEDNORMAL;
                         }
                         else
                         {
-                            state_id = action->active ? CBS_CHECKEDDISABLED : CBS_UNCHECKEDDISABLED;
+                            state_id = item->active ? CBS_CHECKEDDISABLED : CBS_UNCHECKEDDISABLED;
                         }
 
 
@@ -473,42 +578,50 @@ static INT_PTR CALLBACK command_palette_proc(const HWND hwnd, const UINT msg, co
                         DrawThemeBackground(g_ctx.button_theme, pdis->hDC, BP_CHECKBOX, state_id, &rc, nullptr);
                     }
 
-                    // 3. Draw the action and hotkey text if applicable
+                    // 3. Draw the display text if applicable
                     SetBkMode(pdis->hDC, TRANSPARENT);
                     SetTextColor(pdis->hDC, text_color);
 
-                    if (!action->is_group_header)
+                    RECT base_rc = pdis->rcItem;
+                    base_rc.left += 12;
+                    if (checkbox_width > 0)
                     {
-                        RECT text_rc = pdis->rcItem;
-                        text_rc.left += 12;
-                        if (checkbox_width > 0)
-                        {
-                            text_rc.left += checkbox_width + 4;
-                        }
-
-                        const auto draw_flag = action->enabled ? 0 : DSS_DISABLED;
-
-                        DrawState(pdis->hDC, nullptr, nullptr, (LPARAM)action->display_name.c_str(), 0, text_rc.left, text_rc.top, text_rc.right - text_rc.left, text_rc.bottom - text_rc.top, draw_flag | DST_TEXT);
-
-                        SIZE sz;
-                        GetTextExtentPoint32(pdis->hDC, action->hotkey_display_name.c_str(), (int)action->hotkey_display_name.length(), &sz);
-                        const int x = text_rc.right - sz.cx;
-
-                        DrawState(pdis->hDC, nullptr, nullptr, (LPARAM)action->hotkey_display_name.c_str(), 0, x, text_rc.top, sz.cx, text_rc.bottom - text_rc.top, draw_flag | DSS_RIGHT | DST_TEXT);
+                        base_rc.left += checkbox_width + 4;
                     }
 
-                    // 4. Draw the group header if applicable
-                    if (action->is_group_header)
+                    if (!item->is_group)
+                    {
+                        const auto draw_flag = item->enabled ? 0 : DSS_DISABLED;
+
+                        DrawState(pdis->hDC, nullptr, nullptr, (LPARAM)item->text.c_str(), 0, base_rc.left, base_rc.top, base_rc.right - base_rc.left, base_rc.bottom - base_rc.top, draw_flag | DST_TEXT);
+                    }
+
+                    // 4. Draw the hint text if applicable
+                    if (!item->hint_text.empty())
+                    {
+                        const auto hint_text = limit_wstring(item->hint_text, 30);
+
+                        const auto draw_flag = item->enabled ? 0 : DSS_DISABLED;
+
+                        SIZE sz;
+                        GetTextExtentPoint32(pdis->hDC, hint_text.c_str(), (int)hint_text.size(), &sz);
+                        const int x = base_rc.right - sz.cx;
+
+                        DrawState(pdis->hDC, nullptr, nullptr, (LPARAM)hint_text.c_str(), 0, x, base_rc.top, sz.cx, base_rc.bottom - base_rc.top, draw_flag | DSS_RIGHT | DST_TEXT);
+                    }
+
+                    // 5. Draw the group header if applicable
+                    if (item->is_group)
                     {
                         const RECT text_rc = pdis->rcItem;
 
-                        DrawState(pdis->hDC, nullptr, nullptr, (LPARAM)action->display_name.c_str(), 0, text_rc.left, text_rc.top, text_rc.right - text_rc.left, text_rc.bottom - text_rc.top, DST_TEXT);
+                        DrawState(pdis->hDC, nullptr, nullptr, (LPARAM)item->text.c_str(), 0, text_rc.left, text_rc.top, text_rc.right - text_rc.left, text_rc.bottom - text_rc.top, DST_TEXT);
 
                         HPEN pen = CreatePen(PS_DOT, 1, text_color);
                         HGDIOBJ prev_obj = SelectObject(pdis->hDC, pen);
 
                         SIZE sz;
-                        GetTextExtentPoint32(pdis->hDC, action->display_name.c_str(), (int)action->display_name.length(), &sz);
+                        GetTextExtentPoint32(pdis->hDC, item->text.c_str(), (int)item->text.length(), &sz);
 
                         MoveToEx(pdis->hDC, text_rc.left + sz.cx + 4, text_rc.top + (text_rc.bottom - text_rc.top) / 2, nullptr);
                         LineTo(pdis->hDC, text_rc.right, text_rc.top + (text_rc.bottom - text_rc.top) / 2);
@@ -516,7 +629,7 @@ static INT_PTR CALLBACK command_palette_proc(const HWND hwnd, const UINT msg, co
                         SelectObject(pdis->hDC, prev_obj);
                     }
 
-                    // 5. Draw the focus rect
+                    // 6. Draw the focus rect
                     if (pdis->itemState & ODS_FOCUS)
                     {
                         DrawFocusRect(pdis->hDC, &pdis->rcItem);
