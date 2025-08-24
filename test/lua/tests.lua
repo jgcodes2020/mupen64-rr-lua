@@ -6,16 +6,130 @@
 
 ---
 --- Describes the automated testing suite for the Mupen64 Lua API.
---- Assumes an x86 Windows environment.
+--- Assumes an x86 Windows environment with no Lua trust.
 ---
 
 dofile(debug.getinfo(1).source:sub(2):gsub("[^\\]+$", "") .. 'test_prelude.lua')
+
+local libsocket_path = path_root .. "lib\\luasocket\\"
+local libsocket_dll_path = libsocket_path .. "socket\\core.dll"
+package.cpath = libsocket_path .. "?.dll;" .. package.cpath
 
 lust.describe('mupen64', function()
     lust.describe('shims', function()
         lust.describe('table', function()
             lust.it('get_n_works', function()
                 lust.expect(table.getn({ 1, 2, 3 })).to.equal(3)
+            end)
+        end)
+    end)
+
+    lust.describe('trust', function()
+        local function print_test_wrapper(func)
+            __prev_print = print
+            local printed_str
+            print = function(str) printed_str = str end
+
+            func()
+
+            print = __prev_print
+            lust.expect(printed_str:find("dangerous") ~= nil).to.equal(true)
+        end
+        local function print_suppression_wrapper_begin()
+            __prev_print = print
+            print = function() end
+        end
+        local function print_suppression_wrapper_end()
+            print = __prev_print
+        end
+
+        lust.describe('os.execute', function()
+            lust.it('returns_correct_values_in_untrusted_environment', function()
+                print_suppression_wrapper_begin()
+                local suc, exitcode, code = os.execute("start calc.exe")
+                print_suppression_wrapper_end()
+
+                lust.expect(suc).to.equal(false)
+                lust.expect(exitcode).to.equal(nil)
+                lust.expect(code).to.equal(nil)
+            end)
+            lust.it('prints_warning_message_in_untrusted_environment', function()
+                print_test_wrapper(function()
+                    os.execute("start calc.exe")
+                end)
+            end)
+        end)
+        lust.describe('io.popen', function()
+            lust.it('returns_correct_values_in_untrusted_environment', function()
+                print_suppression_wrapper_begin()
+                local file, err = io.popen("start calc.exe")
+                print_suppression_wrapper_end()
+
+                lust.expect(file).to.equal(nil)
+                lust.expect(err).to.equal(nil)
+            end)
+            lust.it('prints_warning_message_in_untrusted_environment', function()
+                print_test_wrapper(function()
+                    local file, err = io.popen("start calc.exe")
+                end)
+            end)
+        end)
+        lust.describe('os.remove', function()
+            lust.it('returns_correct_values_in_untrusted_environment', function()
+                print_suppression_wrapper_begin()
+                local suc, err = os.remove("a.txt")
+                print_suppression_wrapper_end()
+
+                lust.expect(suc).to.equal(false)
+                lust.expect(err).to.equal(nil)
+            end)
+            lust.it('prints_warning_message_in_untrusted_environment', function()
+                print_test_wrapper(function()
+                    local suc, err = os.remove("a.txt")
+                end)
+            end)
+        end)
+        lust.describe('os.rename', function()
+            lust.it('returns_correct_values_in_untrusted_environment', function()
+                print_suppression_wrapper_begin()
+                local suc, err = os.rename("a.txt", "b.txt")
+                print_suppression_wrapper_end()
+
+                lust.expect(suc).to.equal(false)
+                lust.expect(err).to.equal(nil)
+            end)
+            lust.it('prints_warning_message_in_untrusted_environment', function()
+                print_test_wrapper(function()
+                    local suc, err = os.rename("a.txt", "b.txt")
+                end)
+            end)
+        end)
+        lust.describe('package.loadlib', function()
+            lust.it('returns_correct_values_in_untrusted_environment', function()
+                print_suppression_wrapper_begin()
+                local lib = package.loadlib(libsocket_dll_path, "luaopen_testlib")
+                print_suppression_wrapper_end()
+
+                lust.expect(lib).to.equal(nil)
+            end)
+            lust.it('prints_warning_message_in_untrusted_environment', function()
+                print_test_wrapper(function()
+                    local lib = package.loadlib(libsocket_dll_path, "luaopen_testlib")
+                end)
+            end)
+        end)
+        lust.describe('require', function()
+            lust.it('returns_correct_values_in_untrusted_environment', function()
+                print_suppression_wrapper_begin()
+                local lib = require("socket.core")
+                print_suppression_wrapper_end()
+
+                lust.expect(lib).to.equal(nil)
+            end)
+            lust.it('prints_warning_message_in_untrusted_environment', function()
+                print_test_wrapper(function()
+                    local lib = require("socket.core")
+                end)
             end)
         end)
     end)
