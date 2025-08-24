@@ -907,7 +907,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
 
         MGECompositor::create(hwnd);
         PianoRoll::init();
-        ConfigDialog::init();
 
         return TRUE;
     case WM_DESTROY:

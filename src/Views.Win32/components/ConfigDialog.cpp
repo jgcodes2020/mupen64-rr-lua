@@ -21,114 +21,8 @@
 #define WM_EDIT_END (WM_USER + 19)
 #define WM_PLUGIN_DISCOVERY_FINISHED (WM_USER + 22)
 
-/**
- * Represents a group of options in the settings.
- */
-struct t_options_group {
-    /**
-     * The group's unique identifier.
-     */
-    size_t id;
-
-    /**
-     * The group's name.
-     */
-    std::wstring name;
-};
-
-/**
- * Represents a settings option.
- */
-struct t_options_item {
-    enum class Type {
-        Bool,
-        Number,
-        Enum,
-        String,
-        Hotkey,
-    };
-
-    typedef std::variant<int32_t, std::wstring, Hotkey::t_hotkey> data_variant;
-
-    struct t_readonly_property {
-        std::function<data_variant()> get{};
-
-        explicit t_readonly_property(const std::function<data_variant()>& get)
-        {
-            this->get = get;
-        }
-    };
-
-
-    struct t_readwrite_property : t_readonly_property {
-        std::function<void(const data_variant&)> set{};
-
-        t_readwrite_property(const std::function<data_variant()>& get, const std::function<void(const data_variant&)>& set) :
-            t_readonly_property(get)
-        {
-            this->set = set;
-        }
-    };
-
-
-    /**
-     * The option's backing data type.
-     */
-    Type type;
-
-    /**
-     * The group this option belongs to.
-     */
-    size_t group_id;
-
-    /**
-     * The option's display name.
-     */
-    std::wstring name{};
-
-    /**
-     * The option's tooltip, or an empty string if no tooltip is set.
-     */
-    std::wstring tooltip{};
-
-    t_readwrite_property current_value;
-
-    t_readonly_property initial_value = t_readonly_property([] -> data_variant {
-        runtime_assert(false, L"Initial value not set for option");
-        return data_variant{};
-    });
-
-    t_readonly_property default_value;
-
-    std::vector<std::pair<std::wstring, int32_t>> possible_values = {};
-
-    /**
-     * Function which returns whether the option can be changed. Useful for values which shouldn't be changed during emulation.
-     */
-    std::function<bool()> is_readonly = [] {
-        return false;
-    };
-
-    /**
-     * Gets the name of the option item.
-     */
-    [[nodiscard]] std::wstring get_name() const;
-
-    /**
-     * Gets the value name for the current backing data, or a fallback name if no match is found.
-     */
-    [[nodiscard]] std::wstring get_value_name() const;
-
-    /**
-     * Resets the value of the option to the default value.
-     */
-    void reset_to_default() const;
-
-    /**
-     * \brief Gets neatly formatted information about the option.
-     */
-    std::wstring get_friendly_info() const;
-};
+using t_options_group = ConfigDialog::t_options_group;
+using t_options_item = ConfigDialog::t_options_item;
 
 t_plugin_discovery_result plugin_discovery_result;
 std::vector<t_options_group> g_option_groups;
@@ -1646,10 +1540,6 @@ INT_PTR CALLBACK general_cfg(const HWND hwnd, const UINT message, const WPARAM w
     return TRUE;
 }
 
-void ConfigDialog::init()
-{
-    get_config_listview_items(g_option_groups, g_option_items);
-}
 /**
  * \brief Generate option groups with names based on the path segments
  * e.g.:
@@ -1706,65 +1596,9 @@ static std::vector<t_options_group> generate_hotkey_groups(size_t base_id)
 
 void ConfigDialog::show_app_settings()
 {
-    const auto prev_option_group_size = g_option_groups.size();
-    const auto prev_option_items_size = g_option_items.size();
-
-    auto option_groups = generate_hotkey_groups(g_option_groups.back().id + 1);
-
-    for (const auto& group : option_groups)
-    {
-        const auto actions = ActionManager::get_actions_matching_filter(std::format(L"{} > *", group.name));
-
-        for (const auto& action : actions)
-        {
-            const auto action_segments = ActionManager::get_segments(action);
-            const auto group_segments = ActionManager::get_segments(group.name);
-
-            if (action_segments.at(action_segments.size() - 2) != group_segments.back())
-            {
-                continue;
-            }
-
-            const t_options_item item = {
-            .type = t_options_item::Type::Hotkey,
-            .group_id = group.id,
-            .name = action,
-            .current_value = t_options_item::t_readwrite_property([=] {
-                return g_config.hotkeys.at(action);
-            },
-                                                                  [=](const t_options_item::data_variant& value) {
-                                                                      g_config.hotkeys[action] = std::get<Hotkey::t_hotkey>(value);
-                                                                  }),
-            .default_value = t_options_item::t_readonly_property([=] {
-                return g_config.inital_hotkeys.at(action);
-            }),
-            };
-
-            g_option_items.emplace_back(item);
-        }
-    }
-
-    for (auto& option_item : g_option_items)
-    {
-        const auto initial_value = option_item.current_value.get();
-        option_item.initial_value = t_options_item::t_readonly_property([=] {
-            return initial_value;
-        });
-    }
-
-    // We beautify the names here, a bit annoying because we have to reconstruct them
-    for (auto& option_group : option_groups)
-    {
-        auto segments = ActionManager::get_segments(option_group.name);
-        for (auto& segment : segments)
-        {
-            segment = ActionManager::get_display_name(segment, true);
-        }
-        const auto name = io_service.join_wstring(segments, std::format(L" {} ", ActionManager::SEGMENT_SEPARATOR));
-        option_group.name = name;
-    }
-
-    g_option_groups.insert(g_option_groups.end(), option_groups.begin(), option_groups.end());
+    const auto groups_and_items = get_option_groups_and_items();
+    g_option_groups = groups_and_items.first;
+    g_option_items = groups_and_items.second;
 
     PROPSHEETPAGE psp[3] = {{0}};
     for (auto& i : psp)
@@ -1812,9 +1646,74 @@ void ConfigDialog::show_app_settings()
     }
     ActionManager::end_batch_work();
 
-    g_option_items.erase(g_option_items.begin() + prev_option_items_size, g_option_items.end());
-    g_option_groups.erase(g_option_groups.begin() + prev_option_group_size, g_option_groups.end());
-
     Config::save();
     Messenger::broadcast(Messenger::Message::ConfigLoaded, nullptr);
+}
+
+std::pair<std::vector<t_options_group>, std::vector<t_options_item>> ConfigDialog::get_option_groups_and_items()
+{
+    std::vector<t_options_group> option_groups;
+    std::vector<t_options_item> option_items;
+
+    get_config_listview_items(option_groups, option_items);
+
+    auto dynamic_option_groups = generate_hotkey_groups(option_groups.back().id + 1);
+
+    for (const auto& group : dynamic_option_groups)
+    {
+        const auto actions = ActionManager::get_actions_matching_filter(std::format(L"{} > *", group.name));
+
+        for (const auto& action : actions)
+        {
+            const auto action_segments = ActionManager::get_segments(action);
+            const auto group_segments = ActionManager::get_segments(group.name);
+
+            if (action_segments.at(action_segments.size() - 2) != group_segments.back())
+            {
+                continue;
+            }
+
+            const t_options_item item = {
+            .type = t_options_item::Type::Hotkey,
+            .group_id = group.id,
+            .name = action,
+            .current_value = t_options_item::t_readwrite_property([=] {
+                return g_config.hotkeys.at(action);
+            },
+                                                                  [=](const t_options_item::data_variant& value) {
+                                                                      g_config.hotkeys[action] = std::get<Hotkey::t_hotkey>(value);
+                                                                  }),
+            .default_value = t_options_item::t_readonly_property([=] {
+                return g_config.inital_hotkeys.at(action);
+            }),
+            };
+
+            option_items.emplace_back(item);
+        }
+    }
+
+    // We beautify the names here, a bit annoying because we have to reconstruct them
+    for (auto& option_group : dynamic_option_groups)
+    {
+        auto segments = ActionManager::get_segments(option_group.name);
+        for (auto& segment : segments)
+        {
+            segment = ActionManager::get_display_name(segment, true);
+        }
+        const auto name = io_service.join_wstring(segments, std::format(L" {} ", ActionManager::SEGMENT_SEPARATOR));
+        option_group.name = name;
+    }
+
+    // Arm all initial values
+    for (auto& option_item : option_items)
+    {
+        const auto initial_value = option_item.current_value.get();
+        option_item.initial_value = t_options_item::t_readonly_property([=] {
+            return initial_value;
+        });
+    }
+
+    option_groups.insert(option_groups.end(), dynamic_option_groups.begin(), dynamic_option_groups.end());
+
+    return {option_groups, option_items};
 }
