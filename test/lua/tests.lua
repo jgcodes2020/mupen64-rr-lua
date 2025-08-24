@@ -17,9 +17,84 @@ package.cpath = libsocket_path .. "?.dll;" .. package.cpath
 
 lust.describe('mupen64', function()
     lust.describe('shims', function()
+        lust.describe('global', function()
+            lust.it('printx_forwarded_to_print', function()
+                lust.expect(printx).to.equal(print)
+            end)
+        end)
         lust.describe('table', function()
             lust.it('get_n_works', function()
                 lust.expect(table.getn({ 1, 2, 3 })).to.equal(3)
+            end)
+        end)
+        lust.describe('emu', function()
+            lust.it('debug_view_forwarded_to_print', function()
+                lust.expect(emu.debugview).to.equal(print)
+            end)
+            lust.it('setgfx_exists_and_is_noop', function()
+                local func = function()
+                    emu.setgfx("anything")
+                end
+                lust.expect(func).to_not.fail()
+            end)
+            lust.it('isreadonly_forwarded_to_movie_get_readonly', function()
+                lust.expect(emu.isreadonly).to.equal(movie.get_readonly)
+            end)
+            lust.it('getsystemmetrics_exists_and_prints_deprecation', function()
+                __prev_print = print
+                local printed_str
+                print = function(str) printed_str = str end
+
+                emu.getsystemmetrics()
+
+                print = __prev_print
+                lust.expect(printed_str:find("deprecated") ~= nil).to.equal(true)
+            end)
+        end)
+        lust.describe('movie', function()
+            lust.it('playmovie_forwarded_to_play', function()
+                lust.expect(movie.playmovie).to.equal(movie.play)
+            end)
+            lust.it('stopmovie_forwarded_to_stop', function()
+                lust.expect(movie.stopmovie).to.equal(movie.stop)
+            end)
+            lust.it('getmoviefilename_forwarded_to_get_filename', function()
+                lust.expect(movie.getmoviefilename).to.equal(movie.get_filename)
+            end)
+            lust.it('isreadonly_forwarded_to_get_readonly', function()
+                lust.expect(movie.isreadonly).to.equal(movie.get_readonly)
+            end)
+            lust.it('begin_seek_to_exists_and_prints_deprecation', function()
+                __prev_print = print
+                local printed_str
+                print = function(str) printed_str = str end
+
+                movie.begin_seek_to()
+
+                print = __prev_print
+                lust.expect(printed_str:find("deprecated") ~= nil).to.equal(true)
+            end)
+            lust.it('get_seek_info_exists_and_prints_deprecation', function()
+                __prev_print = print
+                local printed_str
+                print = function(str) printed_str = str end
+
+                movie.get_seek_info()
+
+                print = __prev_print
+                lust.expect(printed_str:find("deprecated") ~= nil).to.equal(true)
+            end)
+        end)
+        lust.describe('input', function()
+            lust.it('map_virtual_key_ex_exists_and_prints_deprecation', function()
+                __prev_print = print
+                local printed_str
+                print = function(str) printed_str = str end
+
+                input.map_virtual_key_ex()
+
+                print = __prev_print
+                lust.expect(printed_str:find("deprecated") ~= nil).to.equal(true)
             end)
         end)
     end)
