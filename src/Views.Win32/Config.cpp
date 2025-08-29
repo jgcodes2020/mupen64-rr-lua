@@ -8,6 +8,7 @@
 #include <Config.h>
 #include <Messenger.h>
 #include <ini.h>
+#include <components/AppActions.h>
 
 static t_config get_default_config();
 
@@ -427,6 +428,86 @@ static void config_patch(t_config& cfg)
     }
 }
 
+/**
+ * \brief Migrates old values from the specified config to new ones if possible.
+ */
+static void migrate_config(t_config& config, const mINI::INIStructure& ini)
+{
+    const auto migrate_hotkey = [&](const std::string& old_section_name, std::wstring action) {
+        action = ActionManager::normalize_filter(action);
+
+        if (!ini.has(old_section_name))
+        {
+            return;
+        }
+
+        Hotkey::t_hotkey hotkey{};
+        const auto& section = ini.get(old_section_name);
+
+        try
+        {
+            hotkey.key = std::stoi(section.get("key"));
+            hotkey.ctrl = std::stoi(section.get("ctrl"));
+            hotkey.shift = std::stoi(section.get("shift"));
+            hotkey.alt = std::stoi(section.get("alt"));
+        }
+        catch (...)
+        {
+        }
+        
+        g_view_logger->info(L"[Config] Migrating {} -> {} ({})", io_service.string_to_wstring(old_section_name), action, hotkey.to_wstring());
+        config.hotkeys[action] = hotkey;
+        config.inital_hotkeys[action] = hotkey;
+    };
+
+    // Migrate pre-1.3.0 hotkeys to their action counterparts.
+    migrate_hotkey("Fast-forward", AppActions::FAST_FORWARD);
+    migrate_hotkey("GS Button", AppActions::GS_BUTTON);
+    migrate_hotkey("Speed down", AppActions::SPEED_DOWN);
+    migrate_hotkey("Speed up", AppActions::SPEED_UP);
+    migrate_hotkey("Speed reset", AppActions::SPEED_RESET);
+    migrate_hotkey("Frame advance", AppActions::FRAME_ADVANCE);
+    migrate_hotkey("Multi-Frame advance", AppActions::MULTI_FRAME_ADVANCE);
+    migrate_hotkey("Multi-Frame advance increment", AppActions::MULTI_FRAME_ADVANCE_INCREMENT);
+    migrate_hotkey("Multi-Frame advance decrement", AppActions::MULTI_FRAME_ADVANCE_DECREMENT);
+    migrate_hotkey("Multi-Frame advance reset", AppActions::MULTI_FRAME_ADVANCE_RESET);
+    migrate_hotkey("Pause", AppActions::PAUSE);
+    migrate_hotkey("Toggle read-only", AppActions::READONLY);
+    migrate_hotkey("Toggle movie loop", AppActions::LOOP_MOVIE_PLAYBACK);
+    migrate_hotkey("Start movie playback", AppActions::START_MOVIE_PLAYBACK);
+    migrate_hotkey("Start movie recording", AppActions::START_MOVIE_RECORDING);
+    migrate_hotkey("Stop movie", AppActions::STOP_MOVIE);
+    migrate_hotkey("Create Movie Backup", AppActions::CREATE_MOVIE_BACKUP);
+    migrate_hotkey("Take screenshot", AppActions::SCREENSHOT);
+    migrate_hotkey("Play latest movie", AppActions::RECENT_MOVIES + L" > Load Recent Item 1");
+    migrate_hotkey("Load latest script", AppActions::RECENT_SCRIPTS + L" > Load Recent Item 1");
+    migrate_hotkey("New Lua Instance", AppActions::NEW_INSTANCE);
+    migrate_hotkey("Close all Lua Instances", AppActions::CLOSE_ALL);
+    migrate_hotkey("Load ROM", AppActions::LOAD_ROM);
+    migrate_hotkey("Close ROM", AppActions::CLOSE_ROM);
+    migrate_hotkey("Reset ROM", AppActions::RESET_ROM);
+    migrate_hotkey("Load Latest ROM", AppActions::RECENT_ROMS + L" > Load Recent Item 1");
+    migrate_hotkey("Toggle Fullscreen", AppActions::FULL_SCREEN);
+    migrate_hotkey("Show Settings", AppActions::SETTINGS);
+    migrate_hotkey("Toggle Statusbar", AppActions::STATUSBAR);
+    migrate_hotkey("Refresh Rombrowser", AppActions::REFRESH_ROM_LIST);
+    migrate_hotkey("Seek to frame", AppActions::SEEK_TO);
+    migrate_hotkey("Run", AppActions::COMMAND_PALETTE);
+    migrate_hotkey("Open Piano Roll", AppActions::PIANO_ROLL);
+    migrate_hotkey("Open Cheats dialog", AppActions::CHEATS);
+    migrate_hotkey("Save to current slot", AppActions::SAVE_CURRENT_SLOT);
+    migrate_hotkey("Load from current slot", AppActions::LOAD_CURRENT_SLOT);
+    migrate_hotkey("Save state as", AppActions::SAVE_STATE_FILE);
+    migrate_hotkey("Load state as", AppActions::LOAD_STATE_FILE);
+    migrate_hotkey("Undo load state", AppActions::UNDO_LOAD_STATE);
+    for (int i = 0; i < 10; ++i)
+    {
+        migrate_hotkey(std::format("Save to slot {}", i), std::vformat(AppActions::SAVE_SLOT_X, std::make_wformat_args(i)));
+        migrate_hotkey(std::format("Load from slot {}", i), std::vformat(AppActions::LOAD_SLOT_X, std::make_wformat_args(i)));
+        migrate_hotkey(std::format("Select slot {}", i), std::vformat(AppActions::SELECT_SLOT_X, std::make_wformat_args(i)));
+    }
+}
+
 void Config::init()
 {
 }
@@ -474,6 +555,7 @@ void Config::load()
 
     handle_config_ini(true, ini);
 
+    migrate_config(g_config, ini);
     config_patch(g_config);
 
     Messenger::broadcast(Messenger::Message::ConfigLoaded, nullptr);
