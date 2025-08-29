@@ -292,8 +292,11 @@ bool ActionManager::add(const t_action_params& params)
     g_mgr.actions.emplace_back(action);
     g_mgr.filter_result_cache.clear();
 
-    g_config.hotkeys[normalized_path] = Hotkey::t_hotkey{};
-    g_config.inital_hotkeys[normalized_path] = Hotkey::t_hotkey{};
+    if (!g_config.hotkeys.contains(normalized_path) || !g_config.inital_hotkeys.contains(normalized_path))
+    {
+        g_config.hotkeys[normalized_path] = Hotkey::t_hotkey{};
+        g_config.inital_hotkeys[normalized_path] = Hotkey::t_hotkey{};
+    }
 
     if (!g_mgr.batched_work)
     {
