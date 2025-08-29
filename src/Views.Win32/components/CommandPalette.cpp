@@ -176,8 +176,6 @@ static bool try_change_hotkey(int32_t i)
     Hotkey::t_hotkey hotkey = g_config.hotkeys.at(item->path);
     Hotkey::show_prompt(g_main_hwnd, std::format(L"Choose a hotkey for {}", item->text), hotkey);
     Hotkey::try_associate_hotkey(g_main_hwnd, item->path, hotkey);
-
-    SendMessage(g_ctx.hwnd, WM_CLOSE, 0, 0);
 }
 
 
@@ -395,7 +393,21 @@ static LRESULT CALLBACK keyboard_interaction_subclass_proc(HWND hwnd, UINT msg, 
         }
         if (wparam == VK_F2)
         {
-            try_change_hotkey(ListBox_GetCurSel(g_ctx.listbox_hwnd));
+            const auto selected_index = ListBox_GetCurSel(g_ctx.listbox_hwnd);
+            
+            // HACK: We want to keep the command palette open while changing the hotkey, but we also want to prevent it from closing.
+            EnableWindow(g_ctx.hwnd, false);
+            g_ctx.dont_close_on_focus_loss = true;
+            try_change_hotkey(selected_index);
+            EnableWindow(g_ctx.hwnd, true);
+            g_ctx.dont_close_on_focus_loss = false;
+
+            SetFocus(g_ctx.edit_hwnd);
+            build_listbox();
+
+            // Advance selection to next item.
+            ListBox_SetCurSel(g_ctx.listbox_hwnd, selected_index + 1);
+
             return FALSE;
         }
         break;
