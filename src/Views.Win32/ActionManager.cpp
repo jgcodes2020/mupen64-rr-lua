@@ -363,7 +363,7 @@ bool ActionManager::associate_hotkey(const action_path& path, const Hotkey::t_ho
 
     runtime_assert(g_config.hotkeys.contains(normalized_path) && g_config.inital_hotkeys.contains(normalized_path), L"Action didn't have a hotkey entry.");
 
-    const bool has_assignment = !g_config.hotkeys[normalized_path].is_nothing();
+    const bool has_assignment = !g_config.hotkeys.at(normalized_path).is_nothing();
 
     if (overwrite_existing)
     {

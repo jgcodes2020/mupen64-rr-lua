@@ -330,7 +330,7 @@ void Hotkey::try_associate_hotkey(const HWND hwnd, const std::wstring& action, c
         return;
     }
 
-    if (g_config.hotkeys[action] == new_hotkey)
+    if (g_config.hotkeys.at(action) == new_hotkey)
     {
         return;
     }

@@ -105,7 +105,7 @@ static std::wstring get_display_name(const t_menu_item& item)
     // Add the accelerator text if there is any :P
     if (!item.action_path.empty() && g_config.hotkeys.contains(item.action_path))
     {
-        const auto hotkey = g_config.hotkeys[item.action_path];
+        const auto hotkey = g_config.hotkeys.at(item.action_path);
         if (!hotkey.is_nothing())
         {
             display_name += std::format(L"\t{}", hotkey.to_wstring());
