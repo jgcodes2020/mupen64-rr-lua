@@ -35,8 +35,8 @@ static INT_PTR CALLBACK about_dlg_proc(const HWND hwnd, const UINT message, cons
         case IDOK:
             EndDialog(hwnd, IDOK);
             break;
-        case IDCLOSE:
-            EndDialog(hwnd, IDCLOSE);
+        case IDCANCEL:
+            EndDialog(hwnd, IDCANCEL);
             break;
         default:
             break;
