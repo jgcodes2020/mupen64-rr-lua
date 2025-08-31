@@ -498,6 +498,7 @@ static INT_PTR CALLBACK command_palette_proc(const HWND hwnd, const UINT msg, co
             default:
                 break;
             }
+            break;
         case IDC_COMMAND_PALETTE_LIST:
             switch (HIWORD(wparam))
             {
