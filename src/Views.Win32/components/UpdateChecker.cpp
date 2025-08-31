@@ -207,13 +207,13 @@ namespace UpdateChecker
         case WM_INITDIALOG:
             {
                 const auto str = (wchar_t*)lparam;
-                const auto edit_hwnd = GetDlgItem(hwnd, IDC_TEXTBOX_LUAPROMPT);
+                const auto edit_hwnd = GetDlgItem(hwnd, IDC_EDIT);
 
                 SetWindowText(hwnd, L"Changelog");
                 Edit_SetText(edit_hwnd, str);
                 Edit_SetReadOnly(edit_hwnd, true);
 
-                SetFocus(GetDlgItem(hwnd, IDC_TEXTBOX_LUAPROMPT));
+                SetFocus(GetDlgItem(hwnd, IDC_EDIT));
                 break;
             }
         case WM_CLOSE:
@@ -236,7 +236,7 @@ namespace UpdateChecker
 
     void show_changelog(const std::wstring& changelog)
     {
-        DialogBoxParam(g_app_instance, MAKEINTRESOURCE(IDD_LUAINPUTPROMPT), g_main_hwnd, changelog_dlgproc, (LPARAM)changelog.data());
+        DialogBoxParam(g_app_instance, MAKEINTRESOURCE(IDD_TEXT_EDIT), g_main_hwnd, changelog_dlgproc, (LPARAM)changelog.data());
     }
 
     void show_connectivity_error(bool manual)

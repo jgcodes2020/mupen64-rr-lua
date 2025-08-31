@@ -1256,14 +1256,14 @@ INT_PTR CALLBACK edit_string_dlgproc(HWND wnd, UINT msg, WPARAM wparam, LPARAM l
     case WM_INITDIALOG:
         {
             const auto option_item = g_option_items[g_edit_option_item_index];
-            const auto edit_hwnd = GetDlgItem(wnd, IDC_TEXTBOX_LUAPROMPT);
+            const auto edit_hwnd = GetDlgItem(wnd, IDC_EDIT);
 
             const auto current_value = std::get<std::wstring>(option_item.current_value.get());
 
             SetWindowText(wnd, std::format(L"Edit '{}'", option_item.name).c_str());
             Edit_SetText(edit_hwnd, current_value.c_str());
 
-            SetFocus(GetDlgItem(wnd, IDC_TEXTBOX_LUAPROMPT));
+            SetFocus(GetDlgItem(wnd, IDC_EDIT));
             break;
         }
     case WM_CLOSE:
@@ -1275,7 +1275,7 @@ INT_PTR CALLBACK edit_string_dlgproc(HWND wnd, UINT msg, WPARAM wparam, LPARAM l
         case IDOK:
             {
                 const auto& option_item = g_option_items[g_edit_option_item_index];
-                const auto edit_hwnd = GetDlgItem(wnd, IDC_TEXTBOX_LUAPROMPT);
+                const auto edit_hwnd = GetDlgItem(wnd, IDC_EDIT);
 
                 const auto str = get_window_text(edit_hwnd).value_or(L"");
 
