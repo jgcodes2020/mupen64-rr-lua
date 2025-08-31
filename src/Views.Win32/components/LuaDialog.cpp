@@ -163,6 +163,8 @@ static std::shared_ptr<t_instance_context> add_instance(const std::filesystem::p
     }
 
     SendMessage(g_dlg.mgr_hwnd, MUPM_REBUILD_INSTANCE_LIST, 0, 0);
+
+    return ctx;
 }
 
 /**
