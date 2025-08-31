@@ -211,8 +211,6 @@ namespace UpdateChecker
 
     void check(bool manual)
     {
-        TextEditDialog::show({.text = L"a", .caption = L"Changelog", .readonly = true});
-
         if (!manual && !g_config.automatic_update_checking)
         {
             g_view_logger->trace("[UpdateChecker] Automatic update checking disabled. Ignoring update check.");
