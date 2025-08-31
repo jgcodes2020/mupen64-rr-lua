@@ -527,7 +527,8 @@ static INT_PTR CALLBACK command_palette_proc(const HWND hwnd, const UINT msg, co
     case WM_MEASUREITEM:
         {
             const auto pmis = (PMEASUREITEMSTRUCT)lparam;
-            pmis->itemHeight = 18;
+            const auto scale = (double)GetDpiForWindow(hwnd) / 96.0;
+            pmis->itemHeight = (UINT)(14.0 * scale);
             return TRUE;
         }
     case WM_DRAWITEM:
