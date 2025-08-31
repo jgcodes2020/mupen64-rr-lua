@@ -8,8 +8,7 @@
 #include <components/TextEditDialog.h>
 
 struct t_text_edit_dialog_context {
-    std::wstring text{};
-    std::wstring caption{};
+    TextEditDialog::t_params params{};
 };
 
 static t_text_edit_dialog_context g_ctx{};
@@ -19,12 +18,13 @@ static INT_PTR CALLBACK about_dlg_proc(const HWND hwnd, const UINT message, cons
     switch (message)
     {
     case WM_INITDIALOG:
-        SetWindowText(hwnd, g_ctx.caption.c_str());
-        SetWindowText(GetDlgItem(hwnd, IDC_EDIT), g_ctx.text.c_str());
+        SetWindowText(hwnd, g_ctx.params.caption.c_str());
+        SetWindowText(GetDlgItem(hwnd, IDC_EDIT), g_ctx.params.text.c_str());
+        Edit_SetReadOnly(GetDlgItem(hwnd, IDC_EDIT), g_ctx.params.readonly ? TRUE : FALSE);
         SetFocus(GetDlgItem(hwnd, IDC_EDIT));
         break;
     case WM_DESTROY:
-        g_ctx.text = get_window_text(GetDlgItem(hwnd, IDC_EDIT)).value_or(L"");
+        g_ctx.params.text = get_window_text(GetDlgItem(hwnd, IDC_EDIT)).value_or(L"");
         break;
     case WM_CLOSE:
         EndDialog(hwnd, IDCANCEL);
@@ -48,11 +48,10 @@ static INT_PTR CALLBACK about_dlg_proc(const HWND hwnd, const UINT message, cons
     return TRUE;
 }
 
-std::optional<std::wstring> TextEditDialog::show(const std::wstring& text, const std::wstring& caption)
+std::optional<std::wstring> TextEditDialog::show(const t_params& params)
 {
     g_ctx = {};
-    g_ctx.text = std::move(text);
-    g_ctx.caption = std::move(caption);
+    g_ctx.params = params;
 
     const auto result = DialogBox(g_app_instance, MAKEINTRESOURCE(IDD_TEXT_EDIT), g_main_hwnd, about_dlg_proc);
 
@@ -61,5 +60,5 @@ std::optional<std::wstring> TextEditDialog::show(const std::wstring& text, const
         return std::nullopt;
     }
 
-    return g_ctx.text;
+    return g_ctx.params.text;
 }

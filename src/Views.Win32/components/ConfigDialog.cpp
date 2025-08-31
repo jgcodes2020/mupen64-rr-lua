@@ -125,7 +125,8 @@ bool t_options_item::edit(const HWND hwnd)
     case Type::Number:
         {
             const auto value = std::get<int32_t>(current_value.get());
-            const auto result = TextEditDialog::show(std::to_wstring(value), std::format(L"Edit value for {}", name));
+            const auto result = TextEditDialog::show({.text = std::to_wstring(value),
+                                                      .caption = std::format(L"Edit value for {}", name)});
             if (!result.has_value())
             {
                 break;
@@ -178,7 +179,8 @@ bool t_options_item::edit(const HWND hwnd)
     case Type::String:
         {
             const auto value = std::get<std::wstring>(current_value.get());
-            const auto result = TextEditDialog::show(value, std::format(L"Edit value for {}", name));
+            const auto result = TextEditDialog::show({.text = value,
+                                                      .caption = std::format(L"Edit value for {}", name)});
             if (result.has_value())
             {
                 current_value.set(result.value());
