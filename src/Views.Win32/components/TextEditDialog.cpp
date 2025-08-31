@@ -22,7 +22,7 @@ static INT_PTR CALLBACK about_dlg_proc(const HWND hwnd, const UINT message, cons
         SetWindowText(GetDlgItem(hwnd, IDC_EDIT), g_ctx.params.text.c_str());
         Edit_SetReadOnly(GetDlgItem(hwnd, IDC_EDIT), g_ctx.params.readonly ? TRUE : FALSE);
         SetFocus(GetDlgItem(hwnd, IDC_EDIT));
-        break;
+        return FALSE;
     case WM_DESTROY:
         g_ctx.params.text = get_window_text(GetDlgItem(hwnd, IDC_EDIT)).value_or(L"");
         break;
