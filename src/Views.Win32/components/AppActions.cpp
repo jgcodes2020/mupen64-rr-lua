@@ -773,6 +773,11 @@ static bool enable_when_emu_launched()
     return g_core_ctx->vr_get_launched();
 }
 
+static bool disable_when_emu_launched()
+{
+    return !g_core_ctx->vr_get_launched();
+}
+
 static bool enable_when_emu_launched_and_vcr_active()
 {
     return g_core_ctx->vr_get_launched() && g_core_ctx->vcr_get_task() != task_idle;
@@ -978,7 +983,7 @@ void AppActions::add()
     add_action(AUDIO_SETTINGS, {}, show_audio_plugin_settings);
     add_action(INPUT_SETTINGS, {}, show_input_plugin_settings);
     add_action(RSP_SETTINGS, {}, show_rsp_plugin_settings);
-    add_action(STATUSBAR, {.key = 'S', .alt = true}, toggle_statusbar, always_enabled, [] {
+    add_action(STATUSBAR, {.key = 'S', .alt = true}, toggle_statusbar, disable_when_emu_launched, [] {
         return g_config.is_statusbar_enabled;
     });
     add_action(SETTINGS, {.key = 'S', .ctrl = true}, show_settings_dialog);
