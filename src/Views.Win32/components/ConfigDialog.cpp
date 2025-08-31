@@ -282,13 +282,6 @@ INT_PTR CALLBACK plugin_discovery_dlgproc(HWND hwnd, UINT msg, WPARAM w_param, L
     case WM_CLOSE:
         EndDialog(hwnd, IDOK);
         break;
-    case WM_COMMAND:
-        switch (LOWORD(w_param))
-        {
-        default:
-            break;
-        }
-        break;
     default:
         return FALSE;
     }
