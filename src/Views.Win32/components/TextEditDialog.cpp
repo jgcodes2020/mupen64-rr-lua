@@ -27,7 +27,7 @@ static INT_PTR CALLBACK about_dlg_proc(const HWND hwnd, const UINT message, cons
         g_ctx.text = get_window_text(GetDlgItem(hwnd, IDC_EDIT)).value_or(L"");
         break;
     case WM_CLOSE:
-        EndDialog(hwnd, IDCLOSE);
+        EndDialog(hwnd, IDCANCEL);
         break;
     case WM_COMMAND:
         switch (LOWORD(w_param))
