@@ -225,12 +225,12 @@ void LuaManager::destroy_environment(t_lua_environment* lua)
 {
     runtime_assert(lua && lua->L, L"LuaManager::destroy_environment: Lua environment is already destroyed");
 
+    LuaCallbacks::invoke_callbacks_with_key(lua, LuaCallbacks::REG_ATSTOP);
+
     lua->destroying(lua);
 
     LuaRenderer::pre_destroy_renderer(&lua->rctx);
-
-    LuaCallbacks::invoke_callbacks_with_key(lua, LuaCallbacks::REG_ATSTOP);
-
+    
     ActionManager::begin_batch_work();
     for (const auto& action : lua->registered_actions)
     {
