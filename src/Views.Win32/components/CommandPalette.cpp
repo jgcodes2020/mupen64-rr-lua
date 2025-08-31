@@ -21,11 +21,10 @@ struct t_listbox_item {
 
     // (only applicable if action)
     std::wstring path{};
+    std::wstring display_name{};
 
     // (only applicable if option)
     size_t parent_group_id{};
-
-    // (only applicable if option)
     ConfigDialog::t_options_item* option_item{};
 
     t_listbox_item() = default;
@@ -70,6 +69,7 @@ t_listbox_item::t_listbox_item(const std::wstring& action, const std::wstring& g
     }
 
     text = ActionManager::get_display_name(action, true);
+    display_name = ActionManager::get_display_name(action);
     enabled = ActionManager::get_enabled(action);
     active = ActionManager::get_active(action);
     activatable = ActionManager::get_activatability(action);
@@ -218,8 +218,9 @@ static void build_listbox()
         const auto normalized_action = normalize(item.text);
         const auto normalized_group_name = normalize(item.parent_group_name);
         const auto normalized_hotkey = normalize(item.hint_text);
+        const auto normalized_display_name = normalize(item.display_name);
 
-        const auto matches = normalized_action.contains(query) || normalized_group_name.contains(query) || normalized_hotkey.contains(query);
+        const auto matches = normalized_action.contains(query) || normalized_group_name.contains(query) || normalized_hotkey.contains(query) || normalized_display_name.contains(query);
 
         return matches;
     };
