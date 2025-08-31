@@ -269,6 +269,7 @@ INT_PTR CALLBACK plugin_discovery_dlgproc(HWND hwnd, UINT msg, WPARAM w_param, L
                         break;
                     }
                 }
+                break;
             default:
                 break;
             }
