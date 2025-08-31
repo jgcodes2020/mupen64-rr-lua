@@ -478,6 +478,8 @@ namespace PianoRoll
 
         g_piano_roll_state_index = new_index;
         set_piano_roll_state(g_piano_roll_history[g_piano_roll_state_index]);
+
+        return true;
     }
 
     /**
