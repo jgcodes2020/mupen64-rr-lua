@@ -620,6 +620,8 @@ void on_emu_launched_changed(std::any data)
             SetWindowPos(g_main_hwnd, nullptr, 0, 0, g_config.window_width, g_config.window_height, SWP_NOMOVE);
         }
 
+        RedrawWindow(g_main_hwnd, nullptr, nullptr, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ERASE | RDW_ALLCHILDREN);
+
         previous_value = value;
     });
 }
