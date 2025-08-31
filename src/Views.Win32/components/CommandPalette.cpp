@@ -176,6 +176,8 @@ static bool try_change_hotkey(int32_t i)
     Hotkey::t_hotkey hotkey = g_config.hotkeys.at(item->path);
     Hotkey::show_prompt(g_main_hwnd, std::format(L"Choose a hotkey for {}", item->text), hotkey);
     Hotkey::try_associate_hotkey(g_main_hwnd, item->path, hotkey);
+
+    return true;
 }
 
 
