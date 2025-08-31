@@ -117,6 +117,23 @@ std::wstring luaL_checkwstring(lua_State* L, int i)
     return io_service.string_to_wstring(str);
 }
 
+std::wstring luaL_optwstring(lua_State* L, int i, const std::wstring& def)
+{
+    if (lua_isnoneornil(L, i))
+    {
+        return def;
+    }
+
+    return luaL_checkwstring(L, i);
+}
+
+std::wstring lua_pushwstring(lua_State* L, const std::wstring& str)
+{
+    const auto s = io_service.wstring_to_string(str);
+    lua_pushstring(L, s.c_str());
+    return str;
+}
+
 void LuaManager::init()
 {
     g_mupen_api_lua_code = load_resource_as_string(IDR_API_LUA_FILE, MAKEINTRESOURCE(TEXTFILE));

@@ -84,6 +84,24 @@ void lua_freecallback(lua_State* L, uintptr_t* token);
  */
 std::wstring luaL_checkwstring(lua_State* L, int i);
 
+
+/**
+ * \brief Gets the wide string at the given index in the Lua stack, or a default value if the value is not present or nil. Errors if the value is not a string.
+ * \param L The Lua state.
+ * \param i The index of the value in the Lua stack.
+ * \param def The default value to return if the value is not present or nil.
+ * \return The wide string at the given index in the Lua stack, or the default value.
+ */
+std::wstring luaL_optwstring(lua_State* L, int i, const std::wstring& def);
+
+/**
+ * \brief Pushes a wide string onto the Lua stack.
+ * \param L The Lua state.
+ * \param str The wide string to push.
+ * \return The pushed wide string.
+ */
+std::wstring lua_pushwstring(lua_State* L, const std::wstring& str);
+
 extern std::vector<t_lua_environment*> g_lua_environments;
 
 /**

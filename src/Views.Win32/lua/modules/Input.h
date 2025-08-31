@@ -6,6 +6,8 @@
 
 #pragma once
 
+#include <components/TextEditDialog.h>
+#include <lua/LuaManager.h>
 
 namespace LuaCore::Input
 {
@@ -342,64 +344,33 @@ namespace LuaCore::Input
         return 1;
     }
 
-    static INT_PTR CALLBACK InputPromptProc(HWND wnd, UINT msg, WPARAM wParam, LPARAM lParam)
-    {
-        static lua_State* L;
-        switch (msg)
-        {
-        case WM_INITDIALOG:
-            {
-                L = (lua_State*)lParam;
-                std::string str(luaL_optstring(L, 2, ""));
-                SetWindowText(wnd, io_service.string_to_wstring(luaL_optstring(L, 1, "input:")).c_str());
-                std::string::size_type p = 0;
-                while ((p = str.find('\n', p)) != std::string::npos)
-                {
-                    str.replace(p, 1, "\r\n");
-                    p += 2;
-                }
-                SetWindowText(GetDlgItem(wnd, IDC_TEXTBOX_LUAPROMPT), io_service.string_to_wstring(str).c_str());
-                SetFocus(GetDlgItem(wnd, IDC_TEXTBOX_LUAPROMPT));
-                break;
-            }
-        case WM_COMMAND:
-            switch (LOWORD(wParam))
-            {
-            case IDOK:
-                {
-                    HWND inp = GetDlgItem(wnd, IDC_TEXTBOX_LUAPROMPT);
-                    int size = GetWindowTextLength(inp) + 1;
-                    auto buf = new wchar_t[size];
-                    GetWindowText(inp, buf, size);
-                    std::wstring str(buf);
-                    delete[] buf;
-                    std::string::size_type p = 0;
-                    while ((p = str.find(L"\r\n", p)) != std::string::npos)
-                    {
-                        str.replace(p, 2, L"\n");
-                        p += 1;
-                    }
-                    lua_pushstring(L, io_service.wstring_to_string(str).c_str());
-                    EndDialog(wnd, 0);
-                    break;
-                }
-            case IDCANCEL:
-                lua_pushnil(L);
-                EndDialog(wnd, 1);
-                break;
-            }
-            break;
-        }
-        return FALSE;
-    }
 
-    static int InputPrompt(lua_State* L)
+    static int prompt(lua_State* L)
     {
-        DialogBoxParam(g_app_instance,
-                       MAKEINTRESOURCE(IDD_LUAINPUTPROMPT),
-                       g_main_hwnd,
-                       InputPromptProc,
-                       (LPARAM)L);
+        const auto title = luaL_optwstring(L, 1, L"input:");
+        const auto placeholder = luaL_optwstring(L, 2, L"");
+
+        const auto result = TextEditDialog::show(placeholder, title);
+
+        if (result.has_value())
+        {
+            auto str = result.value();
+
+            // COMPAT: \r\n is replaced with \n. Not sure why, but we're keeping this old implementation detail.
+            std::string::size_type p = 0;
+            while ((p = str.find(L"\r\n", p)) != std::string::npos)
+            {
+                str.replace(p, 2, L"\n");
+                p += 1;
+            }
+
+            lua_pushwstring(L, str);
+        }
+        else
+        {
+            lua_pushnil(L);
+        }
+
         return 1;
     }
 } // namespace LuaCore::Input

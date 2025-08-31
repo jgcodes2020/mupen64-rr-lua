@@ -1315,12 +1315,11 @@ function input.get() end
 ---@return table
 function input.diff(t1, t2) end
 
----Opens a window where the user can input text.
----If `OK` is clicked, that text is returned.
----If `Cancel` is clicked or the window is closed, `nil` is returned.
+---Opens a dialog in which the user can input text. 
+---If the dialog is cancelled, `nil` is returned.
 ---@nodiscard
----@param title string? The title of the text box. Defaults to "input:".
----@param placeholder string? The text box is filled with this string when it opens. Defaults to "".
+---@param title string? The title of the text box. Defaults to `"input:"`.
+---@param placeholder string? The text box is filled with this string when it opens. Defaults to `""`.
 ---@return string|nil
 function input.prompt(title, placeholder) end
 

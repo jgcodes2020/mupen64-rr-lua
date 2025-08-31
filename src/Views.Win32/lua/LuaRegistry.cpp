@@ -176,7 +176,7 @@ const luaL_Reg D2D_FUNCS[] = {
 const luaL_Reg INPUT_FUNCS[] = {
 {"get", LuaCore::Input::get_keys},
 {"diff", LuaCore::Input::GetKeyDifference},
-{"prompt", LuaCore::Input::InputPrompt},
+{"prompt", LuaCore::Input::prompt},
 {"get_key_name_text", LuaCore::Input::LuaGetKeyNameText},
 {NULL, NULL}};
 
