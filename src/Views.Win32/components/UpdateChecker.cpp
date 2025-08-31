@@ -8,6 +8,7 @@
 #include <Config.h>
 #include <DialogService.h>
 #include <winhttp.h>
+#include <components/TextEditDialog.h>
 #include <components/UpdateChecker.h>
 #include <json/json.hpp>
 
@@ -200,45 +201,6 @@ namespace UpdateChecker
         PostMessage(g_main_hwnd, WM_CLOSE, 0, 0);
     }
 
-    INT_PTR CALLBACK changelog_dlgproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
-    {
-        switch (msg)
-        {
-        case WM_INITDIALOG:
-            {
-                const auto str = (wchar_t*)lparam;
-                const auto edit_hwnd = GetDlgItem(hwnd, IDC_EDIT);
-
-                SetWindowText(hwnd, L"Changelog");
-                Edit_SetText(edit_hwnd, str);
-                Edit_SetReadOnly(edit_hwnd, true);
-
-                SetFocus(GetDlgItem(hwnd, IDC_EDIT));
-                break;
-            }
-        case WM_CLOSE:
-            EndDialog(hwnd, IDCANCEL);
-            break;
-        case WM_COMMAND:
-            switch (LOWORD(wparam))
-            {
-            case IDOK:
-                EndDialog(hwnd, 0);
-                break;
-            case IDCANCEL:
-                EndDialog(hwnd, 1);
-                break;
-            }
-            break;
-        }
-        return FALSE;
-    }
-
-    void show_changelog(const std::wstring& changelog)
-    {
-        DialogBoxParam(g_app_instance, MAKEINTRESOURCE(IDD_TEXT_EDIT), g_main_hwnd, changelog_dlgproc, (LPARAM)changelog.data());
-    }
-
     void show_connectivity_error(bool manual)
     {
         if (manual)
@@ -322,8 +284,11 @@ namespace UpdateChecker
             download_executable(data);
             break;
         case 1:
-            show_changelog(io_service.string_to_wstring(body.get<std::string>()));
-            goto show_prompt;
+            {
+                const auto changelog = io_service.string_to_wstring(body.get<std::string>());
+                TextEditDialog::show(changelog, L"Changelog");
+                goto show_prompt;
+            }
         case 2:
             g_config.ignored_version = version;
             break;
