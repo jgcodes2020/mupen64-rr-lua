@@ -662,7 +662,7 @@ struct core_ctx {
 #pragma endregion
 
 #pragma region Tracelog
-    
+
     /**
      * \brief Gets whether tracelogging is active.
      */

@@ -239,11 +239,11 @@ const luaL_Reg ACTION_FUNCS[] = {
 {NULL, NULL}};
 
 const luaL_Reg CLIPBOARD_FUNCS[] = {
-    {"get", LuaCore::Clipboard::get},
-    {"get_content_type", LuaCore::Clipboard::get_content_type},
-    {"set", LuaCore::Clipboard::set},
-    {"clear", LuaCore::Clipboard::clear},
-    {NULL, NULL}};
+{"get", LuaCore::Clipboard::get},
+{"get_content_type", LuaCore::Clipboard::get_content_type},
+{"set", LuaCore::Clipboard::set},
+{"clear", LuaCore::Clipboard::clear},
+{NULL, NULL}};
 
 const std::pair<std::string, lua_CFunction> OVERRIDE_FUNCS[] = {
 {"os.exit", LuaCore::Global::Exit}};
@@ -265,7 +265,7 @@ void register_as_package(lua_State* lua_state, const char* name, const luaL_Reg 
     luaL_newlib(lua_state, regs);
     lua_setglobal(lua_state, name);
 }
-    
+
 static void register_function(lua_State* L, const std::wstring& name, const lua_CFunction& func)
 {
     const auto parts = io_service.split_string(name, L".");

@@ -264,7 +264,7 @@ namespace LuaCore::Action
         lua_pushboolean(L, result);
         return 1;
     }
-    
+
     static int get_activatability(lua_State* L)
     {
         const auto path = luaL_checkwstring(L, 1);

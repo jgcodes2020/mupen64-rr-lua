@@ -882,13 +882,13 @@ TEST_CASE("mutex_unlocked_during_emu_pause_changed_callback_called_while_playbac
     };
 
     const auto inputs = std::vector<core_buttons>{
-        {1},
-        {2},
-        {3},
-        {4}};
+    {1},
+    {2},
+    {3},
+    {4}};
 
     core_create(&params, &ctx);
-    
+
     cfg.wait_at_movie_end = true;
     vcr.inputs = inputs;
     vcr.hdr.length_samples = inputs.size();

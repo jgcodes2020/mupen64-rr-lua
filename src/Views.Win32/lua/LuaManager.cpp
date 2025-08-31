@@ -230,7 +230,7 @@ void LuaManager::destroy_environment(t_lua_environment* lua)
     lua->destroying(lua);
 
     LuaRenderer::pre_destroy_renderer(&lua->rctx);
-    
+
     ActionManager::begin_batch_work();
     for (const auto& action : lua->registered_actions)
     {

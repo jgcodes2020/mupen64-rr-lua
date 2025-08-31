@@ -454,7 +454,7 @@ static void migrate_config(t_config& config, const mINI::INIStructure& ini)
         catch (...)
         {
         }
-        
+
         g_view_logger->info(L"[Config] Migrating {} -> {} ({})", io_service.string_to_wstring(old_section_name), action, hotkey.to_wstring());
         config.hotkeys[action] = hotkey;
         config.inital_hotkeys[action] = hotkey;

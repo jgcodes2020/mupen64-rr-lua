@@ -137,5 +137,5 @@ namespace PluginUtil
      * \brief Gets the extended function set for RSP plugins.
      */
     core_plugin_extended_funcs rsp_extended_funcs();
-    
+
 } // namespace PluginUtil

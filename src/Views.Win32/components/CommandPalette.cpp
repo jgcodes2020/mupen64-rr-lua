@@ -396,7 +396,7 @@ static LRESULT CALLBACK keyboard_interaction_subclass_proc(HWND hwnd, UINT msg, 
         if (wparam == VK_F2)
         {
             const auto selected_index = ListBox_GetCurSel(g_ctx.listbox_hwnd);
-            
+
             // HACK: We want to keep the command palette open while changing the hotkey, but we also want to prevent it from closing.
             EnableWindow(g_ctx.hwnd, false);
             g_ctx.dont_close_on_focus_loss = true;

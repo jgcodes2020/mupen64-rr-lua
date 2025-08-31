@@ -393,7 +393,7 @@ namespace Config
      * \brief Applies the current config state and saves it to the config file.
      */
     void apply_and_save();
-    
+
     /**
      * \brief Restores the config state from the config file.
      */
