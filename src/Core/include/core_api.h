@@ -180,7 +180,7 @@ struct core_params {
     /**
      * \brief An IIOHelperService implementation.
      */
-    IIOHelperService* io_service;
+    PlatformService* io_service;
 
     /**
      * \brief The core callbacks.

@@ -55,9 +55,9 @@ extern "C" {
 #include <cwctype>
 
 #include <Loggers.h>
-#include <MiscHelpers.h>
+#include <ViewHelpers.h>
 #include <Main.h>
 #include <lua/LuaTypes.h>
 #include <Config.h>
-#include <IIOHelperService.h>
+#include <PlatformService.h>
 #include <ResizeAnchor.h>

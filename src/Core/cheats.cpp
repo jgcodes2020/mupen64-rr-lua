@@ -18,7 +18,7 @@ bool core_cht_compile(const std::wstring& code, core_cheat& cheat)
 {
     core_cheat compiled_cheat{};
 
-    auto lines = g_core->io_service->split_wstring(code, L"\n");
+    auto lines = MiscHelpers::split_wstring(code, L"\n");
 
     bool serial = false;
     size_t serial_count = 0;
@@ -172,7 +172,7 @@ bool cht_read_from_file(const std::filesystem::path& path, std::vector<core_chea
 
     std::wstring wstr = g_core->io_service->string_to_wstring(str);
 
-    const auto lines = g_core->io_service->split_string(wstr, L"\n");
+    const auto lines = MiscHelpers::split_wstring(wstr, L"\n");
 
     bool reading_cheat_code = false;
     cheats.clear();

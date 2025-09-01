@@ -175,7 +175,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="lib\IIOHelperService.h" />
+    <ClInclude Include="src\Common\PlatformService.h" />
+    <ClInclude Include="src\Common\MiscHelpers.h" />
     <ClInclude Include="src\Core\Core.h" />
     <ClInclude Include="src\Core\alloc.h" />
     <ClInclude Include="src\Core\cheats.h" />

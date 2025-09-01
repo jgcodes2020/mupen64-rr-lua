@@ -21,7 +21,7 @@ void RecentMenu::add(const ActionManager::action_filter& menu_path, std::vector<
         vec.pop_back();
     }
     std::erase_if(vec, [&](const auto& str) {
-        return io_service.iequals(str, val) || std::filesystem::path(str).compare(val) == 0;
+        return MiscHelpers::iequals(str, val) || std::filesystem::path(str).compare(val) == 0;
     });
     vec.insert(vec.begin(), val);
 

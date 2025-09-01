@@ -205,7 +205,7 @@ static void build_listbox()
 {
     const auto normalize = [](std::wstring str) -> std::wstring {
         std::ranges::transform(str, str.begin(), toupper);
-        str = io_service.trim(str);
+        str = MiscHelpers::trim(str);
         return str;
     };
 
@@ -267,7 +267,7 @@ static void build_listbox()
         {
             segment = ActionManager::get_display_name(segment, true);
         }
-        const auto name = io_service.join_wstring(segments, std::format(L" {} ", ActionManager::SEGMENT_SEPARATOR));
+        const auto name = MiscHelpers::join_wstring(segments, std::format(L" {} ", ActionManager::SEGMENT_SEPARATOR));
 
         std::erase_if(actions, [&](const auto& action) {
             const auto action_segments = ActionManager::get_segments(action);

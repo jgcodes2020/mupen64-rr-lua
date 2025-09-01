@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include <MiscHelpers.h>
+#include <ViewHelpers.h>
 #include <components/FilePicker.h>
 #include <components/LuaDialog.h>
 

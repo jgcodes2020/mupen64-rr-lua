@@ -268,7 +268,7 @@ void register_as_package(lua_State* lua_state, const char* name, const luaL_Reg 
 
 static void register_function(lua_State* L, const std::wstring& name, const lua_CFunction& func)
 {
-    const auto parts = io_service.split_string(name, L".");
+    const auto parts = MiscHelpers::split_wstring(name, L".");
 
     runtime_assert(parts.size() == 2, L"Accessor invalid");
 

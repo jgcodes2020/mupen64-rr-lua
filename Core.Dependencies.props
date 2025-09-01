@@ -2,7 +2,7 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <ItemDefinitionGroup Condition="'$(Platform)'=='Win32'">
         <ClCompile>
-            <AdditionalIncludeDirectories>lib/;lib/libdeflate;lib/xxhash;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+            <AdditionalIncludeDirectories>src/Common;lib/;lib/libdeflate;lib/xxhash;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
         </ClCompile>
         <Link>
             <AdditionalLibraryDirectories>lib/libdeflate;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -11,7 +11,7 @@
     </ItemDefinitionGroup>
     <ItemDefinitionGroup Condition="'$(Platform)'=='x64'">
         <ClCompile>
-            <AdditionalIncludeDirectories>lib/;lib/libdeflate-x64;lib/xxhash;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+            <AdditionalIncludeDirectories>src/Common;lib/;lib/libdeflate-x64;lib/xxhash;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
         </ClCompile>
         <Link>
             <AdditionalLibraryDirectories>lib/libdeflate-x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>

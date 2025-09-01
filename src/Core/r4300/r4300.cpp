@@ -2177,7 +2177,7 @@ core_result vr_start_rom_impl(std::filesystem::path path)
         }
 
         const auto matching_rom = g_core->find_available_rom([&](auto header) {
-            g_core->io_service->strtrim((char*)header.nom, sizeof(header.nom));
+            MiscHelpers::strtrim((char*)header.nom, sizeof(header.nom));
             return movie_header.rom_crc1 == header.CRC1 && !_strnicmp((const char*)header.nom, movie_header.rom_name, 20);
         });
 

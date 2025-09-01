@@ -6,7 +6,7 @@
 
 #include "stdafx.h"
 #include <Core.h>
-#include <IIOHelperService.h>
+#include <PlatformService.h>
 #include <md5.h>
 #include <memory/memory.h>
 #include <r4300/r4300.h>
@@ -148,7 +148,7 @@ bool rom_load(std::filesystem::path path)
     }
 
     auto rom_buf = g_core->io_service->read_file_buffer(path);
-    auto decompressed_rom = g_core->io_service->auto_decompress(rom_buf, 8000000);
+    auto decompressed_rom = MiscHelpers::auto_decompress(rom_buf, 8000000);
 
     if (decompressed_rom.empty())
     {
@@ -202,7 +202,7 @@ bool rom_load(std::filesystem::path path)
     ROM_HEADER.Unknown[1] = 0;
 
     // trim header
-    g_core->io_service->strtrim((char*)ROM_HEADER.nom, sizeof(ROM_HEADER.nom));
+    MiscHelpers::strtrim((char*)ROM_HEADER.nom, sizeof(ROM_HEADER.nom));
 
     {
         md5_state_t state;

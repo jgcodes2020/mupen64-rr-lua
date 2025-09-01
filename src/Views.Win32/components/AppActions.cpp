@@ -576,7 +576,7 @@ static void show_ram_start()
     wchar_t proc_name[MAX_PATH] = {0};
     GetModuleFileName(NULL, proc_name, MAX_PATH);
 
-    IIOHelperService::t_path_segment_info info;
+    PlatformService::t_path_segment_info info;
     if (!io_service.get_path_segment_info(proc_name, info))
     {
         return;

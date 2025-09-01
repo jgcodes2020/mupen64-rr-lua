@@ -1721,7 +1721,7 @@ std::vector<t_options_group> ConfigDialog::get_option_groups()
         {
             segment = ActionManager::get_display_name(segment, true);
         }
-        const auto name = io_service.join_wstring(segments, std::format(L" {} ", ActionManager::SEGMENT_SEPARATOR));
+        const auto name = MiscHelpers::join_wstring(segments, std::format(L" {} ", ActionManager::SEGMENT_SEPARATOR));
         option_group.name = name;
     }
 

@@ -5,7 +5,7 @@
  */
 
 #include "stdafx.h"
-#include <IIOHelperService.h>
+#include <PlatformService.h>
 #include <Core.h>
 #include <cheats.h>
 #include <include/core_api.h>
@@ -127,7 +127,7 @@ std::filesystem::path find_accompanying_file_for_movie(std::filesystem::path pat
     // A.B.m64 -> A.st, A.B.st
     // A.B.C.m64->A.st, A.B.st, A.B.C.st
 
-    IIOHelperService::t_path_segment_info info;
+    PlatformService::t_path_segment_info info;
     if (!g_core->io_service->get_path_segment_info(path, info))
     {
         return "";
@@ -136,7 +136,7 @@ std::filesystem::path find_accompanying_file_for_movie(std::filesystem::path pat
     size_t i = 0;
     while (true)
     {
-        const auto result = g_core->io_service->str_nth_occurence(info.filename, L".", i + 1);
+        const auto result = MiscHelpers::str_nth_occurence(info.filename, L".", i + 1);
         std::wstring matched_filename;
 
         // Standard case, no st sharing
@@ -916,7 +916,7 @@ void vcr_on_controller_poll(int32_t index, core_buttons* input)
 // Consists of the movie path, but with the stem trimmed at the first dot and with the specified extension (must contain dot)
 std::filesystem::path get_path_for_new_movie(std::filesystem::path path, const std::wstring& extension = L".st")
 {
-    auto result = g_core->io_service->str_nth_occurence(path.stem().wstring(), L".", 1);
+    auto result = MiscHelpers::str_nth_occurence(path.stem().wstring(), L".", 1);
 
     // Standard case, no st shortcutting
     if (result == std::wstring::npos)
@@ -925,7 +925,7 @@ std::filesystem::path get_path_for_new_movie(std::filesystem::path path, const s
         return path;
     }
 
-    IIOHelperService::t_path_segment_info info;
+    PlatformService::t_path_segment_info info;
     if (!g_core->io_service->get_path_segment_info(path, info))
     {
         return "";

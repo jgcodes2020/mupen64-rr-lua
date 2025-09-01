@@ -11,7 +11,7 @@
 static core_cfg cfg{};
 static core_params params{};
 static core_ctx* ctx = nullptr;
-static IIOHelperService io_helper_service{};
+static PlatformService io_helper_service{};
 
 /**
  * \brief Initializes the test environment by resetting the vcr state and core parameters, as well as filling out some required functions.

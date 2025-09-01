@@ -401,7 +401,7 @@ std::wstring ActionManager::get_display_name(const action_filter& filter, bool i
         auto name = get_segments(filter).back();
         if (name.ends_with(SEPARATOR_SUFFIX))
         {
-            name = io_service.trim(name.substr(0, name.size() - SEPARATOR_SUFFIX.size()));
+            name = MiscHelpers::trim(name.substr(0, name.size() - SEPARATOR_SUFFIX.size()));
         }
         return name;
     }
@@ -521,10 +521,10 @@ std::vector<action_filter> ActionManager::get_segments(const action_filter& filt
         return g_mgr.segment_cache.get(filter).value();
     }
 
-    std::vector<action_filter> parts = io_service.split_wstring(filter, SEGMENT_SEPARATOR);
+    std::vector<action_filter> parts = MiscHelpers::split_wstring(filter, SEGMENT_SEPARATOR);
     for (auto& part : parts)
     {
-        part = io_service.trim(part);
+        part = MiscHelpers::trim(part);
     }
 
     std::erase_if(parts, [](const std::wstring& part) {
@@ -539,7 +539,7 @@ std::vector<action_filter> ActionManager::get_segments(const action_filter& filt
 ActionManager::action_filter ActionManager::normalize_filter(const action_filter& filter)
 {
     const auto parts = get_segments(filter);
-    return io_service.join_wstring(parts, SEGMENT_SEPARATOR);
+    return MiscHelpers::join_wstring(parts, SEGMENT_SEPARATOR);
 }
 
 void ActionManager::invoke(const action_path& path, const bool up)

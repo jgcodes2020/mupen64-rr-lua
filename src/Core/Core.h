@@ -7,6 +7,7 @@
 #pragma once
 
 #include <include/core_api.h>
+#include <MiscHelpers.h>
 
 extern core_params* g_core;
 extern core_ctx g_ctx;

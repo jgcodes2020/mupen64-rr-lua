@@ -55,7 +55,7 @@ namespace RomBrowser
             {
                 return false;
             }
-            return io_service.iequals(c_extension, L".z64") || io_service.iequals(c_extension, L".n64") || io_service.iequals(c_extension, L".v64") || io_service.iequals(c_extension, L".rom");
+            return MiscHelpers::iequals(c_extension, L".z64") || MiscHelpers::iequals(c_extension, L".n64") || MiscHelpers::iequals(c_extension, L".v64") || MiscHelpers::iequals(c_extension, L".rom");
         });
         return filtered_rom_paths;
     }
@@ -258,7 +258,7 @@ namespace RomBrowser
 
                 g_core_ctx->vr_byteswap((uint8_t*)&header);
 
-                io_service.strtrim((char*)header.nom, sizeof(header.nom));
+                MiscHelpers::strtrim((char*)header.nom, sizeof(header.nom));
 
                 // We need this for later, because listview assumes it has a nul terminator
                 header.nom[sizeof(header.nom) - 1] = '\0';

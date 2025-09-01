@@ -51,7 +51,7 @@ static HANDLE dispatcher_done_event{};
 
 core_params g_core{};
 core_ctx* g_core_ctx;
-IIOHelperService io_service{};
+PlatformService io_service{};
 
 bool g_frame_changed = true;
 bool g_exit = false;
@@ -524,7 +524,7 @@ void update_titlebar()
 
     if (g_core_ctx->vcr_get_task() != task_idle)
     {
-        IIOHelperService::t_path_segment_info info;
+        PlatformService::t_path_segment_info info;
         io_service.get_path_segment_info(g_core_ctx->vcr_get_path(), info);
 
         text += std::format(L" - {}", info.filename);
@@ -759,7 +759,7 @@ std::filesystem::path get_app_full_path()
 
     app_path.resize(app_path_len);
 
-    IIOHelperService::t_path_segment_info info;
+    PlatformService::t_path_segment_info info;
     io_service.get_path_segment_info(app_path, info);
 
     return info.drive + info.dir;
@@ -789,7 +789,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
             DragQueryFile(drop, 0, fname, std::size(fname));
 
             std::filesystem::path path = fname;
-            std::string extension = io_service.to_lower(path.extension().string());
+            std::string extension = MiscHelpers::to_lower(path.extension().string());
 
             if (extension == ".n64" || extension == ".z64" || extension == ".v64" || extension == ".rom")
             {

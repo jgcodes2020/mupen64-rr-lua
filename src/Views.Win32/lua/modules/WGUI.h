@@ -236,7 +236,7 @@ namespace LuaCore::Wgui
         }
 
         auto s = io_service.string_to_wstring(lua_tostring(L, 1));
-        if (io_service.iequals(s, L"null"))
+        if (MiscHelpers::iequals(s, L"null"))
             lua->rctx.brush = (HBRUSH)GetStockObject(NULL_BRUSH);
         else
             lua->rctx.brush = CreateSolidBrush(StrToColor(s));
@@ -256,7 +256,7 @@ namespace LuaCore::Wgui
         auto s = io_service.string_to_wstring(lua_tostring(L, 1));
         int width = luaL_optnumber(L, 2, 1);
 
-        if (io_service.iequals(s, L"null"))
+        if (MiscHelpers::iequals(s, L"null"))
             lua->rctx.pen = (HPEN)GetStockObject(NULL_PEN);
         else
             lua->rctx.pen = CreatePen(PS_SOLID, width, StrToColor(s));
@@ -277,7 +277,7 @@ namespace LuaCore::Wgui
 
         auto s = io_service.string_to_wstring(lua_tostring(L, 1));
 
-        if (io_service.iequals(s, L"null"))
+        if (MiscHelpers::iequals(s, L"null"))
         {
             lua->rctx.bkmode = TRANSPARENT;
         }
