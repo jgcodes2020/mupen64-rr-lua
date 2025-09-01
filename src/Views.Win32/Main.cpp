@@ -1386,8 +1386,25 @@ static bool normal_message_pump(MSG* msg)
     return true;
 }
 
+/**
+ * \brief Enables common mitigations.
+ */
+static void enable_mitigations()
+{
+    PROCESS_MITIGATION_STRICT_HANDLE_CHECK_POLICY handles = {0};
+    handles.RaiseExceptionOnInvalidHandleReference = 1;
+    handles.HandleExceptionsPermanentlyEnabled = 1;
+    runtime_assert(SetProcessMitigationPolicy(ProcessStrictHandleCheckPolicy, &handles, sizeof(handles)), L"Couldn't set process mitigation policy.");
+
+    PROCESS_MITIGATION_EXTENSION_POINT_DISABLE_POLICY ext = {0};
+    ext.DisableExtensionPoints = 1;
+    runtime_assert(SetProcessMitigationPolicy(ProcessExtensionPointDisablePolicy, &ext, sizeof(ext)), L"Couldn't set process mitigation policy.");
+}
+
 int CALLBACK WinMain(const HINSTANCE hInstance, HINSTANCE, LPSTR, const int nShowCmd)
 {
+    enable_mitigations();
+
 #ifdef _DEBUG
     open_console();
 #endif
