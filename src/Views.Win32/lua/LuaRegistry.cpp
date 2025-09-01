@@ -76,41 +76,34 @@ const luaL_Reg EMU_FUNCS[] = {
 
 const luaL_Reg MEMORY_FUNCS[] = {
 // memory conversion functions
-{"inttofloat", LuaCore::Memory::LuaIntToFloat},
-{"inttodouble", LuaCore::Memory::LuaIntToDouble},
-{"floattoint", LuaCore::Memory::LuaFloatToInt},
-{"doubletoint", LuaCore::Memory::LuaDoubleToInt},
-{"qwordtonumber", LuaCore::Memory::LuaQWordToNumber},
+{"inttofloat", LuaCore::Memory::int_to_float},
+{"inttodouble", LuaCore::Memory::int_to_double},
+{"floattoint", LuaCore::Memory::float_to_int},
+{"doubletoint", LuaCore::Memory::double_to_int},
+{"qwordtonumber", LuaCore::Memory::qword_to_number},
 
-// word = 2 bytes
-// reading functions
-{"readbytesigned", LuaCore::Memory::LuaReadByteSigned},
-{"readbyte", LuaCore::Memory::LuaReadByteUnsigned},
-{"readwordsigned", LuaCore::Memory::LuaReadWordSigned},
-{"readword", LuaCore::Memory::LuaReadWordUnsigned},
-{"readdwordsigned", LuaCore::Memory::LuaReadDWordSigned},
-{"readdword", LuaCore::Memory::LuaReadDWorldUnsigned},
-{"readqwordsigned", LuaCore::Memory::LuaReadQWordSigned},
-{"readqword", LuaCore::Memory::LuaReadQWordUnsigned},
-{"readfloat", LuaCore::Memory::LuaReadFloat},
-{"readdouble", LuaCore::Memory::LuaReadDouble},
-{"readsize", LuaCore::Memory::LuaReadSize},
+{"readbyte", LuaCore::Memory::read_byte},
+{"readbytesigned", LuaCore::Memory::read_byte_signed},
+{"readword", LuaCore::Memory::read_word},
+{"readwordsigned", LuaCore::Memory::read_word_signed},
+{"readdword", LuaCore::Memory::read_dword},
+{"readdwordsigned", LuaCore::Memory::read_dword_signed},
+{"readqword", LuaCore::Memory::read_qword},
+{"readqwordsigned", LuaCore::Memory::read_qword_signed},
+{"readfloat", LuaCore::Memory::read_float},
+{"readdouble", LuaCore::Memory::read_double},
+{"readsize", LuaCore::Memory::read_size},
 
-// writing functions
-// all of these are assumed to be unsigned
-{"writebyte", LuaCore::Memory::LuaWriteByteUnsigned},
-{"writeword", LuaCore::Memory::LuaWriteWordUnsigned},
-{"writedword", LuaCore::Memory::LuaWriteDWordUnsigned},
-{"writeqword", LuaCore::Memory::LuaWriteQWordUnsigned},
-{"writefloat", LuaCore::Memory::LuaWriteFloatUnsigned},
-{"writedouble", LuaCore::Memory::LuaWriteDoubleUnsigned},
+{"writebyte", LuaCore::Memory::write_byte},
+{"writeword", LuaCore::Memory::write_word},
+{"writedword", LuaCore::Memory::write_dword},
+{"writeqword", LuaCore::Memory::write_qword},
+{"writefloat", LuaCore::Memory::write_float},
+{"writedouble", LuaCore::Memory::write_double},
+{"writesize", LuaCore::Memory::write_size},
 
-{"writesize", LuaCore::Memory::LuaWriteSize},
-
-{"recompilenow", LuaCore::Memory::Recompile},
-{"recompile", LuaCore::Memory::Recompile},
-{"recompilenext", LuaCore::Memory::Recompile},
-{"recompilenextall", LuaCore::Memory::RecompileNextAll},
+{"recompile", LuaCore::Memory::recompile},
+{"recompilenextall", LuaCore::Memory::recompile_all},
 
 {NULL, NULL}};
 

@@ -39,70 +39,70 @@ namespace LuaCore::Memory
 
     // Read functions
 
-    static int LuaReadByteUnsigned(lua_State* L)
+    static int read_byte(lua_State* L)
     {
         UCHAR value = core_rdram_load<UCHAR>((uint8_t*)g_core_ctx->rdram, luaL_checkinteger(L, 1));
         lua_pushinteger(L, value);
         return 1;
     }
 
-    static int LuaReadByteSigned(lua_State* L)
+    static int read_byte_signed(lua_State* L)
     {
         CHAR value = core_rdram_load<CHAR>((uint8_t*)g_core_ctx->rdram, luaL_checkinteger(L, 1));
         lua_pushinteger(L, value);
         return 1;
     }
 
-    static int LuaReadWordUnsigned(lua_State* L)
+    static int read_word(lua_State* L)
     {
         USHORT value = core_rdram_load<USHORT>((uint8_t*)g_core_ctx->rdram, luaL_checkinteger(L, 1));
         lua_pushinteger(L, value);
         return 1;
     }
 
-    static int LuaReadWordSigned(lua_State* L)
+    static int read_word_signed(lua_State* L)
     {
         SHORT value = core_rdram_load<SHORT>((uint8_t*)g_core_ctx->rdram, luaL_checkinteger(L, 1));
         lua_pushinteger(L, value);
         return 1;
     }
 
-    static int LuaReadDWorldUnsigned(lua_State* L)
+    static int read_dword(lua_State* L)
     {
         ULONG value = core_rdram_load<ULONG>((uint8_t*)g_core_ctx->rdram, luaL_checkinteger(L, 1));
         lua_pushinteger(L, value);
         return 1;
     }
 
-    static int LuaReadDWordSigned(lua_State* L)
+    static int read_dword_signed(lua_State* L)
     {
         LONG value = core_rdram_load<LONG>((uint8_t*)g_core_ctx->rdram, luaL_checkinteger(L, 1));
         lua_pushinteger(L, value);
         return 1;
     }
 
-    static int LuaReadQWordUnsigned(lua_State* L)
+    static int read_qword(lua_State* L)
     {
         ULONGLONG value = core_rdram_load<ULONGLONG>((uint8_t*)g_core_ctx->rdram, luaL_checkinteger(L, 1));
         LuaPushQword(L, value);
         return 1;
     }
 
-    static int LuaReadQWordSigned(lua_State* L)
+    static int read_qword_signed(lua_State* L)
     {
         LONGLONG value = core_rdram_load<LONGLONG>((uint8_t*)g_core_ctx->rdram, luaL_checkinteger(L, 1));
         LuaPushQword(L, value);
         return 1;
     }
 
-    static int LuaReadFloat(lua_State* L)
+    static int read_float(lua_State* L)
     {
         ULONG value = core_rdram_load<ULONG>((uint8_t*)g_core_ctx->rdram, luaL_checkinteger(L, 1));
         lua_pushnumber(L, *(FLOAT*)&value);
         return 1;
     }
 
-    static int LuaReadDouble(lua_State* L)
+    static int read_double(lua_State* L)
     {
         ULONGLONG value = core_rdram_load<ULONGLONG>((uint8_t*)g_core_ctx->rdram, luaL_checkinteger(L, 1));
         lua_pushnumber(L, *(DOUBLE*)value);
@@ -111,45 +111,45 @@ namespace LuaCore::Memory
 
     // Write functions
 
-    static int LuaWriteByteUnsigned(lua_State* L)
+    static int write_byte(lua_State* L)
     {
         core_rdram_store<UCHAR>((uint8_t*)g_core_ctx->rdram, luaL_checkinteger(L, 1), luaL_checkinteger(L, 2));
         return 0;
     }
 
-    static int LuaWriteWordUnsigned(lua_State* L)
+    static int write_word(lua_State* L)
     {
         core_rdram_store<USHORT>((uint8_t*)g_core_ctx->rdram, luaL_checkinteger(L, 1), luaL_checkinteger(L, 2));
         return 0;
     }
 
-    static int LuaWriteDWordUnsigned(lua_State* L)
+    static int write_dword(lua_State* L)
     {
         core_rdram_store<ULONG>((uint8_t*)g_core_ctx->rdram, luaL_checkinteger(L, 1), luaL_checkinteger(L, 2));
         return 0;
     }
 
-    static int LuaWriteQWordUnsigned(lua_State* L)
+    static int write_qword(lua_State* L)
     {
         core_rdram_store<ULONGLONG>((uint8_t*)g_core_ctx->rdram, luaL_checkinteger(L, 1), LuaCheckQWord(L, 2));
         return 0;
     }
 
-    static int LuaWriteFloatUnsigned(lua_State* L)
+    static int write_float(lua_State* L)
     {
         FLOAT f = luaL_checknumber(L, -1);
         core_rdram_store<ULONG>((uint8_t*)g_core_ctx->rdram, luaL_checkinteger(L, 1), *(ULONG*)&f);
         return 0;
     }
 
-    static int LuaWriteDoubleUnsigned(lua_State* L)
+    static int write_double(lua_State* L)
     {
         DOUBLE f = luaL_checknumber(L, -1);
         core_rdram_store<ULONGLONG>((uint8_t*)g_core_ctx->rdram, luaL_checkinteger(L, 1), *(ULONGLONG*)&f);
         return 0;
     }
 
-    static int LuaReadSize(lua_State* L)
+    static int read_size(lua_State* L)
     {
         ULONG addr = luaL_checkinteger(L, 1);
         int size = luaL_checkinteger(L, 2);
@@ -187,7 +187,7 @@ namespace LuaCore::Memory
         return 1;
     }
 
-    static int LuaWriteSize(lua_State* L)
+    static int write_size(lua_State* L)
     {
         ULONG addr = luaL_checkinteger(L, 1);
         int size = luaL_checkinteger(L, 2);
@@ -223,35 +223,35 @@ namespace LuaCore::Memory
         return 0;
     }
 
-    static int LuaIntToFloat(lua_State* L)
+    static int int_to_float(lua_State* L)
     {
         ULONG n = luaL_checknumber(L, 1);
         lua_pushnumber(L, *(FLOAT*)&n);
         return 1;
     }
 
-    static int LuaIntToDouble(lua_State* L)
+    static int int_to_double(lua_State* L)
     {
         ULONGLONG n = LuaCheckQWord(L, 1);
         lua_pushnumber(L, *(DOUBLE*)&n);
         return 1;
     }
 
-    static int LuaFloatToInt(lua_State* L)
+    static int float_to_int(lua_State* L)
     {
         FLOAT n = luaL_checknumber(L, 1);
         lua_pushinteger(L, *(ULONG*)&n);
         return 1;
     }
 
-    static int LuaDoubleToInt(lua_State* L)
+    static int double_to_int(lua_State* L)
     {
         DOUBLE n = luaL_checknumber(L, 1);
         LuaPushQword(L, *(ULONGLONG*)&n);
         return 1;
     }
 
-    static int LuaQWordToNumber(lua_State* L)
+    static int qword_to_number(lua_State* L)
     {
         ULONGLONG n = LuaCheckQWord(L, 1);
         lua_pushnumber(L, n);
@@ -282,13 +282,13 @@ namespace LuaCore::Memory
         return LuaCheckQWord(L, i);
     }
 
-    static int Recompile(lua_State* L)
+    static int recompile(lua_State* L)
     {
         g_core_ctx->vr_recompile(luaL_checkinteger(L, 1));
         return 0;
     }
 
-    static int RecompileNextAll(lua_State* L)
+    static int recompile_all(lua_State* L)
     {
         g_core_ctx->vr_recompile(UINT32_MAX);
         return 0;

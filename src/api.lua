@@ -751,17 +751,9 @@ function memory.writedouble(address, data) end
 ---@return nil
 function memory.writesize(address, size, data) end
 
----See [memory.recompile](lua://memory.recompile).
----@param addr integer
-function memory.recompilenow(addr) end
-
 ---Queues up a recompilation of the block at the specified address.
 ---@param addr integer
 function memory.recompile(addr) end
-
----See [memory.recompile](lua://memory.recompile).
----@param addr integer
-function memory.recompilenext(addr) end
 
 ---Queues up a recompilation of all blocks.
 function memory.recompilenextall() end

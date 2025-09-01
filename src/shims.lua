@@ -46,3 +46,9 @@ movie.get_seek_info = function() print('movie.get_seek_info has been deprecated,
 
 -- input.map_virtual_key_ex is not available anymore due to WinAPI coupling concerns.
 input.map_virtual_key_ex = function() print('input.map_virtual_key_ex has been deprecated') end
+
+-- memory.recompilenow deprecated, forwarded to memory.recompile
+memory.recompilenow = memory.recompile
+
+-- memory.recompilenext deprecated, forwarded to memory.recompile
+memory.recompilenext = memory.recompile
