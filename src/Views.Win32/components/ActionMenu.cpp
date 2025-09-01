@@ -106,7 +106,7 @@ static std::wstring get_display_name(const t_menu_item& item)
     if (!item.action_path.empty() && g_config.hotkeys.contains(item.action_path))
     {
         const auto hotkey = g_config.hotkeys.at(item.action_path);
-        if (!hotkey.is_nothing())
+        if (!hotkey.is_empty())
         {
             display_name += std::format(L"\t{}", hotkey.to_wstring());
         }

@@ -63,7 +63,7 @@ t_listbox_item::t_listbox_item(const std::wstring& action, const std::wstring& g
     path = action;
     parent_group_name = group;
     const auto hotkey = g_config.hotkeys.at(action);
-    if (!hotkey.is_nothing())
+    if (!hotkey.is_empty())
     {
         hint_text = hotkey.to_wstring();
     }

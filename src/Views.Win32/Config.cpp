@@ -219,30 +219,66 @@ static void handle_config_value(mINI::INIStructure& ini, const std::wstring& fie
 
             const auto action_path = pair.first.substr(prefix.size());
 
-            Hotkey::t_hotkey hotkey{};
+            Hotkey::t_hotkey hotkey = Hotkey::t_hotkey::make_empty();
 
             const auto key = pair.second.get("key");
             if (!key.empty())
             {
-                hotkey.key = std::stoi(key);
+                try
+                {
+                    hotkey.key = std::stoi(key);
+                }
+                catch (...)
+                {
+                }
             }
 
             const auto ctrl = pair.second.get("ctrl");
             if (!ctrl.empty())
             {
-                hotkey.ctrl = std::stoi(ctrl);
+                try
+                {
+                    hotkey.ctrl = std::stoi(ctrl);
+                }
+                catch (...)
+                {
+                }
             }
 
             const auto shift = pair.second.get("shift");
             if (!shift.empty())
             {
-                hotkey.shift = std::stoi(shift);
+                try
+                {
+                    hotkey.shift = std::stoi(shift);
+                }
+                catch (...)
+                {
+                }
             }
 
             const auto alt = pair.second.get("alt");
             if (!alt.empty())
             {
-                hotkey.alt = std::stoi(alt);
+                try
+                {
+                    hotkey.alt = std::stoi(alt);
+                }
+                catch (...)
+                {
+                }
+            }
+
+            const auto assigned = pair.second.get("assigned");
+            if (!alt.empty())
+            {
+                try
+                {
+                    hotkey.assigned = std::stoi(assigned);
+                }
+                catch (...)
+                {
+                }
             }
 
             value[io_service.string_to_wstring(action_path)] = hotkey;
@@ -257,6 +293,7 @@ static void handle_config_value(mINI::INIStructure& ini, const std::wstring& fie
             ini[action_key]["ctrl"] = std::to_string(hotkey.ctrl);
             ini[action_key]["shift"] = std::to_string(hotkey.shift);
             ini[action_key]["alt"] = std::to_string(hotkey.alt);
+            ini[action_key]["assigned"] = std::to_string(hotkey.assigned);
         }
     }
 }
@@ -441,7 +478,7 @@ static void migrate_config(t_config& config, const mINI::INIStructure& ini)
             return;
         }
 
-        Hotkey::t_hotkey hotkey{};
+        auto hotkey = Hotkey::t_hotkey::make_empty();
         const auto& section = ini.get(old_section_name);
 
         try

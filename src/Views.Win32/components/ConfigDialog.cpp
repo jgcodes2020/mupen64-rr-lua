@@ -1501,7 +1501,7 @@ INT_PTR CALLBACK general_cfg(const HWND hwnd, const UINT message, const WPARAM w
                 DialogService::show_dialog(option_item.get_friendly_info().c_str(), option_item.name.c_str(), fsvc_information, hwnd);
                 break;
             case 3:
-                option_item.current_value.set(Hotkey::t_hotkey{});
+                option_item.current_value.set(Hotkey::t_hotkey::make_empty());
                 ListView_Update(g_lv_hwnd, i);
                 break;
             case 5:

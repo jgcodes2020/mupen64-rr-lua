@@ -1512,6 +1512,7 @@ function avi.stopcapture() end
 ---@field ctrl boolean? Whether the control modifier is pressed.
 ---@field shift boolean? Whether the shift modifier is pressed.
 ---@field alt boolean? Whether the alt modifier is pressed.
+---@field assigned boolean? Whether the hotkey is assigned. Defaults to `true`.
 
 ---Shows a dialog prompting the user to enter a hotkey.
 ---@param caption string The headline to display in the dialog.

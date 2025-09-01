@@ -294,8 +294,8 @@ bool ActionManager::add(const t_action_params& params)
 
     if (!g_config.hotkeys.contains(normalized_path) || !g_config.inital_hotkeys.contains(normalized_path))
     {
-        g_config.hotkeys[normalized_path] = Hotkey::t_hotkey{};
-        g_config.inital_hotkeys[normalized_path] = Hotkey::t_hotkey{};
+        g_config.hotkeys[normalized_path] = Hotkey::t_hotkey::make_unassigned();
+        g_config.inital_hotkeys[normalized_path] = Hotkey::t_hotkey::make_unassigned();
     }
 
     if (!g_mgr.batched_work)
@@ -363,7 +363,7 @@ bool ActionManager::associate_hotkey(const action_path& path, const Hotkey::t_ho
 
     runtime_assert(g_config.hotkeys.contains(normalized_path) && g_config.inital_hotkeys.contains(normalized_path), L"Action didn't have a hotkey entry.");
 
-    const bool has_assignment = !g_config.hotkeys.at(normalized_path).is_nothing();
+    const bool has_assignment = g_config.hotkeys.at(normalized_path).is_assigned();
 
     if (overwrite_existing)
     {

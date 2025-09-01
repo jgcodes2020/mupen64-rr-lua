@@ -9,12 +9,17 @@
 
 struct t_hotkey_dialog_params {
     std::wstring headline{};
-    Hotkey::t_hotkey hotkey{};
+    Hotkey::t_hotkey hotkey = Hotkey::t_hotkey::make_unassigned();
 };
 
-bool Hotkey::t_hotkey::is_nothing() const
+bool Hotkey::t_hotkey::is_empty() const
 {
     return !this->ctrl && !this->shift && !this->alt && this->key == 0;
+}
+
+bool Hotkey::t_hotkey::is_assigned() const
+{
+    return this->assigned;
 }
 
 std::wstring Hotkey::t_hotkey::to_wstring() const
@@ -186,6 +191,18 @@ std::wstring Hotkey::t_hotkey::to_wstring() const
     return buf;
 }
 
+Hotkey::t_hotkey Hotkey::t_hotkey::make_empty()
+{
+    t_hotkey hotkey;
+    hotkey.assigned = true;
+    return hotkey;
+}
+
+Hotkey::t_hotkey Hotkey::t_hotkey::make_unassigned()
+{
+    return {};
+}
+
 static LRESULT CALLBACK hotkey_button_subclass_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam, UINT_PTR id, DWORD_PTR ref_data)
 {
     const auto params = reinterpret_cast<t_hotkey_dialog_params*>(ref_data);
@@ -258,7 +275,7 @@ static INT_PTR CALLBACK dlgproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
             EndDialog(hwnd, IDCANCEL);
             return TRUE;
         case IDC_CLEAR:
-            params->hotkey = {};
+            params->hotkey = Hotkey::t_hotkey::make_empty();
             EndDialog(hwnd, IDOK);
             break;
         default:
@@ -291,7 +308,7 @@ bool Hotkey::show_prompt(const HWND hwnd, const std::wstring& caption, t_hotkey&
 {
     const auto prev_hotkey = hotkey;
 
-    hotkey = {};
+    hotkey = t_hotkey::make_unassigned();
     auto params = new t_hotkey_dialog_params{.headline = caption, .hotkey = hotkey};
 
     const INT_PTR result = DialogBoxParam(g_app_instance, MAKEINTRESOURCE(IDD_HOTKEY), hwnd, dlgproc, reinterpret_cast<LPARAM>(params));
@@ -324,9 +341,9 @@ void Hotkey::try_associate_hotkey(const HWND hwnd, const std::wstring& action, c
         }
     };
 
-    if (new_hotkey.is_nothing())
+    if (new_hotkey.is_empty())
     {
-        set_hotkey(action, {});
+        set_hotkey(action, t_hotkey::make_empty());
         return;
     }
 
@@ -368,12 +385,12 @@ void Hotkey::try_associate_hotkey(const HWND hwnd, const std::wstring& action, c
     case 0:
         for (const auto& action : conflicting_hotkeys | std::views::keys)
         {
-            set_hotkey(action, {});
+            set_hotkey(action, t_hotkey::make_empty());
         }
         set_hotkey(action, new_hotkey);
         break;
     case 1:
-        set_hotkey(action, {});
+        set_hotkey(action, t_hotkey::make_empty());
         break;
     case 2:
         set_hotkey(action, new_hotkey);

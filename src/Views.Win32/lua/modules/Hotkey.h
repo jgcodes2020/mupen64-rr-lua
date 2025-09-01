@@ -30,11 +30,15 @@ namespace LuaCore::Hotkey
         lua_pushstring(L, "alt");
         lua_pushboolean(L, hotkey.alt);
         lua_settable(L, -3);
+
+        lua_pushstring(L, "assigned");
+        lua_pushboolean(L, hotkey.assigned);
+        lua_settable(L, -3);
     }
 
     static ::Hotkey::t_hotkey check_hotkey(lua_State* L, int i)
     {
-        ::Hotkey::t_hotkey hotkey{};
+        auto hotkey = ::Hotkey::t_hotkey::make_empty();
 
         if (!lua_istable(L, i))
         {
@@ -54,8 +58,8 @@ namespace LuaCore::Hotkey
         hotkey.shift = luaL_opt(L, lua_toboolean, -1, false);
         lua_pop(L, 1);
 
-        lua_getfield(L, i, "alt");
-        hotkey.alt = luaL_opt(L, lua_toboolean, -1, false);
+        lua_getfield(L, i, "assigned");
+        hotkey.assigned = luaL_opt(L, lua_toboolean, -1, true);
         lua_pop(L, 1);
 
         return hotkey;
@@ -67,7 +71,7 @@ namespace LuaCore::Hotkey
 
         const auto caption = luaL_checkwstring(L, 1);
 
-        ::Hotkey::t_hotkey hotkey{};
+        ::Hotkey::t_hotkey hotkey = ::Hotkey::t_hotkey::make_empty();
 
         const bool confirmed = ::Hotkey::show_prompt(g_main_hwnd, caption, hotkey);
 

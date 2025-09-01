@@ -19,20 +19,43 @@ namespace Hotkey
         bool ctrl{};
         bool shift{};
         bool alt{};
+        bool assigned{};
+
+        explicit t_hotkey(const int32_t key, const bool ctrl = false, const bool shift = false, const bool alt = false) :
+            key(key), ctrl(ctrl), shift(shift), alt(alt), assigned(true)
+        {
+        }
+
+        t_hotkey() = default;
 
         /**
-         * \brief Gets whether the hotkey has no key or modifier set.
+         * \brief Gets whether the hotkey is empty. This is different to having no assignment, as it means an intentional user override.
          */
-        [[nodiscard]] bool is_nothing() const;
+        [[nodiscard]] bool is_empty() const;
+
+        /**
+         * \brief Gets whether the hotkey has no assignment.
+         */
+        [[nodiscard]] bool is_assigned() const;
 
         /**
          * \brief Gets the string representation of the hotkey.
          */
         [[nodiscard]] std::wstring to_wstring() const;
 
+        /**
+         * \returns An empty hotkey.
+         */
+        [[nodiscard]] static t_hotkey make_empty();
+
+        /**
+         * \returns An unassigned hotkey.
+         */
+        [[nodiscard]] static t_hotkey make_unassigned();
+
         bool operator==(const t_hotkey& other) const
         {
-            return key == other.key && ctrl == other.ctrl && shift == other.shift && alt == other.alt;
+            return key == other.key && ctrl == other.ctrl && shift == other.shift && alt == other.alt && assigned == other.assigned;
         }
     };
 
