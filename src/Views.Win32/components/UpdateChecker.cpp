@@ -156,12 +156,26 @@ namespace UpdateChecker
             std::wstringstream ss(main_part);
             for (int i = 0; i < 3 && std::getline(ss, main_part, L'.'); ++i)
             {
-                parts[i] = std::stoi(main_part);
+                try
+                {
+                    parts[i] = std::stoi(main_part);
+                }
+                catch (...)
+                {
+                    parts[i] = 0;
+                }
             }
 
             if (!sub_part.empty())
             {
-                parts[3] = std::stoi(sub_part);
+                try
+                {
+                    parts[3] = std::stoi(sub_part);
+                }
+                catch (...)
+                {
+                    parts[3] = 0;
+                }
             }
 
             return parts;
