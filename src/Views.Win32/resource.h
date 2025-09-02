@@ -165,6 +165,7 @@
 #define IDD_COMMAND_PALETTE 10160
 #define IDC_COMMAND_PALETTE_EDIT 10161
 #define IDC_COMMAND_PALETTE_LIST 10162
+#define IDC_COMMAND_PALETTE_TEXT 10163
 
 // Next default values for new objects
 //

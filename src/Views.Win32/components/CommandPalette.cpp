@@ -38,6 +38,7 @@ struct t_listbox_item {
 
 struct t_command_palette_context {
     HWND hwnd{};
+    HWND text_hwnd{};
     HWND listbox_hwnd{};
     HWND edit_hwnd{};
     bool closing{};
@@ -428,6 +429,7 @@ static INT_PTR CALLBACK command_palette_proc(const HWND hwnd, const UINT msg, co
         {
             g_ctx.hwnd = hwnd;
             g_ctx.button_theme = OpenThemeData(hwnd, L"BUTTON");
+            g_ctx.text_hwnd = GetDlgItem(hwnd, IDC_COMMAND_PALETTE_TEXT);
             g_ctx.edit_hwnd = GetDlgItem(hwnd, IDC_COMMAND_PALETTE_EDIT);
             g_ctx.listbox_hwnd = GetDlgItem(hwnd, IDC_COMMAND_PALETTE_LIST);
             g_ctx.actions = ActionManager::get_actions_matching_filter(L"*");
@@ -440,6 +442,7 @@ static INT_PTR CALLBACK command_palette_proc(const HWND hwnd, const UINT msg, co
             // 2. Add resize anchors
             ResizeAnchor::add_anchors(hwnd,
                                       {
+                                      {g_ctx.text_hwnd, ResizeAnchor::HORIZONTAL_ANCHOR},
                                       {g_ctx.edit_hwnd, ResizeAnchor::HORIZONTAL_ANCHOR},
                                       {g_ctx.listbox_hwnd, ResizeAnchor::FULL_ANCHOR},
                                       });
