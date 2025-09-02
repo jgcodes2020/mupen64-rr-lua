@@ -8,6 +8,7 @@
 #define _MSVC_STL_HARDENING 1
 #endif
 
+#pragma warning(push, 0)
 #include <algorithm>
 #include <any>
 #include <atomic>
@@ -40,3 +41,4 @@
 #include <xxh64.h>
 #include <MiscHelpers.h>
 #include <PlatformService.h>
+#pragma warning pop

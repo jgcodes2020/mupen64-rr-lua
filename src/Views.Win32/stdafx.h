@@ -13,12 +13,12 @@
 #include <Core/stdafx.h>
 #include <core_api.h>
 
+#pragma warning(push, 0)
 extern "C" {
 #include <lua.h>
 #include <lauxlib.h>
 #include <lualib.h>
 }
-
 #include <spdlog/logger.h>
 #include <microlru.h>
 #include <Windows.h>
@@ -53,6 +53,7 @@ extern "C" {
 #include <ranges>
 #include <set>
 #include <cwctype>
+#pragma warning pop
 
 #include <Loggers.h>
 #include <ViewHelpers.h>
