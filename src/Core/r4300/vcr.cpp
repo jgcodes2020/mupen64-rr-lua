@@ -1027,7 +1027,7 @@ core_result vcr_start_record(std::filesystem::path path, uint16_t flags, std::st
         // save state
         g_core->log_info(L"[VCR] Saving state...");
         vcr.task = task_start_recording_from_snapshot;
-        g_ctx.st_do_file(get_path_for_new_movie(vcr.movie_path), core_st_job_save, [](const core_st_callback_info& info, auto) {
+        g_ctx.st_do_file(get_path_for_new_movie(vcr.movie_path), core_st_job_save, [](const core_st_callback_info& info, auto&&...) {
             std::unique_lock lock(vcr_mtx);
 
             if (info.result != Res_Ok)
@@ -1065,7 +1065,7 @@ core_result vcr_start_record(std::filesystem::path path, uint16_t flags, std::st
         vcr.task = task_start_recording_from_existing_snapshot;
 
         g_core->submit_task([=] {
-            g_ctx.st_do_file(st_path, core_st_job_load, [](const core_st_callback_info& info, auto) {
+            g_ctx.st_do_file(st_path, core_st_job_load, [](const core_st_callback_info& info, auto&&...) {
                 std::unique_lock lock(vcr_mtx);
 
                 if (info.result != Res_Ok)
@@ -1397,7 +1397,7 @@ core_result vcr_start_playback(std::filesystem::path path)
         vcr.task = task_start_playback_from_snapshot;
 
         g_core->submit_task([=] {
-            g_ctx.st_do_file(st_path, core_st_job_load, [](const core_st_callback_info& info, auto) {
+            g_ctx.st_do_file(st_path, core_st_job_load, [](const core_st_callback_info& info, auto&&...) {
                 std::unique_lock lock(vcr_mtx);
 
                 if (info.result != Res_Ok)
@@ -1574,7 +1574,7 @@ core_result vcr_begin_seek_impl(std::wstring str, bool pause_at_end, bool resume
 
             // NOTE: This needs to go through AsyncExecutor (despite us already being on a worker thread) or it will cause a deadlock.
             g_core->submit_task([=] {
-                g_ctx.st_do_memory(vcr.seek_savestates[closest_key], core_st_job_load, [=](const core_st_callback_info& info, auto buf) {
+                g_ctx.st_do_memory(vcr.seek_savestates[closest_key], core_st_job_load, [=](const core_st_callback_info& info, auto&&...) {
                     if (info.result != Res_Ok)
                     {
                         g_core->show_dialog(L"Failed to load seek savestate for seek operation.", L"VCR", fsvc_error);
@@ -1662,7 +1662,7 @@ core_result vcr_begin_seek_impl(std::wstring str, bool pause_at_end, bool resume
 
         // NOTE: This needs to go through AsyncExecutor (despite us already being on a worker thread) or it will cause a deadlock.
         g_core->submit_task([=] {
-            g_ctx.st_do_memory(vcr.seek_savestates[closest_key], core_st_job_load, [=](const core_st_callback_info& info, auto buf) {
+            g_ctx.st_do_memory(vcr.seek_savestates[closest_key], core_st_job_load, [=](const core_st_callback_info& info, auto&&...) {
                 if (info.result != Res_Ok)
                 {
                     g_core->show_dialog(L"Failed to load seek savestate for seek operation.", L"VCR", fsvc_error);
