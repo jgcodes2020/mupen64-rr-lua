@@ -13,7 +13,7 @@ const auto GDI_OVERLAY_CLASS = L"lua_gdi_overlay";
 const auto CTX_PROP = L"lua_ctx";
 
 static bool d2d_drawing = false;
-static HBRUSH g_alpha_mask_brush = CreateSolidBrush(LuaRenderer::LUA_GDI_COLOR_MASK);
+static HBRUSH g_alpha_mask_brush;
 
 static LRESULT CALLBACK d2d_overlay_wndproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
@@ -124,6 +124,8 @@ void LuaRenderer::init()
     wndclass.lpfnWndProc = (WNDPROC)gdi_overlay_wndproc;
     wndclass.lpszClassName = GDI_OVERLAY_CLASS;
     RegisterClass(&wndclass);
+
+    g_alpha_mask_brush = CreateSolidBrush(LUA_GDI_COLOR_MASK);
 }
 
 static void create_loadscreen(t_lua_rendering_context* ctx)
