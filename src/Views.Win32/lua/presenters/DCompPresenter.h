@@ -8,10 +8,6 @@
 
 #include "Presenter.h"
 
-#include <d2d1_3.h>
-#include <dcomp.h>
-#include <d3d11.h>
-
 class DCompPresenter : public Presenter {
 public:
     ~DCompPresenter() override;

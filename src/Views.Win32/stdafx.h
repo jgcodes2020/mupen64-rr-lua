@@ -42,6 +42,9 @@ extern "C" {
 #include <d2d1helper.h>
 #include <d2d1helper.h>
 #include <d3d11.h>
+#include <d2d1_3.h>
+#include <dcomp.h>
+#include <d3d11.h>
 #include <dcomp.h>
 #include <shlobj_core.h>
 #include <xxh64.h>
