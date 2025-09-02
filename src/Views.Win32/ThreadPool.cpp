@@ -14,9 +14,26 @@ static std::mutex mtx{};
 
 void ThreadPool::submit_task(const std::function<void()>& func, const size_t key)
 {
+    const auto thunk = [=] {
+        try
+        {
+            func();
+        }
+        catch (const std::exception& e)
+        {
+            g_view_logger->critical("[ThreadPool] Unknown exception in task: {}", e.what());
+            RaiseException(0xDEADBEEF, EXCEPTION_NONCONTINUABLE, 0, nullptr);
+        }
+        catch (...)
+        {
+            g_view_logger->critical("[ThreadPool] Unknown exception in task: unknown exception");
+            RaiseException(0xDEADBEEF, EXCEPTION_NONCONTINUABLE, 0, nullptr);
+        }
+    };
+
     if (!key)
     {
-        (void)pool.submit_task(func);
+        (void)pool.submit_task(thunk);
         return;
     }
 
@@ -30,7 +47,7 @@ void ThreadPool::submit_task(const std::function<void()>& func, const size_t key
     }
 
     (void)pool.submit_task([=] {
-        func();
+        thunk();
         {
             std::lock_guard lock(mtx);
             pending_keys.erase(key);
