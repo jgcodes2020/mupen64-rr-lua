@@ -95,7 +95,7 @@ namespace MiscHelpers
     {
         return a.find(b) != std::string::npos;
     }
-    
+
     /**
      * \brief Splits a wide string into a vector of wide strings based on a specified delimiter.
      * \param str The wide string to split.
