@@ -420,13 +420,9 @@ static void show_plugin_settings_dialog(const std::unique_ptr<Plugin>& plugin)
 {
     BetterEmulationLock lock;
 
-    // FIXME: Is it safe to load multiple plugin instances? This assumes they cooperate and dont overwrite eachother's files...
-    // It does seem fine tho, since the config dialog is modal and core is paused
-    g_hwnd_plug = g_main_hwnd;
-
     if (plugin != nullptr)
     {
-        plugin->config();
+        plugin->config(g_main_hwnd);
     }
 }
 

@@ -25,20 +25,24 @@ public:
     Plugin() = default;
     ~Plugin();
 
+
     /**
-     * \brief Opens the plugin configuration dialog
+     * \brief Opens the plugin configuration dialog.
+     * \param hwnd The parent window handle.
      */
-    void config();
+    void config(HWND hwnd);
 
     /**
      * \brief Opens the plugin test dialog
+     * \param hwnd The parent window handle.
      */
-    void test();
+    void test(HWND hwnd);
 
     /**
      * \brief Opens the plugin about dialog
+     * \param hwnd The parent window handle.
      */
-    void about();
+    void about(HWND hwnd);
 
     /**
      * \brief Loads the plugin's exported functions into the globals and calls the initiate function.

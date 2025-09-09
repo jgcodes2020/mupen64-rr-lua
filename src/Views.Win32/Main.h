@@ -22,7 +22,6 @@ extern DWORD g_ui_thread_id;
 extern int g_last_wheel_delta;
 extern HWND g_main_hwnd;
 extern HINSTANCE g_app_instance;
-extern HWND g_hwnd_plug;
 
 extern std::shared_ptr<Dispatcher> g_main_window_dispatcher;
 

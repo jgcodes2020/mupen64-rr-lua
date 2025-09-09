@@ -407,18 +407,18 @@ Plugin::~Plugin()
     }
 }
 
-void Plugin::config()
+void Plugin::config(const HWND hwnd)
 {
     const auto run_config = [&] {
         const auto dll_config = (DLLCONFIG)GetProcAddress(m_module, "DllConfig");
 
         if (!dll_config)
         {
-            DialogService::show_dialog(std::format(L"'{}' has no configuration.", io_service.string_to_wstring(this->name())).c_str(), L"Plugin", fsvc_error, g_hwnd_plug);
+            DialogService::show_dialog(std::format(L"'{}' has no configuration.", io_service.string_to_wstring(this->name())).c_str(), L"Plugin", fsvc_error, hwnd);
             goto cleanup;
         }
 
-        dll_config(g_hwnd_plug);
+        dll_config(hwnd);
 
     cleanup:
 
@@ -510,18 +510,18 @@ void Plugin::config()
     }
 }
 
-void Plugin::test()
+void Plugin::test(const HWND hwnd)
 {
     dll_test = (DLLTEST)GetProcAddress(m_module, "DllTest");
     if (dll_test)
-        dll_test(g_hwnd_plug);
+        dll_test(hwnd);
 }
 
-void Plugin::about()
+void Plugin::about(const HWND hwnd)
 {
     dll_about = (DLLABOUT)GetProcAddress(m_module, "DllAbout");
     if (dll_about)
-        dll_about(g_hwnd_plug);
+        dll_about(hwnd);
 }
 
 void Plugin::initiate()

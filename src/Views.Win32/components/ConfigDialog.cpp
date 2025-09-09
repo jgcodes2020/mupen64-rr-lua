@@ -711,52 +711,40 @@ INT_PTR CALLBACK plugins_cfg(const HWND hwnd, const UINT message, const WPARAM w
             update_plugin_buttons_enabled_state(hwnd);
             break;
         case IDM_VIDEO_SETTINGS:
-            g_hwnd_plug = hwnd;
-            get_selected_plugin(hwnd, IDC_COMBO_GFX)->config();
+            get_selected_plugin(hwnd, IDC_COMBO_GFX)->config(hwnd);
             break;
         case IDGFXTEST:
-            g_hwnd_plug = hwnd;
-            get_selected_plugin(hwnd, IDC_COMBO_GFX)->test();
+            get_selected_plugin(hwnd, IDC_COMBO_GFX)->test(hwnd);
             break;
         case IDGFXABOUT:
-            g_hwnd_plug = hwnd;
-            get_selected_plugin(hwnd, IDC_COMBO_GFX)->about();
+            get_selected_plugin(hwnd, IDC_COMBO_GFX)->about(hwnd);
             break;
         case IDM_INPUT_SETTINGS:
-            g_hwnd_plug = hwnd;
-            get_selected_plugin(hwnd, IDC_COMBO_INPUT)->config();
+            get_selected_plugin(hwnd, IDC_COMBO_INPUT)->config(hwnd);
             break;
         case IDINPUTTEST:
-            g_hwnd_plug = hwnd;
-            get_selected_plugin(hwnd, IDC_COMBO_INPUT)->test();
+            get_selected_plugin(hwnd, IDC_COMBO_INPUT)->test(hwnd);
             break;
         case IDINPUTABOUT:
-            g_hwnd_plug = hwnd;
-            get_selected_plugin(hwnd, IDC_COMBO_INPUT)->about();
+            get_selected_plugin(hwnd, IDC_COMBO_INPUT)->about(hwnd);
             break;
         case IDM_AUDIO_SETTINGS:
-            g_hwnd_plug = hwnd;
-            get_selected_plugin(hwnd, IDC_COMBO_SOUND)->config();
+            get_selected_plugin(hwnd, IDC_COMBO_SOUND)->config(hwnd);
             break;
         case IDSOUNDTEST:
-            g_hwnd_plug = hwnd;
-            get_selected_plugin(hwnd, IDC_COMBO_SOUND)->test();
+            get_selected_plugin(hwnd, IDC_COMBO_SOUND)->test(hwnd);
             break;
         case IDSOUNDABOUT:
-            g_hwnd_plug = hwnd;
-            get_selected_plugin(hwnd, IDC_COMBO_SOUND)->about();
+            get_selected_plugin(hwnd, IDC_COMBO_SOUND)->about(hwnd);
             break;
         case IDM_RSP_SETTINGS:
-            g_hwnd_plug = hwnd;
-            get_selected_plugin(hwnd, IDC_COMBO_RSP)->config();
+            get_selected_plugin(hwnd, IDC_COMBO_RSP)->config(hwnd);
             break;
         case IDRSPTEST:
-            g_hwnd_plug = hwnd;
-            get_selected_plugin(hwnd, IDC_COMBO_RSP)->test();
+            get_selected_plugin(hwnd, IDC_COMBO_RSP)->test(hwnd);
             break;
         case IDRSPABOUT:
-            g_hwnd_plug = hwnd;
-            get_selected_plugin(hwnd, IDC_COMBO_RSP)->about();
+            get_selected_plugin(hwnd, IDC_COMBO_RSP)->about(hwnd);
             break;
         case IDC_PLUGIN_DISCOVERY_INFO:
             DialogBox(g_app_instance, MAKEINTRESOURCE(IDD_PLUGIN_DISCOVERY_RESULTS), hwnd, plugin_discovery_dlgproc);

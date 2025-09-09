@@ -57,7 +57,6 @@ bool g_frame_changed = true;
 bool g_exit = false;
 
 DWORD g_ui_thread_id;
-HWND g_hwnd_plug;
 MMRESULT g_ui_timer;
 HWND g_main_hwnd;
 HINSTANCE g_app_instance;
