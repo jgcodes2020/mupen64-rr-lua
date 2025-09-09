@@ -20,7 +20,7 @@ namespace LuaCore::Clipboard
         });
         if (it == KNOWN_TYPES.end())
         {
-            luaL_error(L, "Unknown clipboard type: %s", io_service.wstring_to_string(type).c_str());
+            luaL_error(L, "Unknown clipboard type: %s", g_io_service.wstring_to_string(type).c_str());
         }
         return it->second;
     }
@@ -62,7 +62,7 @@ namespace LuaCore::Clipboard
         if (type == L"text")
         {
             const std::wstring text = (LPCWSTR)cb_data;
-            lua_pushstring(L, io_service.wstring_to_string(text).c_str());
+            lua_pushstring(L, g_io_service.wstring_to_string(text).c_str());
         }
         else
         {
@@ -84,7 +84,7 @@ namespace LuaCore::Clipboard
                 continue;
             }
 
-            lua_pushstring(L, io_service.wstring_to_string(name).c_str());
+            lua_pushstring(L, g_io_service.wstring_to_string(name).c_str());
             return 1;
         }
 

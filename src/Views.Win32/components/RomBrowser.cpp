@@ -42,7 +42,7 @@ namespace RomBrowser
         {
             for (auto path : g_config.rombrowser_rom_paths)
             {
-                auto file_paths = io_service.get_files_with_extension_in_directory(path, L"*");
+                auto file_paths = g_io_service.get_files_with_extension_in_directory(path, L"*");
                 rom_paths.insert(rom_paths.end(), file_paths.begin(), file_paths.end());
             }
         }
@@ -346,7 +346,7 @@ namespace RomBrowser
                         {
                             g_view_logger->error("Failed to copy rom name");
                         }
-                        StrNCpy(plvdi->item.pszText, io_service.string_to_wstring(str).c_str(), plvdi->item.cchTextMax);
+                        StrNCpy(plvdi->item.pszText, g_io_service.string_to_wstring(str).c_str(), plvdi->item.cchTextMax);
                         break;
                     }
                 case 2:

@@ -52,7 +52,7 @@ struct t_window_info {
 
 extern core_params g_core;
 extern core_ctx* g_core_ctx;
-extern PlatformService io_service;
+extern PlatformService g_io_service;
 extern bool g_frame_changed;
 extern DWORD g_ui_thread_id;
 extern int g_last_wheel_delta;

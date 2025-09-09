@@ -414,7 +414,7 @@ void Plugin::config(const HWND hwnd)
 
         if (!dll_config)
         {
-            DialogService::show_dialog(std::format(L"'{}' has no configuration.", io_service.string_to_wstring(this->name())).c_str(), L"Plugin", fsvc_error, hwnd);
+            DialogService::show_dialog(std::format(L"'{}' has no configuration.", g_io_service.string_to_wstring(this->name())).c_str(), L"Plugin", fsvc_error, hwnd);
             goto cleanup;
         }
 
@@ -642,7 +642,7 @@ void setup_dummy_info()
 t_plugin_discovery_result PluginUtil::discover_plugins(const std::filesystem::path& directory)
 {
     std::vector<std::unique_ptr<Plugin>> plugins;
-    const auto files = io_service.get_files_with_extension_in_directory(directory, L"dll");
+    const auto files = g_io_service.get_files_with_extension_in_directory(directory, L"dll");
 
     std::vector<std::pair<std::filesystem::path, std::wstring>> results;
     for (const auto& file : files)

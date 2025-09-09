@@ -211,7 +211,7 @@ namespace UpdateChecker
             return;
         }
 
-        ShellExecute(0, 0, io_service.string_to_wstring(download_url).c_str(), 0, 0, SW_SHOW);
+        ShellExecute(0, 0, g_io_service.string_to_wstring(download_url).c_str(), 0, 0, SW_SHOW);
         PostMessage(g_main_hwnd, WM_CLOSE, 0, 0);
     }
 
@@ -259,7 +259,7 @@ namespace UpdateChecker
             return;
         }
 
-        auto version = io_service.string_to_wstring(tag_name.get<std::string>());
+        auto version = g_io_service.string_to_wstring(tag_name.get<std::string>());
 
         if (!manual && g_config.ignored_version == version)
         {
@@ -299,7 +299,7 @@ namespace UpdateChecker
             break;
         case 1:
             {
-                const auto changelog = io_service.string_to_wstring(body.get<std::string>());
+                const auto changelog = g_io_service.string_to_wstring(body.get<std::string>());
                 TextEditDialog::show({.text = changelog, .caption = L"Changelog", .readonly = true});
                 goto show_prompt;
             }

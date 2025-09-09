@@ -59,7 +59,7 @@ INT_PTR CALLBACK dlgproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
             char disasm[32] = {};
             g_core_ctx->dbg_disassemble(disasm, g_ctx.cpu.opcode, g_ctx.cpu.address);
 
-            const auto str = std::format(L"{} ({:#08x}, {:#08x})", io_service.string_to_wstring(disasm), g_ctx.cpu.opcode, g_ctx.cpu.address);
+            const auto str = std::format(L"{} ({:#08x}, {:#08x})", g_io_service.string_to_wstring(disasm), g_ctx.cpu.opcode, g_ctx.cpu.address);
             ListBox_InsertString(g_ctx.list_hwnd, 0, str.c_str());
 
             if (ListBox_GetCount(g_ctx.list_hwnd) > 1024)

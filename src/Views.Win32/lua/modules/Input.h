@@ -340,7 +340,7 @@ namespace LuaCore::Input
             return 1;
         }
 
-        lua_pushstring(L, io_service.wstring_to_string(name).c_str());
+        lua_pushstring(L, g_io_service.wstring_to_string(name).c_str());
         return 1;
     }
 

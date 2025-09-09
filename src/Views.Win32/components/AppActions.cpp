@@ -475,7 +475,7 @@ static void start_movie_recording()
 
     g_core_ctx->vr_wait_increment();
     g_core.submit_task([=] {
-        auto vcr_result = g_core_ctx->vcr_start_record(movie_dialog_result.path, movie_dialog_result.start_flag, io_service.wstring_to_string(movie_dialog_result.author), io_service.wstring_to_string(movie_dialog_result.description));
+        auto vcr_result = g_core_ctx->vcr_start_record(movie_dialog_result.path, movie_dialog_result.start_flag, g_io_service.wstring_to_string(movie_dialog_result.author), g_io_service.wstring_to_string(movie_dialog_result.description));
         g_core_ctx->vr_wait_decrement();
         if (!show_error_dialog_for_result(vcr_result))
         {
@@ -496,7 +496,7 @@ static void start_movie_playback()
         return;
     }
 
-    g_core_ctx->vcr_replace_author_info(result.path, io_service.wstring_to_string(result.author), io_service.wstring_to_string(result.description));
+    g_core_ctx->vcr_replace_author_info(result.path, g_io_service.wstring_to_string(result.author), g_io_service.wstring_to_string(result.description));
 
     g_config.core.pause_at_frame = result.pause_at;
     g_config.core.pause_at_last_frame = result.pause_at_last;
@@ -573,7 +573,7 @@ static void show_ram_start()
     GetModuleFileName(NULL, proc_name, MAX_PATH);
 
     PlatformService::t_path_segment_info info;
-    if (!io_service.get_path_segment_info(proc_name, info))
+    if (!g_io_service.get_path_segment_info(proc_name, info))
     {
         return;
     }

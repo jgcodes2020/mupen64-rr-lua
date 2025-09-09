@@ -51,7 +51,7 @@ static HANDLE dispatcher_done_event{};
 
 core_params g_core{};
 core_ctx* g_core_ctx;
-PlatformService io_service{};
+PlatformService g_io_service{};
 
 bool g_frame_changed = true;
 bool g_exit = false;
@@ -419,7 +419,7 @@ std::filesystem::path get_summercart_path()
 std::filesystem::path get_st_with_slot_path(const size_t slot)
 {
     const auto hdr = g_core_ctx->vr_get_rom_header();
-    const auto fname = std::format(L"{} {}.st{}", io_service.string_to_wstring((const char*)hdr->nom), g_core_ctx->vr_country_code_to_country_name(hdr->Country_code), std::to_wstring(slot));
+    const auto fname = std::format(L"{} {}.st{}", g_io_service.string_to_wstring((const char*)hdr->nom), g_core_ctx->vr_country_code_to_country_name(hdr->Country_code), std::to_wstring(slot));
     return Config::save_directory() / fname;
 }
 
@@ -518,13 +518,13 @@ void update_titlebar()
 
     if (g_core_ctx->vr_get_launched())
     {
-        text += std::format(L" - {}", io_service.string_to_wstring(reinterpret_cast<char*>(g_core_ctx->vr_get_rom_header()->nom)));
+        text += std::format(L" - {}", g_io_service.string_to_wstring(reinterpret_cast<char*>(g_core_ctx->vr_get_rom_header()->nom)));
     }
 
     if (g_core_ctx->vcr_get_task() != task_idle)
     {
         PlatformService::t_path_segment_info info;
-        io_service.get_path_segment_info(g_core_ctx->vcr_get_path(), info);
+        g_io_service.get_path_segment_info(g_core_ctx->vcr_get_path(), info);
 
         text += std::format(L" - {}", info.filename);
     }
@@ -759,7 +759,7 @@ std::filesystem::path get_app_full_path()
     app_path.resize(app_path_len);
 
     PlatformService::t_path_segment_info info;
-    io_service.get_path_segment_info(app_path, info);
+    g_io_service.get_path_segment_info(app_path, info);
 
     return info.drive + info.dir;
 }
@@ -1136,7 +1136,7 @@ static void CALLBACK invalidate_callback(UINT, UINT, DWORD_PTR, DWORD_PTR, DWORD
 static core_result init_core()
 {
     g_core.cfg = &g_config.core;
-    g_core.io_service = &io_service;
+    g_core.io_service = &g_io_service;
     g_core.callbacks = {};
     g_core.callbacks.vi = [] {
         LuaCallbacks::call_interval();
