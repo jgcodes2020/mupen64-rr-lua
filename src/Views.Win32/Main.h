@@ -14,22 +14,15 @@
 #define WM_EXECUTE_DISPATCHER (WM_USER + 18)
 #define WM_INVALIDATE_LUA (WM_USER + 23)
 
-extern BOOL CALLBACK CfgDlgProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);
-
 extern core_params g_core;
 extern core_ctx* g_core_ctx;
 extern PlatformService io_service;
 extern bool g_frame_changed;
-
 extern DWORD g_ui_thread_id;
-
 extern int g_last_wheel_delta;
-
 extern HWND g_main_hwnd;
 extern HINSTANCE g_app_instance;
-
 extern HWND g_hwnd_plug;
-extern DWORD start_rom_id;
 
 extern std::shared_ptr<Dispatcher> g_main_window_dispatcher;
 
