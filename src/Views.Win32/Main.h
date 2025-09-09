@@ -14,16 +14,15 @@
 #define WM_EXECUTE_DISPATCHER (WM_USER + 18)
 #define WM_INVALIDATE_LUA (WM_USER + 23)
 
-extern core_params g_core;
-extern core_ctx* g_core_ctx;
-extern PlatformService io_service;
-extern bool g_frame_changed;
-extern DWORD g_ui_thread_id;
-extern int g_last_wheel_delta;
-extern HWND g_main_hwnd;
-extern HINSTANCE g_app_instance;
-
-extern std::shared_ptr<Dispatcher> g_main_window_dispatcher;
+#define VIEW_DLG_MOVIE_OVERWRITE_WARNING "VIEW_DLG_MOVIE_OVERWRITE_WARNING"
+#define VIEW_DLG_RESET_SETTINGS "VIEW_DLG_RESET_SETTINGS"
+#define VIEW_DLG_RESET_PLUGIN_SETTINGS "VIEW_DLG_RESET_PLUGIN_SETTINGS"
+#define VIEW_DLG_LAG_EXCEEDED "VIEW_DLG_LAG_EXCEEDED"
+#define VIEW_DLG_CLOSE_ROM_WARNING "VIEW_DLG_CLOSE_ROM_WARNING"
+#define VIEW_DLG_HOTKEY_CONFLICT "VIEW_DLG_HOTKEY_CONFLICT"
+#define VIEW_DLG_UPDATE_DIALOG "VIEW_DLG_UPDATE_DIALOG"
+#define VIEW_DLG_PLUGIN_LOAD_ERROR "VIEW_DLG_PLUGIN_LOAD_ERROR"
+#define VIEW_DLG_RAMSTART "VIEW_DLG_RAMSTART"
 
 struct t_main_window_context {
     bool paused_before_menu{};
@@ -32,15 +31,6 @@ struct t_main_window_context {
     bool fast_forward{};
     std::filesystem::path app_path{};
 };
-
-extern t_main_window_context g_main_wnd;
-
-/**
- * \brief Whether the statusbar needs to be updated with new input information
- */
-extern bool is_primary_statusbar_invalidated;
-
-std::wstring get_mupen_name();
 
 /**
  * \brief Pauses the emulation during the object's lifetime, resuming it if previously paused upon being destroyed
@@ -54,26 +44,41 @@ public:
     ~BetterEmulationLock();
 };
 
-typedef struct
-{
+struct t_window_info {
     long width;
     long height;
     long statusbar_height;
-} t_window_info;
+};
 
-extern t_window_info window_info;
+extern core_params g_core;
+extern core_ctx* g_core_ctx;
+extern PlatformService io_service;
+extern bool g_frame_changed;
+extern DWORD g_ui_thread_id;
+extern int g_last_wheel_delta;
+extern HWND g_main_hwnd;
+extern HINSTANCE g_app_instance;
+extern std::shared_ptr<Dispatcher> g_main_window_dispatcher;
+extern t_main_window_context g_main_wnd;
 
-static bool task_is_playback(core_vcr_task task)
+static bool task_is_playback(const core_vcr_task task)
 {
     return task == task_playback || task == task_start_playback_from_reset || task == task_start_playback_from_snapshot;
 }
 
-static bool vcr_is_task_recording(core_vcr_task task)
+static bool vcr_is_task_recording(const core_vcr_task task)
 {
     return task == task_recording || task == task_start_recording_from_reset || task == task_start_recording_from_existing_snapshot || task == task_start_recording_from_snapshot;
 }
 
+/**
+ * \return The friendly name of the emulator.
+ */
+std::wstring get_mupen_name();
 
+/**
+ * \return Information about the current window size.
+ */
 t_window_info get_window_info();
 
 /**
@@ -96,20 +101,14 @@ bool is_on_gui_thread();
  */
 bool show_error_dialog_for_result(core_result result, void* hwnd = nullptr);
 
+/**
+ * \brief Sets the current working directory to the application path.
+ */
 void set_cwd();
 
+/**
+ * \brief Gets the path for a savestate with the given slot number.
+ * \param slot The savestate slot number.
+ * \return The path to the savestate file.
+ */
 std::filesystem::path get_st_with_slot_path(size_t slot);
-
-#pragma region Dialog IDs
-
-#define VIEW_DLG_MOVIE_OVERWRITE_WARNING "VIEW_DLG_MOVIE_OVERWRITE_WARNING"
-#define VIEW_DLG_RESET_SETTINGS "VIEW_DLG_RESET_SETTINGS"
-#define VIEW_DLG_RESET_PLUGIN_SETTINGS "VIEW_DLG_RESET_PLUGIN_SETTINGS"
-#define VIEW_DLG_LAG_EXCEEDED "VIEW_DLG_LAG_EXCEEDED"
-#define VIEW_DLG_CLOSE_ROM_WARNING "VIEW_DLG_CLOSE_ROM_WARNING"
-#define VIEW_DLG_HOTKEY_CONFLICT "VIEW_DLG_HOTKEY_CONFLICT"
-#define VIEW_DLG_UPDATE_DIALOG "VIEW_DLG_UPDATE_DIALOG"
-#define VIEW_DLG_PLUGIN_LOAD_ERROR "VIEW_DLG_PLUGIN_LOAD_ERROR"
-#define VIEW_DLG_RAMSTART "VIEW_DLG_RAMSTART"
-
-#pragma endregion
