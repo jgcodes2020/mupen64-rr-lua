@@ -30,9 +30,9 @@ struct t_main_context {
     PlatformService io_service{};
     bool frame_changed{};
     int last_wheel_delta{};
-    HWND main_hwnd{};
-    HINSTANCE app_instance{};
-    std::shared_ptr<Dispatcher> main_window_dispatcher{};
+    HWND hwnd{};
+    HINSTANCE hinst{};
+    std::shared_ptr<Dispatcher> dispatcher{};
     bool paused_before_menu{};
     bool in_menu_loop{};
     bool fullscreen{};

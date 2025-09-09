@@ -51,7 +51,7 @@ size_t DialogService::show_multiple_choice_dialog(const std::string& id, const s
 
     TASKDIALOGCONFIG task_dialog_config = {
     .cbSize = sizeof(TASKDIALOGCONFIG),
-    .hwndParent = static_cast<HWND>(hwnd ? hwnd : g_main_ctx.main_hwnd),
+    .hwndParent = static_cast<HWND>(hwnd ? hwnd : g_main_ctx.hwnd),
     .pszWindowTitle = title,
     .pszMainIcon = icon,
     .pszContent = str,
@@ -111,7 +111,7 @@ void DialogService::show_dialog(const wchar_t* str, const wchar_t* title, core_d
 
     if (!g_config.silent_mode)
     {
-        MessageBox(static_cast<HWND>(hwnd ? hwnd : g_main_ctx.main_hwnd), str, title, icon);
+        MessageBox(static_cast<HWND>(hwnd ? hwnd : g_main_ctx.hwnd), str, title, icon);
     }
 }
 

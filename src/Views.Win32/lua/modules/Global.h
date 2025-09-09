@@ -123,7 +123,7 @@ namespace LuaCore::Global
     static int Exit(lua_State* L)
     {
         // FIXME: Exit-code and close params are ignored
-        PostMessage(g_main_ctx.main_hwnd, WM_CLOSE, 0, 0);
+        PostMessage(g_main_ctx.hwnd, WM_CLOSE, 0, 0);
         return 0;
     }
 } // namespace LuaCore::Global

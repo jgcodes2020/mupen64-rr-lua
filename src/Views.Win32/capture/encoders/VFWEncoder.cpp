@@ -59,7 +59,7 @@ std::optional<std::wstring> VFWEncoder::start(Params params)
     if (params.ask_for_encoding_settings && !m_splitting)
     {
         LPAVICOMPRESSOPTIONS avi_options[1] = {&m_avi_options};
-        if (!AVISaveOptions(g_main_ctx.main_hwnd, 0, 1, &m_video_stream, avi_options))
+        if (!AVISaveOptions(g_main_ctx.hwnd, 0, 1, &m_video_stream, avi_options))
         {
             stop_impl();
             return L"";

@@ -74,8 +74,8 @@ namespace EncodingManager
 
     void readscreen_window()
     {
-        g_main_ctx.main_window_dispatcher->invoke([] {
-            HDC dc = GetDC(g_main_ctx.main_hwnd);
+        g_main_ctx.dispatcher->invoke([] {
+            HDC dc = GetDC(g_main_ctx.hwnd);
             HDC compat_dc = CreateCompatibleDC(dc);
             HBITMAP bitmap = CreateCompatibleBitmap(dc, m_video_width, m_video_height);
 
@@ -96,15 +96,15 @@ namespace EncodingManager
             SelectObject(compat_dc, nullptr);
             DeleteObject(bitmap);
             DeleteDC(compat_dc);
-            ReleaseDC(g_main_ctx.main_hwnd, dc);
+            ReleaseDC(g_main_ctx.hwnd, dc);
         });
     }
 
     void readscreen_desktop()
     {
-        g_main_ctx.main_window_dispatcher->invoke([] {
+        g_main_ctx.dispatcher->invoke([] {
             POINT pt{};
-            ClientToScreen(g_main_ctx.main_hwnd, &pt);
+            ClientToScreen(g_main_ctx.hwnd, &pt);
 
             HDC dc = GetDC(nullptr);
             HDC compat_dc = CreateCompatibleDC(dc);
@@ -138,7 +138,7 @@ namespace EncodingManager
 
         // UI resources, must be accessed from UI thread
         // To avoid GDI weirdness with cross-thread resources, we do all GDI work on UI thread.
-        g_main_ctx.main_window_dispatcher->invoke([&] {
+        g_main_ctx.dispatcher->invoke([&] {
             // Since atupdatescreen might not have occured for a long time, we force it now.
             // This avoids "outdated" visuals, which are otherwise acceptable during normal gameplay, being blitted to the video stream.
             LuaRenderer::repaint_visuals();
@@ -148,7 +148,7 @@ namespace EncodingManager
             if (!hy_dc)
             {
                 g_view_logger->trace("Creating hybrid capture resources...");
-                hy_main_dc = GetDC(g_main_ctx.main_hwnd);
+                hy_main_dc = GetDC(g_main_ctx.hwnd);
                 hy_dc = CreateCompatibleDC(hy_main_dc);
                 hy_bmp = CreateCompatibleBitmap(hy_main_dc, m_video_width, m_video_height);
                 SelectObject(hy_dc, hy_bmp);
@@ -293,7 +293,7 @@ namespace EncodingManager
 
         m_encoder.release();
 
-        g_main_ctx.main_window_dispatcher->invoke([] {
+        g_main_ctx.dispatcher->invoke([] {
             SelectObject(hy_dc, nullptr);
 
             DeleteObject(hy_bmp);
@@ -302,7 +302,7 @@ namespace EncodingManager
             DeleteDC(hy_dc);
             hy_dc = nullptr;
 
-            ReleaseDC(g_main_ctx.main_hwnd, hy_main_dc);
+            ReleaseDC(g_main_ctx.hwnd, hy_main_dc);
             hy_main_dc = nullptr;
         });
 

@@ -1259,10 +1259,10 @@ namespace PianoRoll
             {
                 // We create all the child controls here because windows dialog scaling would mess our stuff up when mixing dialog manager and manual creation
                 g_hwnd = hwnd;
-                g_joy_hwnd = CreateWindowEx(WS_EX_STATICEDGE, JOYSTICK_CLASS, L"", WS_CHILD | WS_VISIBLE, 17, 30, 131, 131, g_hwnd, nullptr, g_main_ctx.app_instance, nullptr);
-                CreateWindowEx(0, WC_STATIC, L"History", WS_CHILD | WS_VISIBLE | WS_GROUP | SS_LEFT | SS_CENTERIMAGE, 17, 166, 131, 15, g_hwnd, nullptr, g_main_ctx.app_instance, nullptr);
-                g_hist_hwnd = CreateWindowEx(WS_EX_CLIENTEDGE, WC_LISTBOX, L"", WS_CHILD | WS_VISIBLE | WS_VSCROLL | LBS_NOINTEGRALHEIGHT | LBS_NOTIFY, 17, 186, 131, 181, g_hwnd, nullptr, g_main_ctx.app_instance, nullptr);
-                g_status_hwnd = CreateWindowEx(0, WC_STATIC, L"", WS_CHILD | WS_VISIBLE | WS_GROUP | SS_LEFT, 17, 370, 131, 60, g_hwnd, nullptr, g_main_ctx.app_instance, nullptr);
+                g_joy_hwnd = CreateWindowEx(WS_EX_STATICEDGE, JOYSTICK_CLASS, L"", WS_CHILD | WS_VISIBLE, 17, 30, 131, 131, g_hwnd, nullptr, g_main_ctx.hinst, nullptr);
+                CreateWindowEx(0, WC_STATIC, L"History", WS_CHILD | WS_VISIBLE | WS_GROUP | SS_LEFT | SS_CENTERIMAGE, 17, 166, 131, 15, g_hwnd, nullptr, g_main_ctx.hinst, nullptr);
+                g_hist_hwnd = CreateWindowEx(WS_EX_CLIENTEDGE, WC_LISTBOX, L"", WS_CHILD | WS_VISIBLE | WS_VSCROLL | LBS_NOINTEGRALHEIGHT | LBS_NOTIFY, 17, 186, 131, 181, g_hwnd, nullptr, g_main_ctx.hinst, nullptr);
+                g_status_hwnd = CreateWindowEx(0, WC_STATIC, L"", WS_CHILD | WS_VISIBLE | WS_GROUP | SS_LEFT, 17, 370, 131, 60, g_hwnd, nullptr, g_main_ctx.hinst, nullptr);
 
                 // Some controls don't get the font set by default, so we do it manually
                 EnumChildWindows(hwnd, [](HWND hwnd, LPARAM font) {
@@ -1275,15 +1275,15 @@ namespace PianoRoll
 
                 RECT grid_rect = get_window_rect_client_space(hwnd, GetDlgItem(hwnd, IDC_LIST_PIANO_ROLL));
 
-                g_lv_hwnd = CreateWindowEx(WS_EX_CLIENTEDGE, WC_LISTVIEW, nullptr, lv_style, grid_rect.left, grid_rect.top, grid_rect.right - grid_rect.left, grid_rect.bottom - grid_rect.top, hwnd, (HMENU)IDC_PIANO_ROLL_LV, g_main_ctx.app_instance, nullptr);
+                g_lv_hwnd = CreateWindowEx(WS_EX_CLIENTEDGE, WC_LISTVIEW, nullptr, lv_style, grid_rect.left, grid_rect.top, grid_rect.right - grid_rect.left, grid_rect.bottom - grid_rect.top, hwnd, (HMENU)IDC_PIANO_ROLL_LV, g_main_ctx.hinst, nullptr);
                 SetWindowSubclass(g_lv_hwnd, list_view_proc, 0, 0);
 
                 ListView_SetExtendedListViewStyle(g_lv_hwnd,
                                                   LVS_EX_GRIDLINES | LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER);
 
                 HIMAGELIST image_list = ImageList_Create(16, 16, ILC_COLORDDB | ILC_MASK, 1, 0);
-                ImageList_AddIcon(image_list, LoadIcon(g_main_ctx.app_instance, MAKEINTRESOURCE(IDI_CURRENT)));
-                ImageList_AddIcon(image_list, LoadIcon(g_main_ctx.app_instance, MAKEINTRESOURCE(IDI_MARKER)));
+                ImageList_AddIcon(image_list, LoadIcon(g_main_ctx.hinst, MAKEINTRESOURCE(IDI_CURRENT)));
+                ImageList_AddIcon(image_list, LoadIcon(g_main_ctx.hinst, MAKEINTRESOURCE(IDI_MARKER)));
                 ListView_SetImageList(g_lv_hwnd, image_list, LVSIL_SMALL);
 
                 LVCOLUMN lv_column{};
@@ -1481,7 +1481,7 @@ namespace PianoRoll
         WNDCLASS wndclass = {0};
         wndclass.style = CS_GLOBALCLASS | CS_HREDRAW | CS_VREDRAW;
         wndclass.lpfnWndProc = (WNDPROC)joystick_proc;
-        wndclass.hInstance = g_main_ctx.app_instance;
+        wndclass.hInstance = g_main_ctx.hinst;
         wndclass.hCursor = LoadCursor(nullptr, IDC_ARROW);
         wndclass.lpszClassName = JOYSTICK_CLASS;
         RegisterClass(&wndclass);
@@ -1512,7 +1512,7 @@ namespace PianoRoll
             unsubscribe_funcs.push_back(Messenger::subscribe(Messenger::Message::SeekSavestateChanged, on_seek_savestate_changed));
             unsubscribe_funcs.push_back(Messenger::subscribe(Messenger::Message::EmuPausedChanged, on_emu_paused_changed));
 
-            DialogBox(g_main_ctx.app_instance, MAKEINTRESOURCE(IDD_PIANO_ROLL), 0, (DLGPROC)dialog_proc);
+            DialogBox(g_main_ctx.hinst, MAKEINTRESOURCE(IDD_PIANO_ROLL), 0, (DLGPROC)dialog_proc);
 
             g_view_logger->info("[PianoRoll] Unsubscribing from {} messages...", unsubscribe_funcs.size());
             for (auto unsubscribe_func : unsubscribe_funcs)

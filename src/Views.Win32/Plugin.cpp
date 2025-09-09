@@ -186,7 +186,7 @@ void load_gfx(HMODULE handle)
     FUNC(g_main_ctx.core.plugin_funcs.video_fb_get_frame_buffer_info, FBGETFRAMEBUFFERINFO, dummy_fb_get_framebuffer_info, "FBGetFrameBufferInfo");
     g_main_ctx.core.plugin_funcs.video_dll_crt_free = get_free_function_in_module(handle);
 
-    gfx_info.main_hwnd = g_main_ctx.main_hwnd;
+    gfx_info.main_hwnd = g_main_ctx.hwnd;
     gfx_info.statusbar_hwnd = g_config.is_statusbar_enabled ? Statusbar::hwnd() : nullptr;
     gfx_info.byteswapped = 1;
     gfx_info.rom = g_main_ctx.core_ctx->rom;
@@ -248,8 +248,8 @@ void load_input(uint16_t version, HMODULE handle)
     FUNC(g_main_ctx.core.plugin_funcs.input_key_down, KEYDOWN, dummy_key_down, "WM_KeyDown");
     FUNC(g_main_ctx.core.plugin_funcs.input_key_up, KEYUP, dummy_key_up, "WM_KeyUp");
 
-    control_info.main_hwnd = g_main_ctx.main_hwnd;
-    control_info.hinst = g_main_ctx.app_instance;
+    control_info.main_hwnd = g_main_ctx.hwnd;
+    control_info.hinst = g_main_ctx.hinst;
     control_info.byteswapped = 1;
     control_info.header = g_main_ctx.core_ctx->rom;
     control_info.controllers = g_main_ctx.core.controls;
@@ -266,7 +266,7 @@ void load_input(uint16_t version, HMODULE handle)
     }
     else
     {
-        old_initiate_controllers(g_main_ctx.main_hwnd, g_main_ctx.core.controls);
+        old_initiate_controllers(g_main_ctx.hwnd, g_main_ctx.core.controls);
     }
 }
 
@@ -288,8 +288,8 @@ void load_audio(HMODULE handle)
     FUNC(g_main_ctx.core.plugin_funcs.audio_process_alist, PROCESSALIST, dummy_void, "ProcessAList");
     FUNC(g_main_ctx.core.plugin_funcs.audio_ai_update, AIUPDATE, dummy_ai_update, "AiUpdate");
 
-    audio_info.main_hwnd = g_main_ctx.main_hwnd;
-    audio_info.hinst = g_main_ctx.app_instance;
+    audio_info.main_hwnd = g_main_ctx.hwnd;
+    audio_info.hinst = g_main_ctx.hinst;
     audio_info.byteswapped = 1;
     audio_info.rom = g_main_ctx.core_ctx->rom;
     audio_info.rdram = (uint8_t*)g_main_ctx.core_ctx->rdram;
@@ -482,7 +482,7 @@ void Plugin::config(const HWND hwnd)
                 {
                     const auto old_initiate_controllers = (OLD_INITIATECONTROLLERS)GetProcAddress(m_module, "InitiateControllers");
                     if (old_initiate_controllers)
-                        old_initiate_controllers(g_main_ctx.main_hwnd, g_main_ctx.core.controls);
+                        old_initiate_controllers(g_main_ctx.hwnd, g_main_ctx.core.controls);
                 }
             }
 
@@ -580,8 +580,8 @@ void setup_dummy_info()
     dummy_gfx_info.check_interrupts = dummy_void;
 
     /////// AUDIO /////////////////////////
-    dummy_audio_info.main_hwnd = g_main_ctx.main_hwnd;
-    dummy_audio_info.hinst = g_main_ctx.app_instance;
+    dummy_audio_info.main_hwnd = g_main_ctx.hwnd;
+    dummy_audio_info.hinst = g_main_ctx.hinst;
     dummy_audio_info.byteswapped = 1;
     dummy_audio_info.rom = (uint8_t*)dummy_header;
     dummy_audio_info.rdram = (uint8_t*)g_main_ctx.core_ctx->rdram;
@@ -597,8 +597,8 @@ void setup_dummy_info()
     dummy_audio_info.check_interrupts = dummy_void;
 
     ///// CONTROLS ///////////////////////////
-    dummy_control_info.main_hwnd = g_main_ctx.main_hwnd;
-    dummy_control_info.hinst = g_main_ctx.app_instance;
+    dummy_control_info.main_hwnd = g_main_ctx.hwnd;
+    dummy_control_info.hinst = g_main_ctx.hinst;
     dummy_control_info.byteswapped = 1;
     dummy_control_info.header = (uint8_t*)dummy_header;
     dummy_control_info.controllers = g_main_ctx.core.controls;

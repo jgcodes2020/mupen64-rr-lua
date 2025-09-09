@@ -211,7 +211,7 @@ INT_PTR CALLBACK plugin_discovery_dlgproc(HWND hwnd, UINT msg, WPARAM w_param, L
             RECT rect{};
             GetClientRect(hwnd, &rect);
 
-            g_pldlv_hwnd = CreateWindowEx(WS_EX_CLIENTEDGE, WC_LISTVIEW, NULL, WS_TABSTOP | WS_VISIBLE | WS_CHILD | LVS_SINGLESEL | LVS_REPORT | LVS_SHOWSELALWAYS, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, hwnd, nullptr, g_main_ctx.app_instance, NULL);
+            g_pldlv_hwnd = CreateWindowEx(WS_EX_CLIENTEDGE, WC_LISTVIEW, NULL, WS_TABSTOP | WS_VISIBLE | WS_CHILD | LVS_SINGLESEL | LVS_REPORT | LVS_SHOWSELALWAYS, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, hwnd, nullptr, g_main_ctx.hinst, NULL);
 
             ListView_SetExtendedListViewStyle(g_pldlv_hwnd,
                                               LVS_EX_GRIDLINES |
@@ -607,10 +607,10 @@ INT_PTR CALLBACK plugins_cfg(const HWND hwnd, const UINT message, const WPARAM w
         break;
     case WM_INITDIALOG:
         {
-            SendDlgItemMessage(hwnd, IDB_DISPLAY, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)LoadImage(g_main_ctx.app_instance, MAKEINTRESOURCE(IDB_DISPLAY), IMAGE_BITMAP, 0, 0, 0));
-            SendDlgItemMessage(hwnd, IDB_CONTROL, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)LoadImage(g_main_ctx.app_instance, MAKEINTRESOURCE(IDB_CONTROL), IMAGE_BITMAP, 0, 0, 0));
-            SendDlgItemMessage(hwnd, IDB_SOUND, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)LoadImage(g_main_ctx.app_instance, MAKEINTRESOURCE(IDB_SOUND), IMAGE_BITMAP, 0, 0, 0));
-            SendDlgItemMessage(hwnd, IDB_RSP, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)LoadImage(g_main_ctx.app_instance, MAKEINTRESOURCE(IDB_RSP), IMAGE_BITMAP, 0, 0, 0));
+            SendDlgItemMessage(hwnd, IDB_DISPLAY, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)LoadImage(g_main_ctx.hinst, MAKEINTRESOURCE(IDB_DISPLAY), IMAGE_BITMAP, 0, 0, 0));
+            SendDlgItemMessage(hwnd, IDB_CONTROL, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)LoadImage(g_main_ctx.hinst, MAKEINTRESOURCE(IDB_CONTROL), IMAGE_BITMAP, 0, 0, 0));
+            SendDlgItemMessage(hwnd, IDB_SOUND, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)LoadImage(g_main_ctx.hinst, MAKEINTRESOURCE(IDB_SOUND), IMAGE_BITMAP, 0, 0, 0));
+            SendDlgItemMessage(hwnd, IDB_RSP, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)LoadImage(g_main_ctx.hinst, MAKEINTRESOURCE(IDB_RSP), IMAGE_BITMAP, 0, 0, 0));
 
             refresh_plugins_page(hwnd);
 
@@ -747,7 +747,7 @@ INT_PTR CALLBACK plugins_cfg(const HWND hwnd, const UINT message, const WPARAM w
             get_selected_plugin(hwnd, IDC_COMBO_RSP)->about(hwnd);
             break;
         case IDC_PLUGIN_DISCOVERY_INFO:
-            DialogBox(g_main_ctx.app_instance, MAKEINTRESOURCE(IDD_PLUGIN_DISCOVERY_RESULTS), hwnd, plugin_discovery_dlgproc);
+            DialogBox(g_main_ctx.hinst, MAKEINTRESOURCE(IDD_PLUGIN_DISCOVERY_RESULTS), hwnd, plugin_discovery_dlgproc);
             break;
         default:
             break;
@@ -1333,7 +1333,7 @@ bool begin_settings_lv_edit(HWND hwnd, int i)
 
     item_rect.right = lv_rect.right;
 
-    g_edit_hwnd = CreateWindowEx(WS_EX_CLIENTEDGE, L"EDIT", L"", WS_CHILD | WS_VISIBLE | WS_TABSTOP, item_rect.left, item_rect.top, item_rect.right - item_rect.left, item_rect.bottom - item_rect.top, hwnd, 0, g_main_ctx.app_instance, 0);
+    g_edit_hwnd = CreateWindowEx(WS_EX_CLIENTEDGE, L"EDIT", L"", WS_CHILD | WS_VISIBLE | WS_TABSTOP, item_rect.left, item_rect.top, item_rect.right - item_rect.left, item_rect.bottom - item_rect.top, hwnd, 0, g_main_ctx.hinst, 0);
 
     SendMessage(g_edit_hwnd, WM_SETFONT, (WPARAM)SendMessage(g_lv_hwnd, WM_GETFONT, 0, 0), 0);
 
@@ -1621,7 +1621,7 @@ void ConfigDialog::show_app_settings()
     {
         i.dwSize = sizeof(PROPSHEETPAGE);
         i.dwFlags = PSP_USETITLE;
-        i.hInstance = g_main_ctx.app_instance;
+        i.hInstance = g_main_ctx.hinst;
     }
 
     psp[0].pszTemplate = MAKEINTRESOURCE(IDD_SETTINGS_PLUGINS);
@@ -1639,8 +1639,8 @@ void ConfigDialog::show_app_settings()
     PROPSHEETHEADER psh = {0};
     psh.dwSize = sizeof(PROPSHEETHEADER);
     psh.dwFlags = PSH_PROPSHEETPAGE | PSH_NOAPPLYNOW | PSH_NOCONTEXTHELP;
-    psh.hwndParent = g_main_ctx.main_hwnd;
-    psh.hInstance = g_main_ctx.app_instance;
+    psh.hwndParent = g_main_ctx.hwnd;
+    psh.hInstance = g_main_ctx.hinst;
     psh.pszCaption = L"Settings";
     psh.nPages = sizeof(psp) / sizeof(PROPSHEETPAGE);
     psh.nStartPage = g_config.settings_tab;

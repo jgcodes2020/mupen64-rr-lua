@@ -115,10 +115,10 @@ namespace RomBrowser
         assert(rombrowser_hwnd == nullptr);
 
         RECT rcl{}, rtool{}, rstatus{};
-        GetClientRect(g_main_ctx.main_hwnd, &rcl);
+        GetClientRect(g_main_ctx.hwnd, &rcl);
         GetWindowRect(Statusbar::hwnd(), &rstatus);
 
-        rombrowser_hwnd = CreateWindowEx(WS_EX_CLIENTEDGE, WC_LISTVIEW, NULL, WS_TABSTOP | WS_VISIBLE | WS_CHILD | LVS_SINGLESEL | LVS_REPORT | LVS_SHOWSELALWAYS, 0, rtool.bottom - rtool.top, rcl.right - rcl.left, rcl.bottom - rcl.top - rtool.bottom + rtool.top - rstatus.bottom + rstatus.top, g_main_ctx.main_hwnd, (HMENU)IDC_ROMLIST, g_main_ctx.app_instance, NULL);
+        rombrowser_hwnd = CreateWindowEx(WS_EX_CLIENTEDGE, WC_LISTVIEW, NULL, WS_TABSTOP | WS_VISIBLE | WS_CHILD | LVS_SINGLESEL | LVS_REPORT | LVS_SHOWSELALWAYS, 0, rtool.bottom - rtool.top, rcl.right - rcl.left, rcl.bottom - rcl.top - rtool.bottom + rtool.top - rstatus.bottom + rstatus.top, g_main_ctx.hwnd, (HMENU)IDC_ROMLIST, g_main_ctx.hinst, NULL);
         ListView_SetExtendedListViewStyle(rombrowser_hwnd,
                                           LVS_EX_GRIDLINES |
                                           LVS_EX_FULLROWSELECT |
@@ -131,7 +131,7 @@ namespace RomBrowser
         HICON h_icon;
 
 #define ADD_ICON(id)                                        \
-    h_icon = LoadIcon(g_main_ctx.app_instance, MAKEINTRESOURCE(id)); \
+    h_icon = LoadIcon(g_main_ctx.hinst, MAKEINTRESOURCE(id)); \
     ImageList_AddIcon(h_small, h_icon)
 
         ADD_ICON(IDI_GERMANY);
@@ -302,7 +302,7 @@ namespace RomBrowser
         RECT rc, rc_main;
         WORD n_width, n_height;
         int32_t y = 0;
-        GetClientRect(g_main_ctx.main_hwnd, &rc_main);
+        GetClientRect(g_main_ctx.hwnd, &rc_main);
         n_width = rc_main.right - rc_main.left;
         n_height = rc_main.bottom - rc_main.top;
         if (Statusbar::hwnd())

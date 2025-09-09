@@ -160,11 +160,11 @@ bool show_crash_dialog(bool continuable)
     int result = 0;
     if (continuable)
     {
-        TaskDialog(g_main_ctx.main_hwnd, g_main_ctx.app_instance, L"Error", L"An error has occured", L"Crash dumps have been automatically generated. You can choose to continue program execution.", TDCBF_RETRY_BUTTON | TDCBF_CLOSE_BUTTON, TD_ERROR_ICON, &result);
+        TaskDialog(g_main_ctx.hwnd, g_main_ctx.hinst, L"Error", L"An error has occured", L"Crash dumps have been automatically generated. You can choose to continue program execution.", TDCBF_RETRY_BUTTON | TDCBF_CLOSE_BUTTON, TD_ERROR_ICON, &result);
     }
     else
     {
-        TaskDialog(g_main_ctx.main_hwnd, g_main_ctx.app_instance, L"Error", L"An error has occured", L"Crash dumps have been automatically generated. The program will now exit.", TDCBF_CLOSE_BUTTON, TD_ERROR_ICON, &result);
+        TaskDialog(g_main_ctx.hwnd, g_main_ctx.hinst, L"Error", L"An error has occured", L"Crash dumps have been automatically generated. The program will now exit.", TDCBF_CLOSE_BUTTON, TD_ERROR_ICON, &result);
     }
 
     return result == IDCLOSE;

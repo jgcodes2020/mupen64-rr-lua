@@ -163,8 +163,8 @@ rebuild_list:
 
 void Cheats::show()
 {
-    DialogBox(g_main_ctx.app_instance,
+    DialogBox(g_main_ctx.hinst,
               MAKEINTRESOURCE(IDD_CHEATS),
-              g_main_ctx.main_hwnd,
+              g_main_ctx.hwnd,
               (DLGPROC)dlgproc);
 }

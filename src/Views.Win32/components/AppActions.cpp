@@ -101,7 +101,7 @@ static void load_rom()
 {
     BetterEmulationLock lock;
 
-    const auto path = FilePicker::show_open_dialog(L"o_rom", g_main_ctx.main_hwnd, L"*.n64;*.z64;*.v64;*.rom;*.bin;*.zip;*.usa;*.eur;*.jap");
+    const auto path = FilePicker::show_open_dialog(L"o_rom", g_main_ctx.hwnd, L"*.n64;*.z64;*.v64;*.rom;*.bin;*.zip;*.usa;*.eur;*.jap");
 
     if (path.empty())
     {
@@ -159,7 +159,7 @@ static void refresh_rombrowser()
 
 static void exit_app()
 {
-    DestroyWindow(g_main_ctx.main_hwnd);
+    DestroyWindow(g_main_ctx.hwnd);
 }
 
 #pragma endregion
@@ -305,7 +305,7 @@ static void save_state_as()
 {
     BetterEmulationLock lock;
 
-    const auto path = FilePicker::show_save_dialog(L"s_savestate", g_main_ctx.main_hwnd, L"*.st;*.savestate");
+    const auto path = FilePicker::show_save_dialog(L"s_savestate", g_main_ctx.hwnd, L"*.st;*.savestate");
     if (path.empty())
     {
         return;
@@ -322,7 +322,7 @@ static void load_state_as()
 {
     BetterEmulationLock lock;
 
-    const auto path = FilePicker::show_open_dialog(L"o_state", g_main_ctx.main_hwnd, L"*.st;*.savestate;*.st0;*.st1;*.st2;*.st3;*.st4;*.st5;*.st6;*.st7;*.st8;*.st9,*.st10");
+    const auto path = FilePicker::show_open_dialog(L"o_state", g_main_ctx.hwnd, L"*.st;*.savestate;*.st0;*.st1;*.st2;*.st3;*.st4;*.st5;*.st6;*.st7;*.st8;*.st9,*.st10");
     if (path.empty())
     {
         return;
@@ -422,7 +422,7 @@ static void show_plugin_settings_dialog(const std::unique_ptr<Plugin>& plugin)
 
     if (plugin != nullptr)
     {
-        plugin->config(g_main_ctx.main_hwnd);
+        plugin->config(g_main_ctx.hwnd);
     }
 }
 
@@ -594,7 +594,7 @@ static void show_ram_start()
 
     if (result == 0)
     {
-        copy_to_clipboard(g_main_ctx.main_hwnd, stroop_line);
+        copy_to_clipboard(g_main_ctx.hwnd, stroop_line);
     }
 }
 
@@ -604,7 +604,7 @@ static void show_statistics()
 
     auto str = std::format(L"Total playtime: {}\r\nTotal rerecords: {}", format_duration(g_config.core.total_frames / 30), g_config.core.total_rerecords);
 
-    MessageBox(g_main_ctx.main_hwnd,
+    MessageBox(g_main_ctx.hwnd,
                str.c_str(),
                L"Statistics",
                MB_ICONINFORMATION);
@@ -622,14 +622,14 @@ static void start_tracelog()
 {
     stop_tracelog();
 
-    auto path = FilePicker::show_save_dialog(L"s_tracelog", g_main_ctx.main_hwnd, L"*.log");
+    auto path = FilePicker::show_save_dialog(L"s_tracelog", g_main_ctx.hwnd, L"*.log");
 
     if (path.empty())
     {
         return;
     }
 
-    auto result = MessageBox(g_main_ctx.main_hwnd, L"Should the trace log be generated in a binary format?", L"Trace Logger", MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON1);
+    auto result = MessageBox(g_main_ctx.hwnd, L"Should the trace log be generated in a binary format?", L"Trace Logger", MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON1);
 
     g_main_ctx.core_ctx->tl_start(path, result == IDYES, false);
 }
@@ -676,7 +676,7 @@ static void start_capture(const bool ask_preset)
 
     BetterEmulationLock lock;
 
-    auto path = FilePicker::show_save_dialog(L"s_capture", g_main_ctx.main_hwnd, L"*.avi");
+    auto path = FilePicker::show_save_dialog(L"s_capture", g_main_ctx.hwnd, L"*.avi");
     if (path.empty())
     {
         return;

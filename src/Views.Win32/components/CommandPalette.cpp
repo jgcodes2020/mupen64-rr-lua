@@ -175,8 +175,8 @@ static bool try_change_hotkey(int32_t i)
     }
 
     Hotkey::t_hotkey hotkey = g_config.hotkeys.at(item->path);
-    Hotkey::show_prompt(g_main_ctx.main_hwnd, std::format(L"Choose a hotkey for {}", item->text), hotkey);
-    Hotkey::try_associate_hotkey(g_main_ctx.main_hwnd, item->path, hotkey);
+    Hotkey::show_prompt(g_main_ctx.hwnd, std::format(L"Choose a hotkey for {}", item->text), hotkey);
+    Hotkey::try_associate_hotkey(g_main_ctx.hwnd, item->path, hotkey);
 
     return true;
 }
@@ -449,7 +449,7 @@ static INT_PTR CALLBACK command_palette_proc(const HWND hwnd, const UINT msg, co
 
             // 3. Set a reasonable position and size for the dialog (centered horizontally, vertically top-justified)
             RECT parent_rc{};
-            GetClientRect(g_main_ctx.main_hwnd, &parent_rc);
+            GetClientRect(g_main_ctx.hwnd, &parent_rc);
 
             constexpr auto margin = 10;
             const auto width = std::max(400L, parent_rc.right / 3 - margin);
@@ -461,7 +461,7 @@ static INT_PTR CALLBACK command_palette_proc(const HWND hwnd, const UINT msg, co
             rc.right = rc.left + width;
             rc.bottom = rc.top + height;
 
-            MapWindowRect(g_main_ctx.main_hwnd, HWND_DESKTOP, &rc);
+            MapWindowRect(g_main_ctx.hwnd, HWND_DESKTOP, &rc);
             SetWindowPos(hwnd, nullptr, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, SWP_NOZORDER | SWP_FRAMECHANGED);
 
             // 4. Build the listbox
@@ -666,7 +666,7 @@ static INT_PTR CALLBACK command_palette_proc(const HWND hwnd, const UINT msg, co
 void CommandPalette::show()
 {
     g_ctx = {};
-    const HWND hwnd = CreateDialog(g_main_ctx.app_instance, MAKEINTRESOURCE(IDD_COMMAND_PALETTE), g_main_ctx.main_hwnd, command_palette_proc);
+    const HWND hwnd = CreateDialog(g_main_ctx.hinst, MAKEINTRESOURCE(IDD_COMMAND_PALETTE), g_main_ctx.hwnd, command_palette_proc);
     ShowWindow(hwnd, SW_SHOW);
 }
 

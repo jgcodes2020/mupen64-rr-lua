@@ -54,7 +54,7 @@ namespace LuaCore::Savestate
         ThreadPool::submit_task([=] {
             g_main_ctx.core_ctx->vr_wait_decrement();
             g_main_ctx.core_ctx->st_do_file(path, job, [=](const core_st_callback_info& info, const std::vector<uint8_t>& buf) {
-                g_main_ctx.main_window_dispatcher->invoke([=] {
+                g_main_ctx.dispatcher->invoke([=] {
                     if (!LuaManager::get_environment_for_state(L))
                     {
                         return;
@@ -81,7 +81,7 @@ namespace LuaCore::Savestate
         ThreadPool::submit_task([=] {
             g_main_ctx.core_ctx->vr_wait_decrement();
             g_main_ctx.core_ctx->st_do_file(get_st_with_slot_path(slot), job, [=](const core_st_callback_info& info, const std::vector<uint8_t>& buf) {
-                g_main_ctx.main_window_dispatcher->invoke([=] {
+                g_main_ctx.dispatcher->invoke([=] {
                     if (!LuaManager::get_environment_for_state(L))
                     {
                         return;
@@ -110,7 +110,7 @@ namespace LuaCore::Savestate
             g_main_ctx.core_ctx->vr_wait_decrement();
             const auto buffer = std::vector<uint8_t>(buffer_str, buffer_str + buffer_len);
             g_main_ctx.core_ctx->st_do_memory(buffer, job, [=](const core_st_callback_info& info, const std::vector<uint8_t>& buf) {
-                g_main_ctx.main_window_dispatcher->invoke([=] {
+                g_main_ctx.dispatcher->invoke([=] {
                     if (!LuaManager::get_environment_for_state(L))
                     {
                         return;

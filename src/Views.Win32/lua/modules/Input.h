@@ -261,7 +261,7 @@ namespace LuaCore::Input
 
         POINT mouse;
         GetCursorPos(&mouse);
-        ScreenToClient(g_main_ctx.main_hwnd, &mouse);
+        ScreenToClient(g_main_ctx.hwnd, &mouse);
         lua_pushinteger(L, mouse.x);
         lua_setfield(L, -2, "xmouse");
         lua_pushinteger(L, mouse.y);

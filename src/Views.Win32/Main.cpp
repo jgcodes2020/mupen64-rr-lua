@@ -525,14 +525,14 @@ void update_titlebar()
         text += std::format(L" - {}", EncodingManager::get_current_path().filename().wstring());
     }
 
-    SetWindowText(g_main_ctx.main_hwnd, text.c_str());
+    SetWindowText(g_main_ctx.hwnd, text.c_str());
 }
 
 #pragma region Change notifications
 
 void on_script_started(std::any data)
 {
-    g_main_ctx.main_window_dispatcher->invoke([=] {
+    g_main_ctx.dispatcher->invoke([=] {
         auto value = std::any_cast<std::filesystem::path>(data);
         RecentMenu::add(AppActions::RECENT_SCRIPTS, g_config.recent_lua_script_paths, value.wstring(), g_config.is_recent_scripts_frozen);
     });
@@ -540,7 +540,7 @@ void on_script_started(std::any data)
 
 void on_task_changed(std::any data)
 {
-    g_main_ctx.main_window_dispatcher->invoke([=] {
+    g_main_ctx.dispatcher->invoke([=] {
         auto value = std::any_cast<core_vcr_task>(data);
         static auto previous_value = value;
         if (!vcr_is_task_recording(value) && vcr_is_task_recording(previous_value))
@@ -564,7 +564,7 @@ void on_task_changed(std::any data)
 
 void on_emu_stopping(std::any)
 {
-    g_main_ctx.main_window_dispatcher->invoke([] {
+    g_main_ctx.dispatcher->invoke([] {
         LuaDialog::store_running_scripts();
         LuaDialog::stop_all();
     });
@@ -572,18 +572,18 @@ void on_emu_stopping(std::any)
 
 void on_emu_launched_changed(std::any data)
 {
-    g_main_ctx.main_window_dispatcher->invoke([=] {
+    g_main_ctx.dispatcher->invoke([=] {
         auto value = std::any_cast<bool>(data);
         static auto previous_value = value;
 
-        const auto window_style = GetWindowLong(g_main_ctx.main_hwnd, GWL_STYLE);
+        const auto window_style = GetWindowLong(g_main_ctx.hwnd, GWL_STYLE);
         if (value)
         {
-            SetWindowLong(g_main_ctx.main_hwnd, GWL_STYLE, window_style & ~(WS_THICKFRAME | WS_MAXIMIZEBOX));
+            SetWindowLong(g_main_ctx.hwnd, GWL_STYLE, window_style & ~(WS_THICKFRAME | WS_MAXIMIZEBOX));
         }
         else
         {
-            SetWindowLong(g_main_ctx.main_hwnd, GWL_STYLE, window_style | WS_THICKFRAME | WS_MAXIMIZEBOX);
+            SetWindowLong(g_main_ctx.hwnd, GWL_STYLE, window_style | WS_THICKFRAME | WS_MAXIMIZEBOX);
         }
 
         update_titlebar();
@@ -607,10 +607,10 @@ void on_emu_launched_changed(std::any data)
         if (!value && previous_value)
         {
             g_view_logger->info("[View] Restoring window size to {}x{}...", g_config.window_width, g_config.window_height);
-            SetWindowPos(g_main_ctx.main_hwnd, nullptr, 0, 0, g_config.window_width, g_config.window_height, SWP_NOMOVE);
+            SetWindowPos(g_main_ctx.hwnd, nullptr, 0, 0, g_config.window_width, g_config.window_height, SWP_NOMOVE);
         }
 
-        RedrawWindow(g_main_ctx.main_hwnd, nullptr, nullptr, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ERASE | RDW_ALLCHILDREN);
+        RedrawWindow(g_main_ctx.hwnd, nullptr, nullptr, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ERASE | RDW_ALLCHILDREN);
 
         previous_value = value;
     });
@@ -618,20 +618,20 @@ void on_emu_launched_changed(std::any data)
 
 void on_capturing_changed(std::any data)
 {
-    g_main_ctx.main_window_dispatcher->invoke([=] {
+    g_main_ctx.dispatcher->invoke([=] {
         auto value = std::any_cast<bool>(data);
 
         if (value)
         {
-            SetWindowLong(g_main_ctx.main_hwnd, GWL_STYLE, GetWindowLong(g_main_ctx.main_hwnd, GWL_STYLE) & ~WS_MINIMIZEBOX);
+            SetWindowLong(g_main_ctx.hwnd, GWL_STYLE, GetWindowLong(g_main_ctx.hwnd, GWL_STYLE) & ~WS_MINIMIZEBOX);
             // NOTE: WS_EX_LAYERED fixes BitBlt'ing from the window when its off-screen, as it wouldnt redraw otherwise (relevant for Window capture mode)
-            SetWindowLong(g_main_ctx.main_hwnd, GWL_EXSTYLE, GetWindowLong(g_main_ctx.main_hwnd, GWL_EXSTYLE) | WS_EX_LAYERED);
+            SetWindowLong(g_main_ctx.hwnd, GWL_EXSTYLE, GetWindowLong(g_main_ctx.hwnd, GWL_EXSTYLE) | WS_EX_LAYERED);
         }
         else
         {
-            SetWindowPos(g_main_ctx.main_hwnd, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
-            SetWindowLong(g_main_ctx.main_hwnd, GWL_STYLE, GetWindowLong(g_main_ctx.main_hwnd, GWL_STYLE) | WS_MINIMIZEBOX);
-            SetWindowLong(g_main_ctx.main_hwnd, GWL_EXSTYLE, GetWindowLong(g_main_ctx.main_hwnd, GWL_EXSTYLE) & ~WS_EX_LAYERED);
+            SetWindowPos(g_main_ctx.hwnd, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+            SetWindowLong(g_main_ctx.hwnd, GWL_STYLE, GetWindowLong(g_main_ctx.hwnd, GWL_STYLE) | WS_MINIMIZEBOX);
+            SetWindowLong(g_main_ctx.hwnd, GWL_EXSTYLE, GetWindowLong(g_main_ctx.hwnd, GWL_EXSTYLE) & ~WS_EX_LAYERED);
         }
 
         update_titlebar();
@@ -678,7 +678,7 @@ void on_movie_loop_changed(std::any data)
 
 void on_fullscreen_changed(std::any data)
 {
-    g_main_ctx.main_window_dispatcher->invoke([=] {
+    g_main_ctx.dispatcher->invoke([=] {
         auto value = std::any_cast<bool>(data);
         ShowCursor(!value);
     });
@@ -713,7 +713,7 @@ t_window_info get_window_info()
     t_window_info info;
 
     RECT client_rect = {};
-    GetClientRect(g_main_ctx.main_hwnd, &client_rect);
+    GetClientRect(g_main_ctx.hwnd, &client_rect);
 
     // full client dimensions including statusbar
     info.width = client_rect.right - client_rect.left;
@@ -841,14 +841,14 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
                 g_main_ctx.core.plugin_funcs.video_move_screen((int)wParam, lParam);
             }
 
-            if (IsIconic(g_main_ctx.main_hwnd))
+            if (IsIconic(g_main_ctx.hwnd))
             {
                 // GetWindowRect values are nonsense when minimized
                 break;
             }
 
             RECT rect = {0};
-            GetWindowRect(g_main_ctx.main_hwnd, &rect);
+            GetWindowRect(g_main_ctx.hwnd, &rect);
             g_config.window_x = rect.left;
             g_config.window_y = rect.top;
             break;
@@ -857,7 +857,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
         {
             SendMessage(Statusbar::hwnd(), WM_SIZE, 0, 0);
             RECT rect{};
-            GetClientRect(g_main_ctx.main_hwnd, &rect);
+            GetClientRect(g_main_ctx.hwnd, &rect);
             Messenger::broadcast(Messenger::Message::SizeChanged, rect);
 
             if (g_main_ctx.core_ctx->vr_get_launched())
@@ -866,7 +866,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
                 break;
             }
 
-            if (IsIconic(g_main_ctx.main_hwnd))
+            if (IsIconic(g_main_ctx.hwnd))
             {
                 // GetWindowRect values are nonsense when minimized
                 break;
@@ -880,13 +880,13 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
             break;
         }
     case WM_FOCUS_MAIN_WINDOW:
-        SetFocus(g_main_ctx.main_hwnd);
+        SetFocus(g_main_ctx.hwnd);
         break;
     case WM_EXECUTE_DISPATCHER:
-        g_main_ctx.main_window_dispatcher->execute();
+        g_main_ctx.dispatcher->execute();
         break;
     case WM_NCCREATE:
-        g_main_ctx.main_hwnd = hwnd;
+        g_main_ctx.hwnd = hwnd;
         break;
     case WM_CREATE:
         SetWindowLong(hwnd, GWL_EXSTYLE, WS_EX_ACCEPTFILES);
@@ -915,8 +915,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
 
             std::thread([] {
                 g_main_ctx.core_ctx->vr_close_rom(true);
-                g_main_ctx.main_window_dispatcher->invoke([] {
-                    DestroyWindow(g_main_ctx.main_hwnd);
+                g_main_ctx.dispatcher->invoke([] {
+                    DestroyWindow(g_main_ctx.hwnd);
                 });
             })
             .detach();
@@ -1083,7 +1083,7 @@ static void CALLBACK invalidate_callback(UINT, UINT, DWORD_PTR, DWORD_PTR, DWORD
     g_main_ctx.core_ctx->vr_invalidate_visuals();
 
     // This has to be posted to ui thread since it requires synchronized access to the lua map
-    PostMessage(g_main_ctx.main_hwnd, WM_INVALIDATE_LUA, 0, 0);
+    PostMessage(g_main_ctx.hwnd, WM_INVALIDATE_LUA, 0, 0);
 
     static std::chrono::high_resolution_clock::time_point last_statusbar_update = std::chrono::high_resolution_clock::now();
     std::chrono::high_resolution_clock::time_point time = std::chrono::high_resolution_clock::now();
@@ -1278,14 +1278,14 @@ static void main_dispatcher_init()
     g_ui_thread_id = GetCurrentThreadId();
     dispatcher_event = CreateEvent(NULL, FALSE, FALSE, NULL);
     dispatcher_done_event = CreateEvent(NULL, FALSE, FALSE, NULL);
-    g_main_ctx.main_window_dispatcher = std::make_unique<Dispatcher>(g_ui_thread_id, [] {
+    g_main_ctx.dispatcher = std::make_unique<Dispatcher>(g_ui_thread_id, [] {
         if (g_config.fast_dispatcher)
         {
             SetEvent(dispatcher_event);
             WaitForSingleObject(dispatcher_done_event, INFINITE);
             return;
         }
-        SendMessage(g_main_ctx.main_hwnd, WM_EXECUTE_DISPATCHER, 0, 0);
+        SendMessage(g_main_ctx.hwnd, WM_EXECUTE_DISPATCHER, 0, 0);
     });
 }
 
@@ -1336,7 +1336,7 @@ static bool dispatcher_prioritized_message_pump(MSG* msg)
 
     if (result == WAIT_OBJECT_0 || WaitForSingleObjectEx(dispatcher_event, 0, FALSE) == WAIT_OBJECT_0)
     {
-        g_main_ctx.main_window_dispatcher->execute();
+        g_main_ctx.dispatcher->execute();
         SetEvent(dispatcher_done_event);
     }
 
@@ -1404,7 +1404,7 @@ int CALLBACK WinMain(const HINSTANCE hInstance, HINSTANCE, LPSTR, const int nSho
     g_view_logger->info("WinMain");
     g_view_logger->info(get_mupen_name());
 
-    g_main_ctx.app_instance = hInstance;
+    g_main_ctx.hinst = hInstance;
     g_main_ctx.app_path = get_app_full_path();
     set_cwd();
 
@@ -1442,8 +1442,8 @@ int CALLBACK WinMain(const HINSTANCE hInstance, HINSTANCE, LPSTR, const int nSho
     wc.cbSize = sizeof(WNDCLASSEX);
     wc.style = CS_OWNDC | CS_HREDRAW | CS_VREDRAW;
     wc.hInstance = hInstance;
-    wc.hIcon = LoadIcon(g_main_ctx.app_instance, MAKEINTRESOURCE(IDI_M64ICONBIG));
-    wc.hIconSm = LoadIcon(g_main_ctx.app_instance, MAKEINTRESOURCE(IDI_M64ICONSMALL));
+    wc.hIcon = LoadIcon(g_main_ctx.hinst, MAKEINTRESOURCE(IDI_M64ICONBIG));
+    wc.hIconSm = LoadIcon(g_main_ctx.hinst, MAKEINTRESOURCE(IDI_M64ICONSMALL));
     wc.hCursor = LoadCursor(NULL, IDC_ARROW);
     wc.lpszClassName = WND_CLASS;
     wc.lpfnWndProc = WndProc;
@@ -1452,8 +1452,8 @@ int CALLBACK WinMain(const HINSTANCE hInstance, HINSTANCE, LPSTR, const int nSho
 
     g_view_logger->info("[View] Restoring window @ ({}|{}) {}x{}...", g_config.window_x, g_config.window_y, g_config.window_width, g_config.window_height);
 
-    CreateWindow(WND_CLASS, get_mupen_name().c_str(), WS_OVERLAPPEDWINDOW, g_config.window_x, g_config.window_y, g_config.window_width, g_config.window_height, NULL, NULL, g_main_ctx.app_instance, NULL);
-    ShowWindow(g_main_ctx.main_hwnd, nShowCmd);
+    CreateWindow(WND_CLASS, get_mupen_name().c_str(), WS_OVERLAPPEDWINDOW, g_config.window_x, g_config.window_y, g_config.window_width, g_config.window_height, NULL, NULL, g_main_ctx.hinst, NULL);
+    ShowWindow(g_main_ctx.hwnd, nShowCmd);
 
     Messenger::subscribe(Messenger::Message::EmuLaunchedChanged, on_emu_launched_changed);
     Messenger::subscribe(Messenger::Message::EmuStopping, on_emu_stopping);

@@ -126,7 +126,7 @@ namespace LuaCore::Emu
         auto lua = LuaManager::get_environment_for_state(L);
         lua_pushboolean(
         L,
-        GetForegroundWindow() == g_main_ctx.main_hwnd || GetActiveWindow() == g_main_ctx.main_hwnd);
+        GetForegroundWindow() == g_main_ctx.hwnd || GetActiveWindow() == g_main_ctx.hwnd);
         return 1;
     }
 

@@ -79,7 +79,7 @@ INT_PTR CALLBACK dlgproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 
 void CoreDbg::show()
 {
-    CreateDialog(g_main_ctx.app_instance, MAKEINTRESOURCE(IDD_COREDBG), g_main_ctx.main_hwnd, dlgproc);
+    CreateDialog(g_main_ctx.hinst, MAKEINTRESOURCE(IDD_COREDBG), g_main_ctx.hwnd, dlgproc);
     ShowWindow(g_ctx.hwnd, SW_SHOW);
 }
 

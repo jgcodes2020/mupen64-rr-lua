@@ -212,7 +212,7 @@ namespace UpdateChecker
         }
 
         ShellExecute(0, 0, g_main_ctx.io_service.string_to_wstring(download_url).c_str(), 0, 0, SW_SHOW);
-        PostMessage(g_main_ctx.main_hwnd, WM_CLOSE, 0, 0);
+        PostMessage(g_main_ctx.hwnd, WM_CLOSE, 0, 0);
     }
 
     void show_connectivity_error(bool manual)

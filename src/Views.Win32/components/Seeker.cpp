@@ -32,7 +32,7 @@ static INT_PTR CALLBACK dlgproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
         SetFocus(GetDlgItem(hwnd, IDC_SEEKER_FRAME));
         break;
     case WM_DESTROY:
-        EnableWindow(g_main_ctx.main_hwnd, TRUE);
+        EnableWindow(g_main_ctx.hwnd, TRUE);
         KillTimer(hwnd, seeker.refresh_timer);
         g_main_ctx.core_ctx->vcr_stop_seek();
         break;
@@ -123,8 +123,8 @@ void Seeker::init()
 
 void Seeker::show()
 {
-    CreateDialog(g_main_ctx.app_instance, MAKEINTRESOURCE(IDD_SEEKER), g_main_ctx.main_hwnd, dlgproc);
-    EnableWindow(g_main_ctx.main_hwnd, FALSE);
+    CreateDialog(g_main_ctx.hinst, MAKEINTRESOURCE(IDD_SEEKER), g_main_ctx.hwnd, dlgproc);
+    EnableWindow(g_main_ctx.hwnd, FALSE);
     ShowWindow(seeker.hwnd, SW_SHOW);
 }
 

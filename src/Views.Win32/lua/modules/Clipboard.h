@@ -98,7 +98,7 @@ namespace LuaCore::Clipboard
 
         const int32_t clipboard_type = validate_type(L, type);
 
-        if (!OpenClipboard(g_main_ctx.main_hwnd))
+        if (!OpenClipboard(g_main_ctx.hwnd))
         {
             lua_pushboolean(L, false);
             return 1;
@@ -173,7 +173,7 @@ namespace LuaCore::Clipboard
 
     static int clear(lua_State* L)
     {
-        if (!OpenClipboard(g_main_ctx.main_hwnd))
+        if (!OpenClipboard(g_main_ctx.hwnd))
         {
             lua_pushboolean(L, false);
             return 1;

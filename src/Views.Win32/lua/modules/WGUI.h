@@ -145,7 +145,7 @@ namespace LuaCore::Wgui
         auto lua = LuaManager::get_environment_for_state(L);
 
         RECT rect;
-        GetClientRect(g_main_ctx.main_hwnd, &rect);
+        GetClientRect(g_main_ctx.hwnd, &rect);
 
         lua_newtable(L);
         lua_pushinteger(L, rect.right - rect.left);
@@ -162,13 +162,13 @@ namespace LuaCore::Wgui
         auto lua = LuaManager::get_environment_for_state(L);
 
         RECT clientRect, wndRect;
-        GetWindowRect(g_main_ctx.main_hwnd, &wndRect);
-        GetClientRect(g_main_ctx.main_hwnd, &clientRect);
+        GetWindowRect(g_main_ctx.hwnd, &wndRect);
+        GetClientRect(g_main_ctx.hwnd, &clientRect);
         wndRect.bottom -= wndRect.top;
         wndRect.right -= wndRect.left;
         int w = luaL_checkinteger(L, 1),
             h = luaL_checkinteger(L, 2);
-        SetWindowPos(g_main_ctx.main_hwnd, 0, 0, 0, w + (wndRect.right - clientRect.right), h + (wndRect.bottom - clientRect.bottom), SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOMOVE);
+        SetWindowPos(g_main_ctx.hwnd, 0, 0, 0, w + (wndRect.right - clientRect.right), h + (wndRect.bottom - clientRect.bottom), SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOMOVE);
 
         // we need to recreate the renderer to accomodate for size changes (this cant be done in-place)
         LuaRenderer::destroy_renderer(&lua->rctx);
@@ -665,9 +665,9 @@ namespace LuaCore::Wgui
         auto lua = LuaManager::get_environment_for_state(L);
 
         // Copy screen into the loadscreen dc
-        auto dc = GetDC(g_main_ctx.main_hwnd);
+        auto dc = GetDC(g_main_ctx.hwnd);
         BitBlt(lua->rctx.loadscreen_dc, 0, 0, lua->rctx.dc_size.width, lua->rctx.dc_size.height, dc, 0, 0, SRCCOPY);
-        ReleaseDC(g_main_ctx.main_hwnd, dc);
+        ReleaseDC(g_main_ctx.hwnd, dc);
 
         Gdiplus::Bitmap* out = new Gdiplus::Bitmap(lua->rctx.loadscreen_bmp, nullptr);
 

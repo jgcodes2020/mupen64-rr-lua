@@ -98,7 +98,7 @@ static LRESULT CALLBACK dlgproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
             GetDlgItem(hwnd, IDC_MOVIE_INFO_TEMPLATE));
             DestroyWindow(GetDlgItem(hwnd, IDC_MOVIE_INFO_TEMPLATE));
 
-            grid_hwnd = CreateWindowEx(WS_EX_CLIENTEDGE, WC_LISTVIEW, NULL, WS_TABSTOP | WS_VISIBLE | WS_CHILD | LVS_SINGLESEL | LVS_REPORT | LVS_SHOWSELALWAYS, grid_rect.left, grid_rect.top, grid_rect.right - grid_rect.left, grid_rect.bottom - grid_rect.top, hwnd, nullptr, g_main_ctx.app_instance, NULL);
+            grid_hwnd = CreateWindowEx(WS_EX_CLIENTEDGE, WC_LISTVIEW, NULL, WS_TABSTOP | WS_VISIBLE | WS_CHILD | LVS_SINGLESEL | LVS_REPORT | LVS_SHOWSELALWAYS, grid_rect.left, grid_rect.top, grid_rect.right - grid_rect.left, grid_rect.bottom - grid_rect.top, hwnd, nullptr, g_main_ctx.hinst, NULL);
 
             ListView_SetExtendedListViewStyle(grid_hwnd, LVS_EX_GRIDLINES | LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER);
 
@@ -403,9 +403,9 @@ MovieDialog::t_result MovieDialog::show(bool readonly)
     user_result.description = L"";
     is_closing = false;
 
-    DialogBox(g_main_ctx.app_instance,
+    DialogBox(g_main_ctx.hinst,
               MAKEINTRESOURCE(IDD_MOVIE_DIALOG),
-              g_main_ctx.main_hwnd,
+              g_main_ctx.hwnd,
               (DLGPROC)dlgproc);
 
     return user_result;

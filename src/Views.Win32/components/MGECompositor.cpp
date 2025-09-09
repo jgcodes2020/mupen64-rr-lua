@@ -68,7 +68,7 @@ static void recreate_mge_context()
 
 void MGECompositor::create(HWND hwnd)
 {
-    mge_context.hwnd = CreateWindow(CONTROL_CLASS_NAME, L"", WS_CHILD | WS_VISIBLE, 0, 0, 1, 1, hwnd, nullptr, g_main_ctx.app_instance, nullptr);
+    mge_context.hwnd = CreateWindow(CONTROL_CLASS_NAME, L"", WS_CHILD | WS_VISIBLE, 0, 0, 1, 1, hwnd, nullptr, g_main_ctx.hinst, nullptr);
     mge_context.front_dc = GetDC(mge_context.hwnd);
 }
 
@@ -77,7 +77,7 @@ void MGECompositor::init()
     WNDCLASS wndclass = {0};
     wndclass.style = CS_GLOBALCLASS | CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
     wndclass.lpfnWndProc = (WNDPROC)wndproc;
-    wndclass.hInstance = g_main_ctx.app_instance;
+    wndclass.hInstance = g_main_ctx.hinst;
     wndclass.hCursor = LoadCursor(NULL, IDC_ARROW);
     wndclass.lpszClassName = CONTROL_CLASS_NAME;
     RegisterClass(&wndclass);

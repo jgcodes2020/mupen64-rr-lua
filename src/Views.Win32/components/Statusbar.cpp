@@ -159,7 +159,7 @@ static void refresh_segments()
     }
 
     RECT rect{};
-    GetClientRect(g_main_ctx.main_hwnd, &rect);
+    GetClientRect(g_main_ctx.hwnd, &rect);
 
     if (parts.empty())
     {
@@ -223,7 +223,7 @@ static void emu_launched_changed(std::any data)
 static void create()
 {
     // undocumented behaviour of CCS_BOTTOM: it skips applying SBARS_SIZEGRIP in style pre-computation phase
-    statusbar_hwnd = CreateWindowEx(0, STATUSCLASSNAME, nullptr, WS_CHILD | WS_VISIBLE | CCS_BOTTOM, 0, 0, 0, 0, g_main_ctx.main_hwnd, (HMENU)IDC_MAIN_STATUS, g_main_ctx.app_instance, nullptr);
+    statusbar_hwnd = CreateWindowEx(0, STATUSCLASSNAME, nullptr, WS_CHILD | WS_VISIBLE | CCS_BOTTOM, 0, 0, 0, 0, g_main_ctx.hwnd, (HMENU)IDC_MAIN_STATUS, g_main_ctx.hinst, nullptr);
 }
 
 static void statusbar_visibility_changed(std::any data)

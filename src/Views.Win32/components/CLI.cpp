@@ -99,7 +99,7 @@ static void start_lua()
         return;
     }
 
-    g_main_ctx.main_window_dispatcher->invoke([] {
+    g_main_ctx.dispatcher->invoke([] {
         // To run multiple lua scripts, a semicolon-separated list is provided
         std::wstringstream stream;
         std::wstring script;
@@ -133,7 +133,7 @@ static void on_movie_playback_stop()
         EncodingManager::stop_capture([](auto result) {
             if (!result)
                 return;
-            PostMessage(g_main_ctx.main_hwnd, WM_CLOSE, 0, 0);
+            PostMessage(g_main_ctx.hwnd, WM_CLOSE, 0, 0);
         });
     }
 
@@ -142,7 +142,7 @@ static void on_movie_playback_stop()
         Benchmark::t_result result{};
         Benchmark::stop(&result);
         Benchmark::save_result_to_file(cli_params.benchmark, result);
-        PostMessage(g_main_ctx.main_hwnd, WM_CLOSE, 0, 0);
+        PostMessage(g_main_ctx.hwnd, WM_CLOSE, 0, 0);
     }
 }
 
