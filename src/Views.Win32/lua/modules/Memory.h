@@ -41,70 +41,70 @@ namespace LuaCore::Memory
 
     static int read_byte(lua_State* L)
     {
-        UCHAR value = core_rdram_load<UCHAR>((uint8_t*)g_core_ctx->rdram, luaL_checkinteger(L, 1));
+        UCHAR value = core_rdram_load<UCHAR>((uint8_t*)g_main_wnd.core_ctx->rdram, luaL_checkinteger(L, 1));
         lua_pushinteger(L, value);
         return 1;
     }
 
     static int read_byte_signed(lua_State* L)
     {
-        CHAR value = core_rdram_load<CHAR>((uint8_t*)g_core_ctx->rdram, luaL_checkinteger(L, 1));
+        CHAR value = core_rdram_load<CHAR>((uint8_t*)g_main_wnd.core_ctx->rdram, luaL_checkinteger(L, 1));
         lua_pushinteger(L, value);
         return 1;
     }
 
     static int read_word(lua_State* L)
     {
-        USHORT value = core_rdram_load<USHORT>((uint8_t*)g_core_ctx->rdram, luaL_checkinteger(L, 1));
+        USHORT value = core_rdram_load<USHORT>((uint8_t*)g_main_wnd.core_ctx->rdram, luaL_checkinteger(L, 1));
         lua_pushinteger(L, value);
         return 1;
     }
 
     static int read_word_signed(lua_State* L)
     {
-        SHORT value = core_rdram_load<SHORT>((uint8_t*)g_core_ctx->rdram, luaL_checkinteger(L, 1));
+        SHORT value = core_rdram_load<SHORT>((uint8_t*)g_main_wnd.core_ctx->rdram, luaL_checkinteger(L, 1));
         lua_pushinteger(L, value);
         return 1;
     }
 
     static int read_dword(lua_State* L)
     {
-        ULONG value = core_rdram_load<ULONG>((uint8_t*)g_core_ctx->rdram, luaL_checkinteger(L, 1));
+        ULONG value = core_rdram_load<ULONG>((uint8_t*)g_main_wnd.core_ctx->rdram, luaL_checkinteger(L, 1));
         lua_pushinteger(L, value);
         return 1;
     }
 
     static int read_dword_signed(lua_State* L)
     {
-        LONG value = core_rdram_load<LONG>((uint8_t*)g_core_ctx->rdram, luaL_checkinteger(L, 1));
+        LONG value = core_rdram_load<LONG>((uint8_t*)g_main_wnd.core_ctx->rdram, luaL_checkinteger(L, 1));
         lua_pushinteger(L, value);
         return 1;
     }
 
     static int read_qword(lua_State* L)
     {
-        ULONGLONG value = core_rdram_load<ULONGLONG>((uint8_t*)g_core_ctx->rdram, luaL_checkinteger(L, 1));
+        ULONGLONG value = core_rdram_load<ULONGLONG>((uint8_t*)g_main_wnd.core_ctx->rdram, luaL_checkinteger(L, 1));
         LuaPushQword(L, value);
         return 1;
     }
 
     static int read_qword_signed(lua_State* L)
     {
-        LONGLONG value = core_rdram_load<LONGLONG>((uint8_t*)g_core_ctx->rdram, luaL_checkinteger(L, 1));
+        LONGLONG value = core_rdram_load<LONGLONG>((uint8_t*)g_main_wnd.core_ctx->rdram, luaL_checkinteger(L, 1));
         LuaPushQword(L, value);
         return 1;
     }
 
     static int read_float(lua_State* L)
     {
-        ULONG value = core_rdram_load<ULONG>((uint8_t*)g_core_ctx->rdram, luaL_checkinteger(L, 1));
+        ULONG value = core_rdram_load<ULONG>((uint8_t*)g_main_wnd.core_ctx->rdram, luaL_checkinteger(L, 1));
         lua_pushnumber(L, *(FLOAT*)&value);
         return 1;
     }
 
     static int read_double(lua_State* L)
     {
-        ULONGLONG value = core_rdram_load<ULONGLONG>((uint8_t*)g_core_ctx->rdram, luaL_checkinteger(L, 1));
+        ULONGLONG value = core_rdram_load<ULONGLONG>((uint8_t*)g_main_wnd.core_ctx->rdram, luaL_checkinteger(L, 1));
         lua_pushnumber(L, *(DOUBLE*)value);
         return 1;
     }
@@ -113,39 +113,39 @@ namespace LuaCore::Memory
 
     static int write_byte(lua_State* L)
     {
-        core_rdram_store<UCHAR>((uint8_t*)g_core_ctx->rdram, luaL_checkinteger(L, 1), luaL_checkinteger(L, 2));
+        core_rdram_store<UCHAR>((uint8_t*)g_main_wnd.core_ctx->rdram, luaL_checkinteger(L, 1), luaL_checkinteger(L, 2));
         return 0;
     }
 
     static int write_word(lua_State* L)
     {
-        core_rdram_store<USHORT>((uint8_t*)g_core_ctx->rdram, luaL_checkinteger(L, 1), luaL_checkinteger(L, 2));
+        core_rdram_store<USHORT>((uint8_t*)g_main_wnd.core_ctx->rdram, luaL_checkinteger(L, 1), luaL_checkinteger(L, 2));
         return 0;
     }
 
     static int write_dword(lua_State* L)
     {
-        core_rdram_store<ULONG>((uint8_t*)g_core_ctx->rdram, luaL_checkinteger(L, 1), luaL_checkinteger(L, 2));
+        core_rdram_store<ULONG>((uint8_t*)g_main_wnd.core_ctx->rdram, luaL_checkinteger(L, 1), luaL_checkinteger(L, 2));
         return 0;
     }
 
     static int write_qword(lua_State* L)
     {
-        core_rdram_store<ULONGLONG>((uint8_t*)g_core_ctx->rdram, luaL_checkinteger(L, 1), LuaCheckQWord(L, 2));
+        core_rdram_store<ULONGLONG>((uint8_t*)g_main_wnd.core_ctx->rdram, luaL_checkinteger(L, 1), LuaCheckQWord(L, 2));
         return 0;
     }
 
     static int write_float(lua_State* L)
     {
         FLOAT f = luaL_checknumber(L, -1);
-        core_rdram_store<ULONG>((uint8_t*)g_core_ctx->rdram, luaL_checkinteger(L, 1), *(ULONG*)&f);
+        core_rdram_store<ULONG>((uint8_t*)g_main_wnd.core_ctx->rdram, luaL_checkinteger(L, 1), *(ULONG*)&f);
         return 0;
     }
 
     static int write_double(lua_State* L)
     {
         DOUBLE f = luaL_checknumber(L, -1);
-        core_rdram_store<ULONGLONG>((uint8_t*)g_core_ctx->rdram, luaL_checkinteger(L, 1), *(ULONGLONG*)&f);
+        core_rdram_store<ULONGLONG>((uint8_t*)g_main_wnd.core_ctx->rdram, luaL_checkinteger(L, 1), *(ULONGLONG*)&f);
         return 0;
     }
 
@@ -157,29 +157,29 @@ namespace LuaCore::Memory
         {
         // unsigned
         case 1:
-            lua_pushinteger(L, core_rdram_load<UCHAR>((uint8_t*)g_core_ctx->rdram, addr));
+            lua_pushinteger(L, core_rdram_load<UCHAR>((uint8_t*)g_main_wnd.core_ctx->rdram, addr));
             break;
         case 2:
-            lua_pushinteger(L, core_rdram_load<USHORT>((uint8_t*)g_core_ctx->rdram, addr));
+            lua_pushinteger(L, core_rdram_load<USHORT>((uint8_t*)g_main_wnd.core_ctx->rdram, addr));
             break;
         case 4:
-            lua_pushinteger(L, core_rdram_load<ULONG>((uint8_t*)g_core_ctx->rdram, addr));
+            lua_pushinteger(L, core_rdram_load<ULONG>((uint8_t*)g_main_wnd.core_ctx->rdram, addr));
             break;
         case 8:
-            LuaPushQword(L, core_rdram_load<ULONGLONG>((uint8_t*)g_core_ctx->rdram, addr));
+            LuaPushQword(L, core_rdram_load<ULONGLONG>((uint8_t*)g_main_wnd.core_ctx->rdram, addr));
             break;
         // signed
         case -1:
-            lua_pushinteger(L, core_rdram_load<CHAR>((uint8_t*)g_core_ctx->rdram, addr));
+            lua_pushinteger(L, core_rdram_load<CHAR>((uint8_t*)g_main_wnd.core_ctx->rdram, addr));
             break;
         case -2:
-            lua_pushinteger(L, core_rdram_load<SHORT>((uint8_t*)g_core_ctx->rdram, addr));
+            lua_pushinteger(L, core_rdram_load<SHORT>((uint8_t*)g_main_wnd.core_ctx->rdram, addr));
             break;
         case -4:
-            lua_pushinteger(L, core_rdram_load<LONG>((uint8_t*)g_core_ctx->rdram, addr));
+            lua_pushinteger(L, core_rdram_load<LONG>((uint8_t*)g_main_wnd.core_ctx->rdram, addr));
             break;
         case -8:
-            LuaPushQword(L, core_rdram_load<LONGLONG>((uint8_t*)g_core_ctx->rdram, addr));
+            LuaPushQword(L, core_rdram_load<LONGLONG>((uint8_t*)g_main_wnd.core_ctx->rdram, addr));
             break;
         default:
             luaL_error(L, "size must be 1, 2, 4, 8, -1, -2, -4, -8");
@@ -194,28 +194,28 @@ namespace LuaCore::Memory
         switch (size)
         {
         case 1:
-            core_rdram_store<UCHAR>((uint8_t*)g_core_ctx->rdram, addr, luaL_checkinteger(L, 3));
+            core_rdram_store<UCHAR>((uint8_t*)g_main_wnd.core_ctx->rdram, addr, luaL_checkinteger(L, 3));
             break;
         case 2:
-            core_rdram_store<USHORT>((uint8_t*)g_core_ctx->rdram, addr, luaL_checkinteger(L, 3));
+            core_rdram_store<USHORT>((uint8_t*)g_main_wnd.core_ctx->rdram, addr, luaL_checkinteger(L, 3));
             break;
         case 4:
-            core_rdram_store<ULONG>((uint8_t*)g_core_ctx->rdram, addr, luaL_checkinteger(L, 3));
+            core_rdram_store<ULONG>((uint8_t*)g_main_wnd.core_ctx->rdram, addr, luaL_checkinteger(L, 3));
             break;
         case 8:
-            core_rdram_store<ULONGLONG>((uint8_t*)g_core_ctx->rdram, addr, LuaCheckQWord(L, 3));
+            core_rdram_store<ULONGLONG>((uint8_t*)g_main_wnd.core_ctx->rdram, addr, LuaCheckQWord(L, 3));
             break;
         case -1:
-            core_rdram_store<CHAR>((uint8_t*)g_core_ctx->rdram, addr, luaL_checkinteger(L, 3));
+            core_rdram_store<CHAR>((uint8_t*)g_main_wnd.core_ctx->rdram, addr, luaL_checkinteger(L, 3));
             break;
         case -2:
-            core_rdram_store<SHORT>((uint8_t*)g_core_ctx->rdram, addr, luaL_checkinteger(L, 3));
+            core_rdram_store<SHORT>((uint8_t*)g_main_wnd.core_ctx->rdram, addr, luaL_checkinteger(L, 3));
             break;
         case -4:
-            core_rdram_store<LONG>((uint8_t*)g_core_ctx->rdram, addr, luaL_checkinteger(L, 3));
+            core_rdram_store<LONG>((uint8_t*)g_main_wnd.core_ctx->rdram, addr, luaL_checkinteger(L, 3));
             break;
         case -8:
-            core_rdram_store<LONGLONG>((uint8_t*)g_core_ctx->rdram, addr, LuaCheckQWord(L, 3));
+            core_rdram_store<LONGLONG>((uint8_t*)g_main_wnd.core_ctx->rdram, addr, LuaCheckQWord(L, 3));
             break;
         default:
             luaL_error(L, "size must be 1, 2, 4, 8, -1, -2, -4, -8");
@@ -284,13 +284,13 @@ namespace LuaCore::Memory
 
     static int recompile(lua_State* L)
     {
-        g_core_ctx->vr_recompile(luaL_checkinteger(L, 1));
+        g_main_wnd.core_ctx->vr_recompile(luaL_checkinteger(L, 1));
         return 0;
     }
 
     static int recompile_all(lua_State* L)
     {
-        g_core_ctx->vr_recompile(UINT32_MAX);
+        g_main_wnd.core_ctx->vr_recompile(UINT32_MAX);
         return 0;
     }
 } // namespace LuaCore::Memory

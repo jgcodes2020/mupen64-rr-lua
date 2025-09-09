@@ -126,8 +126,8 @@ static void log_crash(const std::wstring& additional_exception_info)
     g_view_logger->critical(L"Audio: {}", g_config.selected_audio_plugin);
     g_view_logger->critical(L"Input: {}", g_config.selected_input_plugin);
     g_view_logger->critical(L"RSP: {}", g_config.selected_rsp_plugin);
-    g_view_logger->critical(L"VCR Task: {}", static_cast<int>(g_core_ctx->vcr_get_task()));
-    g_view_logger->critical(L"Core Executing: {}", g_core_ctx->vr_get_launched());
+    g_view_logger->critical(L"VCR Task: {}", static_cast<int>(g_main_wnd.core_ctx->vcr_get_task()));
+    g_view_logger->critical(L"Core Executing: {}", g_main_wnd.core_ctx->vr_get_launched());
     g_view_logger->critical(additional_exception_info);
 
     g_view_logger->critical("STL Stacktrace:");
@@ -160,11 +160,11 @@ bool show_crash_dialog(bool continuable)
     int result = 0;
     if (continuable)
     {
-        TaskDialog(g_main_hwnd, g_app_instance, L"Error", L"An error has occured", L"Crash dumps have been automatically generated. You can choose to continue program execution.", TDCBF_RETRY_BUTTON | TDCBF_CLOSE_BUTTON, TD_ERROR_ICON, &result);
+        TaskDialog(g_main_wnd.main_hwnd, g_main_wnd.app_instance, L"Error", L"An error has occured", L"Crash dumps have been automatically generated. You can choose to continue program execution.", TDCBF_RETRY_BUTTON | TDCBF_CLOSE_BUTTON, TD_ERROR_ICON, &result);
     }
     else
     {
-        TaskDialog(g_main_hwnd, g_app_instance, L"Error", L"An error has occured", L"Crash dumps have been automatically generated. The program will now exit.", TDCBF_CLOSE_BUTTON, TD_ERROR_ICON, &result);
+        TaskDialog(g_main_wnd.main_hwnd, g_main_wnd.app_instance, L"Error", L"An error has occured", L"Crash dumps have been automatically generated. The program will now exit.", TDCBF_CLOSE_BUTTON, TD_ERROR_ICON, &result);
     }
 
     return result == IDCLOSE;

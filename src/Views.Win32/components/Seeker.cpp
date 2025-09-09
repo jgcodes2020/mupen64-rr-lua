@@ -32,9 +32,9 @@ static INT_PTR CALLBACK dlgproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
         SetFocus(GetDlgItem(hwnd, IDC_SEEKER_FRAME));
         break;
     case WM_DESTROY:
-        EnableWindow(g_main_hwnd, TRUE);
+        EnableWindow(g_main_wnd.main_hwnd, TRUE);
         KillTimer(hwnd, seeker.refresh_timer);
-        g_core_ctx->vcr_stop_seek();
+        g_main_wnd.core_ctx->vcr_stop_seek();
         break;
     case WM_CLOSE:
         EndDialog(hwnd, IDCANCEL);
@@ -47,11 +47,11 @@ static INT_PTR CALLBACK dlgproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
         break;
     case WM_TIMER:
         {
-            if (!g_core_ctx->vcr_is_seeking())
+            if (!g_main_wnd.core_ctx->vcr_is_seeking())
             {
                 break;
             }
-            const core_vcr_seek_info info = g_core_ctx->vcr_get_seek_info();
+            const core_vcr_seek_info info = g_main_wnd.core_ctx->vcr_get_seek_info();
 
             const float effective_progress = remap(
             static_cast<float>(info.current_sample),
@@ -75,9 +75,9 @@ static INT_PTR CALLBACK dlgproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
             break;
         case IDC_SEEKER_START:
             {
-                if (g_core_ctx->vcr_is_seeking())
+                if (g_main_wnd.core_ctx->vcr_is_seeking())
                 {
-                    g_core_ctx->vcr_stop_seek();
+                    g_main_wnd.core_ctx->vcr_stop_seek();
                     break;
                 }
 
@@ -87,7 +87,7 @@ static INT_PTR CALLBACK dlgproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
                     SetDlgItemText(hwnd, IDC_SEEKER_SUBTEXT, L"Seek savestates disabled. Seeking backwards will be slower.");
                 }
 
-                if (g_core_ctx->vcr_begin_seek(g_config.seeker_value, true) != Res_Ok)
+                if (g_main_wnd.core_ctx->vcr_begin_seek(g_config.seeker_value, true) != Res_Ok)
                 {
                     SetDlgItemText(hwnd, IDC_SEEKER_START, L"Start");
                     SetDlgItemText(hwnd, IDC_SEEKER_STATUS, L"Couldn't seek");
@@ -123,8 +123,8 @@ void Seeker::init()
 
 void Seeker::show()
 {
-    CreateDialog(g_app_instance, MAKEINTRESOURCE(IDD_SEEKER), g_main_hwnd, dlgproc);
-    EnableWindow(g_main_hwnd, FALSE);
+    CreateDialog(g_main_wnd.app_instance, MAKEINTRESOURCE(IDD_SEEKER), g_main_wnd.main_hwnd, dlgproc);
+    EnableWindow(g_main_wnd.main_hwnd, FALSE);
     ShowWindow(seeker.hwnd, SW_SHOW);
 }
 

@@ -207,7 +207,7 @@ static void create_placeholder_dialog(t_dialog_state& dlg)
 {
     destroy_placeholder_dialog(dlg);
 
-    dlg.placeholder_hwnd = CreateDialog(g_app_instance, MAKEINTRESOURCE(IDD_LUA_INSTANCE_PLACEHOLDER), dlg.mgr_hwnd, nullptr);
+    dlg.placeholder_hwnd = CreateDialog(g_main_wnd.app_instance, MAKEINTRESOURCE(IDD_LUA_INSTANCE_PLACEHOLDER), dlg.mgr_hwnd, nullptr);
     SetWindowPos(dlg.placeholder_hwnd, nullptr, dlg.initial_rect.right, 0, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_SHOWWINDOW);
     ResizeAnchor::add_anchors(dlg.mgr_hwnd, {{dlg.placeholder_hwnd, ResizeAnchor::FULL_ANCHOR | ResizeAnchor::INVALIDATE_ERASE}});
     ResizeAnchor::add_anchors(dlg.placeholder_hwnd, {{GetDlgItem(dlg.placeholder_hwnd, IDC_STATIC), ResizeAnchor::FULL_ANCHOR | ResizeAnchor::INVALIDATE_ERASE}});
@@ -511,7 +511,7 @@ static INT_PTR CALLBACK lua_manager_dialog_proc(HWND hwnd, UINT msg, WPARAM wpar
                         destroy_placeholder_dialog(g_dlg);
 
                         const auto param = g_lua_instance_wnd_ctxs[index].get();
-                        g_dlg.inst_hwnd = CreateDialogParam(g_app_instance, MAKEINTRESOURCE(IDD_LUA_INSTANCE), hwnd, lua_instance_dialog_proc, (LPARAM)param);
+                        g_dlg.inst_hwnd = CreateDialogParam(g_main_wnd.app_instance, MAKEINTRESOURCE(IDD_LUA_INSTANCE), hwnd, lua_instance_dialog_proc, (LPARAM)param);
 
                         SetWindowPos(g_dlg.inst_hwnd, nullptr, g_dlg.initial_rect.right, 0, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_SHOWWINDOW);
 
@@ -566,7 +566,7 @@ void LuaDialog::show()
         BringWindowToTop(g_dlg.mgr_hwnd);
         return;
     }
-    CreateDialog(g_app_instance, MAKEINTRESOURCE(IDD_LUA_MANAGER), g_main_hwnd, lua_manager_dialog_proc);
+    CreateDialog(g_main_wnd.app_instance, MAKEINTRESOURCE(IDD_LUA_MANAGER), g_main_wnd.main_hwnd, lua_manager_dialog_proc);
     ShowWindow(g_dlg.mgr_hwnd, SW_SHOW);
 }
 

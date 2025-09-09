@@ -59,7 +59,7 @@ std::optional<std::wstring> VFWEncoder::start(Params params)
     if (params.ask_for_encoding_settings && !m_splitting)
     {
         LPAVICOMPRESSOPTIONS avi_options[1] = {&m_avi_options};
-        if (!AVISaveOptions(g_main_hwnd, 0, 1, &m_video_stream, avi_options))
+        if (!AVISaveOptions(g_main_wnd.main_hwnd, 0, 1, &m_video_stream, avi_options))
         {
             stop_impl();
             return L"";
@@ -246,7 +246,7 @@ bool VFWEncoder::append_audio(uint8_t* audio, size_t length, uint8_t bitrate)
             g_view_logger->info(
             "[EncodingManager]: Correcting for A/V desynchronization of %+Lf frames\n",
             desync);
-            int len3 = (int)(m_params.arate / (long double)g_core_ctx->vr_get_vis_per_second(g_core_ctx->vr_get_rom_header()->Country_code)) * (int)desync;
+            int len3 = (int)(m_params.arate / (long double)g_main_wnd.core_ctx->vr_get_vis_per_second(g_main_wnd.core_ctx->vr_get_rom_header()->Country_code)) * (int)desync;
             len3 <<= 2;
             const int empty_size =
             len3 > write_size ? write_size : len3;
@@ -334,7 +334,7 @@ bool VFWEncoder::write_sound(uint8_t* buf, int len, const int min_write_size, co
     memcpy(m_sound_buf + sound_buf_pos, (char*)buf, len);
     sound_buf_pos += len;
     m_audio_frame += ((len / 4) / (long double)m_params.arate) *
-    g_core_ctx->vr_get_vis_per_second(g_core_ctx->vr_get_rom_header()->Country_code);
+    g_main_wnd.core_ctx->vr_get_vis_per_second(g_main_wnd.core_ctx->vr_get_rom_header()->Country_code);
 
     return true;
 }

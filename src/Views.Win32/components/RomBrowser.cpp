@@ -42,7 +42,7 @@ namespace RomBrowser
         {
             for (auto path : g_config.rombrowser_rom_paths)
             {
-                auto file_paths = g_io_service.get_files_with_extension_in_directory(path, L"*");
+                auto file_paths = g_main_wnd.io_service.get_files_with_extension_in_directory(path, L"*");
                 rom_paths.insert(rom_paths.end(), file_paths.begin(), file_paths.end());
             }
         }
@@ -115,10 +115,10 @@ namespace RomBrowser
         assert(rombrowser_hwnd == nullptr);
 
         RECT rcl{}, rtool{}, rstatus{};
-        GetClientRect(g_main_hwnd, &rcl);
+        GetClientRect(g_main_wnd.main_hwnd, &rcl);
         GetWindowRect(Statusbar::hwnd(), &rstatus);
 
-        rombrowser_hwnd = CreateWindowEx(WS_EX_CLIENTEDGE, WC_LISTVIEW, NULL, WS_TABSTOP | WS_VISIBLE | WS_CHILD | LVS_SINGLESEL | LVS_REPORT | LVS_SHOWSELALWAYS, 0, rtool.bottom - rtool.top, rcl.right - rcl.left, rcl.bottom - rcl.top - rtool.bottom + rtool.top - rstatus.bottom + rstatus.top, g_main_hwnd, (HMENU)IDC_ROMLIST, g_app_instance, NULL);
+        rombrowser_hwnd = CreateWindowEx(WS_EX_CLIENTEDGE, WC_LISTVIEW, NULL, WS_TABSTOP | WS_VISIBLE | WS_CHILD | LVS_SINGLESEL | LVS_REPORT | LVS_SHOWSELALWAYS, 0, rtool.bottom - rtool.top, rcl.right - rcl.left, rcl.bottom - rcl.top - rtool.bottom + rtool.top - rstatus.bottom + rstatus.top, g_main_wnd.main_hwnd, (HMENU)IDC_ROMLIST, g_main_wnd.app_instance, NULL);
         ListView_SetExtendedListViewStyle(rombrowser_hwnd,
                                           LVS_EX_GRIDLINES |
                                           LVS_EX_FULLROWSELECT |
@@ -131,7 +131,7 @@ namespace RomBrowser
         HICON h_icon;
 
 #define ADD_ICON(id)                                        \
-    h_icon = LoadIcon(g_app_instance, MAKEINTRESOURCE(id)); \
+    h_icon = LoadIcon(g_main_wnd.app_instance, MAKEINTRESOURCE(id)); \
     ImageList_AddIcon(h_small, h_icon)
 
         ADD_ICON(IDI_GERMANY);
@@ -256,7 +256,7 @@ namespace RomBrowser
                 core_rom_header header{};
                 fread(&header, sizeof(core_rom_header), 1, f);
 
-                g_core_ctx->vr_byteswap((uint8_t*)&header);
+                g_main_wnd.core_ctx->vr_byteswap((uint8_t*)&header);
 
                 MiscHelpers::strtrim((char*)header.nom, sizeof(header.nom));
 
@@ -293,7 +293,7 @@ namespace RomBrowser
 
     void rombrowser_update_size()
     {
-        if (g_core_ctx->vr_get_launched())
+        if (g_main_wnd.core_ctx->vr_get_launched())
             return;
         if (!IsWindow(rombrowser_hwnd))
             return;
@@ -302,7 +302,7 @@ namespace RomBrowser
         RECT rc, rc_main;
         WORD n_width, n_height;
         int32_t y = 0;
-        GetClientRect(g_main_hwnd, &rc_main);
+        GetClientRect(g_main_wnd.main_hwnd, &rc_main);
         n_width = rc_main.right - rc_main.left;
         n_height = rc_main.bottom - rc_main.top;
         if (Statusbar::hwnd())
@@ -346,7 +346,7 @@ namespace RomBrowser
                         {
                             g_view_logger->error("Failed to copy rom name");
                         }
-                        StrNCpy(plvdi->item.pszText, g_io_service.string_to_wstring(str).c_str(), plvdi->item.cchTextMax);
+                        StrNCpy(plvdi->item.pszText, g_main_wnd.io_service.string_to_wstring(str).c_str(), plvdi->item.cchTextMax);
                         break;
                     }
                 case 2:
@@ -411,7 +411,7 @@ namespace RomBrowser
                 auto header = (core_rom_header*)malloc(sizeof(core_rom_header));
                 fread(header, sizeof(core_rom_header), 1, f);
 
-                g_core_ctx->vr_byteswap((uint8_t*)header);
+                g_main_wnd.core_ctx->vr_byteswap((uint8_t*)header);
 
                 if (predicate(*header))
                 {

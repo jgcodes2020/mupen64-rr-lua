@@ -39,16 +39,16 @@ INT_PTR CALLBACK dlgproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
         switch (LOWORD(wparam))
         {
         case IDC_COREDBG_CART_TILT:
-            g_core_ctx->dbg_set_dma_read_enabled(!IsDlgButtonChecked(hwnd, IDC_COREDBG_CART_TILT));
+            g_main_wnd.core_ctx->dbg_set_dma_read_enabled(!IsDlgButtonChecked(hwnd, IDC_COREDBG_CART_TILT));
             break;
         case IDC_COREDBG_RSP_TOGGLE:
-            g_core_ctx->dbg_set_rsp_enabled(IsDlgButtonChecked(hwnd, IDC_COREDBG_RSP_TOGGLE));
+            g_main_wnd.core_ctx->dbg_set_rsp_enabled(IsDlgButtonChecked(hwnd, IDC_COREDBG_RSP_TOGGLE));
             break;
         case IDC_COREDBG_STEP:
-            g_core_ctx->dbg_step();
+            g_main_wnd.core_ctx->dbg_step();
             break;
         case IDC_COREDBG_TOGGLEPAUSE:
-            g_core_ctx->dbg_set_is_resumed(!g_core_ctx->dbg_get_resumed());
+            g_main_wnd.core_ctx->dbg_set_is_resumed(!g_main_wnd.core_ctx->dbg_get_resumed());
             break;
         default:
             break;
@@ -57,9 +57,9 @@ INT_PTR CALLBACK dlgproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     case WM_DEBUGGER_CPU_STATE_UPDATED:
         {
             char disasm[32] = {};
-            g_core_ctx->dbg_disassemble(disasm, g_ctx.cpu.opcode, g_ctx.cpu.address);
+            g_main_wnd.core_ctx->dbg_disassemble(disasm, g_ctx.cpu.opcode, g_ctx.cpu.address);
 
-            const auto str = std::format(L"{} ({:#08x}, {:#08x})", g_io_service.string_to_wstring(disasm), g_ctx.cpu.opcode, g_ctx.cpu.address);
+            const auto str = std::format(L"{} ({:#08x}, {:#08x})", g_main_wnd.io_service.string_to_wstring(disasm), g_ctx.cpu.opcode, g_ctx.cpu.address);
             ListBox_InsertString(g_ctx.list_hwnd, 0, str.c_str());
 
             if (ListBox_GetCount(g_ctx.list_hwnd) > 1024)
@@ -69,7 +69,7 @@ INT_PTR CALLBACK dlgproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
             break;
         }
     case WM_DEBUGGER_RESUMED_UPDATED:
-        Button_SetText(GetDlgItem(g_ctx.hwnd, IDC_COREDBG_TOGGLEPAUSE), g_core_ctx->dbg_get_resumed() ? L"Pause" : L"Resume");
+        Button_SetText(GetDlgItem(g_ctx.hwnd, IDC_COREDBG_TOGGLEPAUSE), g_main_wnd.core_ctx->dbg_get_resumed() ? L"Pause" : L"Resume");
         break;
     default:
         return FALSE;
@@ -79,7 +79,7 @@ INT_PTR CALLBACK dlgproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 
 void CoreDbg::show()
 {
-    CreateDialog(g_app_instance, MAKEINTRESOURCE(IDD_COREDBG), g_main_hwnd, dlgproc);
+    CreateDialog(g_main_wnd.app_instance, MAKEINTRESOURCE(IDD_COREDBG), g_main_wnd.main_hwnd, dlgproc);
     ShowWindow(g_ctx.hwnd, SW_SHOW);
 }
 

@@ -14,13 +14,13 @@ namespace LuaCore::Emu
 {
     static int GetVICount(lua_State* L)
     {
-        lua_pushinteger(L, g_core_ctx->vcr_get_current_vi());
+        lua_pushinteger(L, g_main_wnd.core_ctx->vcr_get_current_vi());
         return 1;
     }
 
     static int GetSampleCount(lua_State* L)
     {
-        const core_vcr_seek_info info = g_core_ctx->vcr_get_seek_info();
+        const core_vcr_seek_info info = g_main_wnd.core_ctx->vcr_get_seek_info();
         lua_pushinteger(L, info.current_sample);
         return 1;
     }
@@ -117,7 +117,7 @@ namespace LuaCore::Emu
 
     static int Screenshot(lua_State* L)
     {
-        g_core.plugin_funcs.video_capture_screen((char*)luaL_checkstring(L, 1));
+        g_main_wnd.core.plugin_funcs.video_capture_screen((char*)luaL_checkstring(L, 1));
         return 0;
     }
 
@@ -126,13 +126,13 @@ namespace LuaCore::Emu
         auto lua = LuaManager::get_environment_for_state(L);
         lua_pushboolean(
         L,
-        GetForegroundWindow() == g_main_hwnd || GetActiveWindow() == g_main_hwnd);
+        GetForegroundWindow() == g_main_wnd.main_hwnd || GetActiveWindow() == g_main_wnd.main_hwnd);
         return 1;
     }
 
     static int LuaPlaySound(lua_State* L)
     {
-        PlaySound(g_io_service.string_to_wstring(luaL_checkstring(L, 1)).c_str(), NULL, SND_FILENAME | SND_ASYNC);
+        PlaySound(g_main_wnd.io_service.string_to_wstring(luaL_checkstring(L, 1)).c_str(), NULL, SND_FILENAME | SND_ASYNC);
         return 1;
     }
 
@@ -140,18 +140,18 @@ namespace LuaCore::Emu
     {
         if (!lua_toboolean(L, 1))
         {
-            g_core_ctx->vr_pause_emu();
+            g_main_wnd.core_ctx->vr_pause_emu();
         }
         else
         {
-            g_core_ctx->vr_resume_emu();
+            g_main_wnd.core_ctx->vr_resume_emu();
         }
         return 0;
     }
 
     static int GetEmuPause(lua_State* L)
     {
-        lua_pushboolean(L, g_core_ctx->vr_get_paused());
+        lua_pushboolean(L, g_main_wnd.core_ctx->vr_get_paused());
         return 1;
     }
 
@@ -164,7 +164,7 @@ namespace LuaCore::Emu
     static int SetSpeed(lua_State* L)
     {
         g_config.core.fps_modifier = luaL_checkinteger(L, 1);
-        g_core_ctx->vr_on_speed_modifier_changed();
+        g_main_wnd.core_ctx->vr_on_speed_modifier_changed();
         return 0;
     }
 
@@ -203,20 +203,20 @@ namespace LuaCore::Emu
 #define A(x, n) {x, &n}
 #define B(x, n) {x, n}
         const NameAndVariable list[] = {
-        A("rdram", g_core_ctx->rdram),
-        A("rdram_register", g_core_ctx->rdram_register),
-        A("MI_register", g_core_ctx->MI_register),
-        A("pi_register", g_core_ctx->pi_register),
-        A("sp_register", g_core_ctx->sp_register),
-        A("rsp_register", g_core_ctx->rsp_register),
-        A("si_register", g_core_ctx->si_register),
-        A("vi_register", g_core_ctx->vi_register),
-        A("ri_register", g_core_ctx->ri_register),
-        A("ai_register", g_core_ctx->ai_register),
-        A("dpc_register", g_core_ctx->dpc_register),
-        A("dps_register", g_core_ctx->dps_register),
-        B("SP_DMEM", g_core_ctx->SP_DMEM),
-        B("PIF_RAM", g_core_ctx->PIF_RAM),
+        A("rdram", g_main_wnd.core_ctx->rdram),
+        A("rdram_register", g_main_wnd.core_ctx->rdram_register),
+        A("MI_register", g_main_wnd.core_ctx->MI_register),
+        A("pi_register", g_main_wnd.core_ctx->pi_register),
+        A("sp_register", g_main_wnd.core_ctx->sp_register),
+        A("rsp_register", g_main_wnd.core_ctx->rsp_register),
+        A("si_register", g_main_wnd.core_ctx->si_register),
+        A("vi_register", g_main_wnd.core_ctx->vi_register),
+        A("ri_register", g_main_wnd.core_ctx->ri_register),
+        A("ai_register", g_main_wnd.core_ctx->ai_register),
+        A("dpc_register", g_main_wnd.core_ctx->dpc_register),
+        A("dps_register", g_main_wnd.core_ctx->dps_register),
+        B("SP_DMEM", g_main_wnd.core_ctx->SP_DMEM),
+        B("PIF_RAM", g_main_wnd.core_ctx->PIF_RAM),
         {NULL, NULL}};
 #undef A
 #undef B
@@ -247,7 +247,7 @@ namespace LuaCore::Emu
             version = version.substr(std::string("Mupen 64 ").size());
         }
 
-        lua_pushstring(L, g_io_service.wstring_to_string(version).c_str());
+        lua_pushstring(L, g_main_wnd.io_service.wstring_to_string(version).c_str());
         return 1;
     }
 
@@ -255,7 +255,7 @@ namespace LuaCore::Emu
     static int ConsoleWriteLua(lua_State* L)
     {
         auto lua = LuaManager::get_environment_for_state(L);
-        const auto str = g_io_service.string_to_wstring(luaL_checkstring(L, 1));
+        const auto str = g_main_wnd.io_service.string_to_wstring(luaL_checkstring(L, 1));
 
         lua->print(lua, str + L"\r\n");
         return 0;
@@ -263,7 +263,7 @@ namespace LuaCore::Emu
 
     static int StatusbarWrite(lua_State* L)
     {
-        Statusbar::post(g_io_service.string_to_wstring(lua_tostring(L, 1)));
+        Statusbar::post(g_main_wnd.io_service.string_to_wstring(lua_tostring(L, 1)));
         return 0;
     }
 } // namespace LuaCore::Emu

@@ -73,7 +73,7 @@ namespace LuaCore::Hotkey
 
         ::Hotkey::t_hotkey hotkey = ::Hotkey::t_hotkey::make_empty();
 
-        const bool confirmed = ::Hotkey::show_prompt(g_main_hwnd, caption, hotkey);
+        const bool confirmed = ::Hotkey::show_prompt(g_main_wnd.main_hwnd, caption, hotkey);
 
         if (!confirmed)
         {

@@ -62,15 +62,15 @@ HWND SettingsListView::create(const t_settings_listview_context& ctx)
     auto ctx2 = new t_settings_listview_context();
     *ctx2 = ctx;
 
-    HWND lvhwnd = CreateWindowEx(WS_EX_CLIENTEDGE, WC_LISTVIEW, NULL, WS_TABSTOP | WS_VISIBLE | WS_CHILD | LVS_SINGLESEL | LVS_REPORT | LVS_SHOWSELALWAYS | LVS_ALIGNTOP, ctx.rect.left, ctx.rect.top, ctx.rect.right - ctx.rect.left, ctx.rect.bottom - ctx.rect.top, ctx.dlg_hwnd, (HMENU)IDC_SETTINGS_LV, g_app_instance, NULL);
+    HWND lvhwnd = CreateWindowEx(WS_EX_CLIENTEDGE, WC_LISTVIEW, NULL, WS_TABSTOP | WS_VISIBLE | WS_CHILD | LVS_SINGLESEL | LVS_REPORT | LVS_SHOWSELALWAYS | LVS_ALIGNTOP, ctx.rect.left, ctx.rect.top, ctx.rect.right - ctx.rect.left, ctx.rect.bottom - ctx.rect.top, ctx.dlg_hwnd, (HMENU)IDC_SETTINGS_LV, g_main_wnd.app_instance, NULL);
 
     SetProp(ctx.dlg_hwnd, PROP_NAME, ctx2);
 
     SetWindowSubclass(lvhwnd, list_view_proc, 0, (DWORD_PTR)ctx2);
 
     HIMAGELIST image_list = ImageList_Create(16, 16, ILC_COLORDDB | ILC_MASK, 2, 0);
-    ImageList_AddIcon(image_list, LoadIcon(g_app_instance, MAKEINTRESOURCE(IDI_DENY)));
-    ImageList_AddIcon(image_list, LoadIcon(g_app_instance, MAKEINTRESOURCE(IDI_CHANGED)));
+    ImageList_AddIcon(image_list, LoadIcon(g_main_wnd.app_instance, MAKEINTRESOURCE(IDI_DENY)));
+    ImageList_AddIcon(image_list, LoadIcon(g_main_wnd.app_instance, MAKEINTRESOURCE(IDI_CHANGED)));
     ListView_SetImageList(lvhwnd, image_list, LVSIL_SMALL);
 
     ListView_EnableGroupView(lvhwnd, true);

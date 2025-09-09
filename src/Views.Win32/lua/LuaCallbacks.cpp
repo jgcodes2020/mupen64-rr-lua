@@ -44,7 +44,7 @@ const std::unordered_map<LuaCallbacks::callback_key, std::function<int(lua_State
      return lua_pcall(l, 4, 0, 0);
  }},
 {LuaCallbacks::REG_ATWARPMODIFYSTATUSCHANGED, [](auto l) -> int {
-     lua_pushinteger(l, g_core_ctx->vcr_get_warp_modify_status());
+     lua_pushinteger(l, g_main_wnd.core_ctx->vcr_get_warp_modify_status());
      return lua_pcall(l, 1, 0, 0);
  }},
 };
@@ -73,7 +73,7 @@ void LuaCallbacks::call_window_message(void* wnd, unsigned int msg, unsigned int
     .w_param = w,
     .l_param = l};
 
-    g_main_window_dispatcher->invoke([] {
+    g_main_wnd.main_window_dispatcher->invoke([] {
         invoke_callbacks_with_key_on_all_instances(REG_WINDOWMESSAGE);
     });
 }
@@ -81,7 +81,7 @@ void LuaCallbacks::call_window_message(void* wnd, unsigned int msg, unsigned int
 void LuaCallbacks::call_vi()
 {
     RET_IF_EMPTY;
-    g_main_window_dispatcher->invoke([] {
+    g_main_wnd.main_window_dispatcher->invoke([] {
         invoke_callbacks_with_key_on_all_instances(REG_ATVI);
     });
 }
@@ -94,7 +94,7 @@ void LuaCallbacks::call_input(core_buttons* input, int index)
 
     RET_IF_EMPTY;
 
-    g_main_window_dispatcher->invoke([=] {
+    g_main_wnd.main_window_dispatcher->invoke([=] {
         current_input_n = index;
         invoke_callbacks_with_key_on_all_instances(REG_ATINPUT);
         g_input_count++;
@@ -111,7 +111,7 @@ void LuaCallbacks::call_input(core_buttons* input, int index)
 void LuaCallbacks::call_interval()
 {
     RET_IF_EMPTY;
-    g_main_window_dispatcher->invoke([] {
+    g_main_wnd.main_window_dispatcher->invoke([] {
         invoke_callbacks_with_key_on_all_instances(REG_ATINTERVAL);
     });
 }
@@ -119,7 +119,7 @@ void LuaCallbacks::call_interval()
 void LuaCallbacks::call_play_movie()
 {
     RET_IF_EMPTY;
-    g_main_window_dispatcher->invoke([] {
+    g_main_wnd.main_window_dispatcher->invoke([] {
         invoke_callbacks_with_key_on_all_instances(REG_ATPLAYMOVIE);
     });
 }
@@ -127,7 +127,7 @@ void LuaCallbacks::call_play_movie()
 void LuaCallbacks::call_stop_movie()
 {
     RET_IF_EMPTY;
-    g_main_window_dispatcher->invoke([] {
+    g_main_wnd.main_window_dispatcher->invoke([] {
         invoke_callbacks_with_key_on_all_instances(REG_ATSTOPMOVIE);
     });
 }
@@ -135,7 +135,7 @@ void LuaCallbacks::call_stop_movie()
 void LuaCallbacks::call_load_state()
 {
     RET_IF_EMPTY;
-    g_main_window_dispatcher->invoke([] {
+    g_main_wnd.main_window_dispatcher->invoke([] {
         invoke_callbacks_with_key_on_all_instances(REG_ATLOADSTATE);
     });
 }
@@ -143,7 +143,7 @@ void LuaCallbacks::call_load_state()
 void LuaCallbacks::call_save_state()
 {
     RET_IF_EMPTY;
-    g_main_window_dispatcher->invoke([] {
+    g_main_wnd.main_window_dispatcher->invoke([] {
         invoke_callbacks_with_key_on_all_instances(REG_ATSAVESTATE);
     });
 }
@@ -151,7 +151,7 @@ void LuaCallbacks::call_save_state()
 void LuaCallbacks::call_reset()
 {
     RET_IF_EMPTY;
-    g_main_window_dispatcher->invoke([] {
+    g_main_wnd.main_window_dispatcher->invoke([] {
         invoke_callbacks_with_key_on_all_instances(REG_ATRESET);
     });
 }
@@ -159,7 +159,7 @@ void LuaCallbacks::call_reset()
 void LuaCallbacks::call_seek_completed()
 {
     RET_IF_EMPTY;
-    g_main_window_dispatcher->invoke([] {
+    g_main_wnd.main_window_dispatcher->invoke([] {
         invoke_callbacks_with_key_on_all_instances(REG_ATSEEKCOMPLETED);
     });
 }
@@ -167,7 +167,7 @@ void LuaCallbacks::call_seek_completed()
 void LuaCallbacks::call_warp_modify_status_changed(const int32_t status)
 {
     RET_IF_EMPTY;
-    g_main_window_dispatcher->invoke([=] {
+    g_main_wnd.main_window_dispatcher->invoke([=] {
         invoke_callbacks_with_key_on_all_instances(REG_ATWARPMODIFYSTATUSCHANGED);
     });
 }
@@ -194,7 +194,7 @@ bool invoke_callbacks_with_key_impl(const t_lua_environment* lua, const std::fun
         if (function(L))
         {
             const char* str = lua_tostring(L, -1);
-            lua->print(lua, g_io_service.string_to_wstring(str) + L"\r\n");
+            lua->print(lua, g_main_wnd.io_service.string_to_wstring(str) + L"\r\n");
             g_view_logger->info("Lua error: {}", str);
             return false;
         }

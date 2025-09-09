@@ -35,5 +35,5 @@ static INT_PTR CALLBACK about_dlg_proc(const HWND hwnd, const UINT message, cons
 
 void AboutDialog::show()
 {
-    DialogBox(g_app_instance, MAKEINTRESOURCE(IDD_ABOUT), g_main_hwnd, about_dlg_proc);
+    DialogBox(g_main_wnd.app_instance, MAKEINTRESOURCE(IDD_ABOUT), g_main_wnd.main_hwnd, about_dlg_proc);
 }

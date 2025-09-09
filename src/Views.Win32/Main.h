@@ -25,6 +25,14 @@
 #define VIEW_DLG_RAMSTART "VIEW_DLG_RAMSTART"
 
 struct t_main_window_context {
+    core_params core{};
+    core_ctx* core_ctx{};
+    PlatformService io_service{};
+    bool frame_changed{};
+    int last_wheel_delta{};
+    HWND main_hwnd{};
+    HINSTANCE app_instance{};
+    std::shared_ptr<Dispatcher> main_window_dispatcher{};
     bool paused_before_menu{};
     bool in_menu_loop{};
     bool fullscreen{};
@@ -50,15 +58,7 @@ struct t_window_info {
     long statusbar_height;
 };
 
-extern core_params g_core;
-extern core_ctx* g_core_ctx;
-extern PlatformService g_io_service;
-extern bool g_frame_changed;
-extern DWORD g_ui_thread_id;
-extern int g_last_wheel_delta;
-extern HWND g_main_hwnd;
-extern HINSTANCE g_app_instance;
-extern std::shared_ptr<Dispatcher> g_main_window_dispatcher;
+
 extern t_main_window_context g_main_wnd;
 
 static bool task_is_playback(const core_vcr_task task)

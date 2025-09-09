@@ -267,8 +267,8 @@ static void register_function(lua_State* L, const std::wstring& name, const lua_
 
     runtime_assert(parts.size() == 2, L"Accessor invalid");
 
-    const auto namespace_name = g_io_service.wstring_to_string(parts.at(0));
-    const auto function_name = g_io_service.wstring_to_string(parts.at(1));
+    const auto namespace_name = g_main_wnd.io_service.wstring_to_string(parts.at(0));
+    const auto function_name = g_main_wnd.io_service.wstring_to_string(parts.at(1));
 
     lua_getglobal(L, namespace_name.c_str());
     lua_pushcfunction(L, func);
@@ -296,6 +296,6 @@ void LuaRegistry::register_functions(lua_State* L)
     register_as_package(L, "clipboard", CLIPBOARD_FUNCS);
     for (const auto& [name, func] : OVERRIDE_FUNCS)
     {
-        register_function(L, g_io_service.string_to_wstring(name), func);
+        register_function(L, g_main_wnd.io_service.string_to_wstring(name), func);
     }
 }

@@ -261,12 +261,12 @@ namespace LuaCore::Input
 
         POINT mouse;
         GetCursorPos(&mouse);
-        ScreenToClient(g_main_hwnd, &mouse);
+        ScreenToClient(g_main_wnd.main_hwnd, &mouse);
         lua_pushinteger(L, mouse.x);
         lua_setfield(L, -2, "xmouse");
         lua_pushinteger(L, mouse.y);
         lua_setfield(L, -2, "ymouse");
-        lua_pushinteger(L, g_last_wheel_delta > 0 ? 1 : (g_last_wheel_delta < 0 ? -1 : 0));
+        lua_pushinteger(L, g_main_wnd.last_wheel_delta > 0 ? 1 : (g_main_wnd.last_wheel_delta < 0 ? -1 : 0));
         lua_setfield(L, -2, "ywmouse");
         return 1;
     }
@@ -340,7 +340,7 @@ namespace LuaCore::Input
             return 1;
         }
 
-        lua_pushstring(L, g_io_service.wstring_to_string(name).c_str());
+        lua_pushstring(L, g_main_wnd.io_service.wstring_to_string(name).c_str());
         return 1;
     }
 

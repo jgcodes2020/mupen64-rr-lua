@@ -62,12 +62,12 @@ static void start_rom()
     ThreadPool::submit_task([] {
         if (!cli_state.rom_is_movie)
         {
-            const auto result = g_core_ctx->vr_start_rom(cli_params.rom);
+            const auto result = g_main_wnd.core_ctx->vr_start_rom(cli_params.rom);
             show_error_dialog_for_result(result);
             return;
         }
 
-        const auto result = g_core_ctx->vcr_start_playback(cli_params.rom);
+        const auto result = g_main_wnd.core_ctx->vcr_start_playback(cli_params.rom);
         show_error_dialog_for_result(result);
     });
 }
@@ -78,7 +78,7 @@ static void play_movie()
         return;
 
     g_config.core.vcr_readonly = true;
-    auto result = g_core_ctx->vcr_start_playback(cli_params.m64);
+    auto result = g_main_wnd.core_ctx->vcr_start_playback(cli_params.m64);
     show_error_dialog_for_result(result);
 }
 
@@ -89,7 +89,7 @@ static void load_st()
         return;
     }
 
-    g_core_ctx->st_do_file(cli_params.st.c_str(), core_st_job_load, nullptr, false);
+    g_main_wnd.core_ctx->st_do_file(cli_params.st.c_str(), core_st_job_load, nullptr, false);
 }
 
 static void start_lua()
@@ -99,7 +99,7 @@ static void start_lua()
         return;
     }
 
-    g_main_window_dispatcher->invoke([] {
+    g_main_wnd.main_window_dispatcher->invoke([] {
         // To run multiple lua scripts, a semicolon-separated list is provided
         std::wstringstream stream;
         std::wstring script;
@@ -133,7 +133,7 @@ static void on_movie_playback_stop()
         EncodingManager::stop_capture([](auto result) {
             if (!result)
                 return;
-            PostMessage(g_main_hwnd, WM_CLOSE, 0, 0);
+            PostMessage(g_main_wnd.main_hwnd, WM_CLOSE, 0, 0);
         });
     }
 
@@ -142,7 +142,7 @@ static void on_movie_playback_stop()
         Benchmark::t_result result{};
         Benchmark::stop(&result);
         Benchmark::save_result_to_file(cli_params.benchmark, result);
-        PostMessage(g_main_hwnd, WM_CLOSE, 0, 0);
+        PostMessage(g_main_wnd.main_hwnd, WM_CLOSE, 0, 0);
     }
 }
 
@@ -293,7 +293,7 @@ void CLI::init()
     if (!movie_path.empty())
     {
         core_vcr_movie_header hdr{};
-        g_core_ctx->vcr_parse_header(movie_path, &hdr);
+        g_main_wnd.core_ctx->vcr_parse_header(movie_path, &hdr);
         cli_state.is_movie_from_start = hdr.startFlags & MOVIE_START_FROM_NOTHING;
     }
 
