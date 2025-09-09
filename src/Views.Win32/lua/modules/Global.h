@@ -32,7 +32,7 @@ namespace LuaCore::Global
             const char* inspected_value = lua_tostring(L, -1);
             if (inspected_value)
             {
-                auto str = g_main_wnd.io_service.string_to_wstring(inspected_value);
+                auto str = g_main_ctx.io_service.string_to_wstring(inspected_value);
 
                 // inspect puts quotes around strings, even when they're not nested in a table. We want to remove those...
                 if (str.size() > 1 && ((str[0] == '"' && str[str.size() - 1] == '"') || (str[0] == '\'' && str[str.size() - 1] == '\'')))
@@ -87,7 +87,7 @@ namespace LuaCore::Global
             const char* inspected_value = lua_tostring(L, -1);
             if (inspected_value)
             {
-                auto str = g_main_wnd.io_service.string_to_wstring(inspected_value);
+                auto str = g_main_ctx.io_service.string_to_wstring(inspected_value);
 
                 // inspect puts quotes around strings, even when they're not nested in a table. We want to remove those...
                 if (str.size() > 1 && str[0] == '"' && str[str.size() - 1] == '"')
@@ -107,7 +107,7 @@ namespace LuaCore::Global
                 final_str += L"\t";
         }
 
-        lua_pushstring(L, g_main_wnd.io_service.wstring_to_string(final_str).c_str());
+        lua_pushstring(L, g_main_ctx.io_service.wstring_to_string(final_str).c_str());
         return 1;
     }
 
@@ -123,7 +123,7 @@ namespace LuaCore::Global
     static int Exit(lua_State* L)
     {
         // FIXME: Exit-code and close params are ignored
-        PostMessage(g_main_wnd.main_hwnd, WM_CLOSE, 0, 0);
+        PostMessage(g_main_ctx.main_hwnd, WM_CLOSE, 0, 0);
         return 0;
     }
 } // namespace LuaCore::Global

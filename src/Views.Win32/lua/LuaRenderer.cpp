@@ -116,7 +116,7 @@ void LuaRenderer::init()
     WNDCLASS wndclass = {0};
     wndclass.style = CS_GLOBALCLASS | CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
     wndclass.lpfnWndProc = (WNDPROC)d2d_overlay_wndproc;
-    wndclass.hInstance = g_main_wnd.app_instance;
+    wndclass.hInstance = g_main_ctx.app_instance;
     wndclass.hCursor = LoadCursor(NULL, IDC_ARROW);
     wndclass.lpszClassName = D2D_OVERLAY_CLASS;
     RegisterClass(&wndclass);
@@ -134,11 +134,11 @@ static void create_loadscreen(t_lua_rendering_context* ctx)
     {
         return;
     }
-    auto gdi_dc = GetDC(g_main_wnd.main_hwnd);
+    auto gdi_dc = GetDC(g_main_ctx.main_hwnd);
     ctx->loadscreen_dc = CreateCompatibleDC(gdi_dc);
     ctx->loadscreen_bmp = CreateCompatibleBitmap(gdi_dc, ctx->dc_size.width, ctx->dc_size.height);
     SelectObject(ctx->loadscreen_dc, ctx->loadscreen_bmp);
-    ReleaseDC(g_main_wnd.main_hwnd, gdi_dc);
+    ReleaseDC(g_main_ctx.main_hwnd, gdi_dc);
 }
 
 static void destroy_loadscreen(t_lua_rendering_context* ctx)
@@ -196,7 +196,7 @@ void LuaRenderer::create_renderer(t_lua_rendering_context* ctx, t_lua_environmen
     g_view_logger->info("Creating multi-target renderer for Lua...");
 
     RECT window_rect;
-    GetClientRect(g_main_wnd.main_hwnd, &window_rect);
+    GetClientRect(g_main_ctx.main_hwnd, &window_rect);
     if (Statusbar::hwnd())
     {
         // We don't want to paint over statusbar
@@ -212,13 +212,13 @@ void LuaRenderer::create_renderer(t_lua_rendering_context* ctx, t_lua_environmen
     // Key 0 is reserved for clearing the image pool, too late to change it now...
     ctx->image_pool_index = 1;
 
-    auto gdi_dc = GetDC(g_main_wnd.main_hwnd);
+    auto gdi_dc = GetDC(g_main_ctx.main_hwnd);
     ctx->gdi_back_dc = CreateCompatibleDC(gdi_dc);
     ctx->gdi_bmp = CreateCompatibleBitmap(gdi_dc, ctx->dc_size.width, ctx->dc_size.height);
     SelectObject(ctx->gdi_back_dc, ctx->gdi_bmp);
-    ReleaseDC(g_main_wnd.main_hwnd, gdi_dc);
+    ReleaseDC(g_main_ctx.main_hwnd, gdi_dc);
 
-    ctx->gdi_overlay_hwnd = CreateWindowEx(WS_EX_LAYERED, GDI_OVERLAY_CLASS, L"", WS_CHILD | WS_VISIBLE, 0, 0, ctx->dc_size.width, ctx->dc_size.height, g_main_wnd.main_hwnd, nullptr, g_main_wnd.app_instance, nullptr);
+    ctx->gdi_overlay_hwnd = CreateWindowEx(WS_EX_LAYERED, GDI_OVERLAY_CLASS, L"", WS_CHILD | WS_VISIBLE, 0, 0, ctx->dc_size.width, ctx->dc_size.height, g_main_ctx.main_hwnd, nullptr, g_main_ctx.app_instance, nullptr);
     SetLayeredWindowAttributes(ctx->gdi_overlay_hwnd, LUA_GDI_COLOR_MASK, 0, LWA_COLORKEY);
 
     ctx->gdi_front_dc = GetDC(ctx->gdi_overlay_hwnd);
@@ -226,7 +226,7 @@ void LuaRenderer::create_renderer(t_lua_rendering_context* ctx, t_lua_environmen
     // If we don't fill up the DC with the key first, it never becomes "transparent"
     FillRect(ctx->gdi_back_dc, &window_rect, g_alpha_mask_brush);
 
-    ctx->d2d_overlay_hwnd = CreateWindowEx(WS_EX_LAYERED, D2D_OVERLAY_CLASS, L"", WS_CHILD | WS_VISIBLE, 0, 0, ctx->dc_size.width, ctx->dc_size.height, g_main_wnd.main_hwnd, nullptr, g_main_wnd.app_instance, nullptr);
+    ctx->d2d_overlay_hwnd = CreateWindowEx(WS_EX_LAYERED, D2D_OVERLAY_CLASS, L"", WS_CHILD | WS_VISIBLE, 0, 0, ctx->dc_size.width, ctx->dc_size.height, g_main_ctx.main_hwnd, nullptr, g_main_ctx.app_instance, nullptr);
 
     SetProp(ctx->d2d_overlay_hwnd, CTX_PROP, env);
     SetProp(ctx->gdi_overlay_hwnd, CTX_PROP, env);

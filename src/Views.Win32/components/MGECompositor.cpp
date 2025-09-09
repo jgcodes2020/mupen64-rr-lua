@@ -68,7 +68,7 @@ static void recreate_mge_context()
 
 void MGECompositor::create(HWND hwnd)
 {
-    mge_context.hwnd = CreateWindow(CONTROL_CLASS_NAME, L"", WS_CHILD | WS_VISIBLE, 0, 0, 1, 1, hwnd, nullptr, g_main_wnd.app_instance, nullptr);
+    mge_context.hwnd = CreateWindow(CONTROL_CLASS_NAME, L"", WS_CHILD | WS_VISIBLE, 0, 0, 1, 1, hwnd, nullptr, g_main_ctx.app_instance, nullptr);
     mge_context.front_dc = GetDC(mge_context.hwnd);
 }
 
@@ -77,7 +77,7 @@ void MGECompositor::init()
     WNDCLASS wndclass = {0};
     wndclass.style = CS_GLOBALCLASS | CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
     wndclass.lpfnWndProc = (WNDPROC)wndproc;
-    wndclass.hInstance = g_main_wnd.app_instance;
+    wndclass.hInstance = g_main_ctx.app_instance;
     wndclass.hCursor = LoadCursor(NULL, IDC_ARROW);
     wndclass.lpszClassName = CONTROL_CLASS_NAME;
     RegisterClass(&wndclass);
@@ -89,13 +89,13 @@ void MGECompositor::init()
 
     Messenger::subscribe(Messenger::Message::EmuLaunchedChanged, [](const std::any& data) {
         const auto value = std::any_cast<bool>(data);
-        ShowWindow(mge_context.hwnd, value && g_main_wnd.core_ctx->vr_get_mge_available() ? SW_SHOW : SW_HIDE);
+        ShowWindow(mge_context.hwnd, value && g_main_ctx.core_ctx->vr_get_mge_available() ? SW_SHOW : SW_HIDE);
     });
 }
 
 void MGECompositor::update_screen()
 {
-    g_main_wnd.core.plugin_funcs.video_get_video_size(&mge_context.width, &mge_context.height);
+    g_main_ctx.core.plugin_funcs.video_get_video_size(&mge_context.width, &mge_context.height);
 
     if (mge_context.width != mge_context.last_width || mge_context.height != mge_context.last_height)
     {
@@ -104,7 +104,7 @@ void MGECompositor::update_screen()
         MoveWindow(mge_context.hwnd, 0, 0, mge_context.width, mge_context.height, true);
     }
 
-    g_main_wnd.core.plugin_funcs.video_read_video(&mge_context.buffer);
+    g_main_ctx.core.plugin_funcs.video_read_video(&mge_context.buffer);
 
     mge_context.last_width = mge_context.width;
     mge_context.last_height = mge_context.height;

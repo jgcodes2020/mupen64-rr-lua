@@ -126,7 +126,7 @@ static HWND statusbar_hwnd;
 static std::vector<t_segment> get_current_parts()
 {
     const t_segment_layout layout = LAYOUT_MAP.at(static_cast<t_config::StatusbarLayout>(g_config.statusbar_layout));
-    return (g_main_wnd.core_ctx->vr_get_launched()) ? layout.emu_parts : layout.idle_parts;
+    return (g_main_ctx.core_ctx->vr_get_launched()) ? layout.emu_parts : layout.idle_parts;
 }
 
 static size_t section_to_segment_index(const Statusbar::Section section)
@@ -159,7 +159,7 @@ static void refresh_segments()
     }
 
     RECT rect{};
-    GetClientRect(g_main_wnd.main_hwnd, &rect);
+    GetClientRect(g_main_ctx.main_hwnd, &rect);
 
     if (parts.empty())
     {
@@ -223,7 +223,7 @@ static void emu_launched_changed(std::any data)
 static void create()
 {
     // undocumented behaviour of CCS_BOTTOM: it skips applying SBARS_SIZEGRIP in style pre-computation phase
-    statusbar_hwnd = CreateWindowEx(0, STATUSCLASSNAME, nullptr, WS_CHILD | WS_VISIBLE | CCS_BOTTOM, 0, 0, 0, 0, g_main_wnd.main_hwnd, (HMENU)IDC_MAIN_STATUS, g_main_wnd.app_instance, nullptr);
+    statusbar_hwnd = CreateWindowEx(0, STATUSCLASSNAME, nullptr, WS_CHILD | WS_VISIBLE | CCS_BOTTOM, 0, 0, 0, 0, g_main_ctx.main_hwnd, (HMENU)IDC_MAIN_STATUS, g_main_ctx.app_instance, nullptr);
 }
 
 static void statusbar_visibility_changed(std::any data)

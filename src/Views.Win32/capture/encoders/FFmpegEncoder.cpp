@@ -179,7 +179,7 @@ bool FFmpegEncoder::append_video(uint8_t* image)
     }
     else if (g_config.synchronization_mode == 2)
     {
-        if (g_main_wnd.core_ctx->vr_get_lag_count() > 2)
+        if (g_main_ctx.core_ctx->vr_get_lag_count() > 2)
         {
             const auto samples_per_frame = static_cast<double>(m_params.arate) / 64;
             append_audio_impl(m_silence_buffer, static_cast<size_t>(round(samples_per_frame)));

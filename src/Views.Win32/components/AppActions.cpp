@@ -40,9 +40,9 @@ bool confirm_user_exit()
 
     std::wstring final_message;
     std::vector<std::pair<bool, std::wstring>> messages = {
-    {g_main_wnd.core_ctx->vcr_get_task() == task_recording, L"Movie recording"},
+    {g_main_ctx.core_ctx->vcr_get_task() == task_recording, L"Movie recording"},
     {EncodingManager::is_capturing(), L"Capture"},
-    {g_main_wnd.core_ctx->tl_active(), L"Trace logging"}};
+    {g_main_ctx.core_ctx->tl_active(), L"Trace logging"}};
 
     std::vector<std::wstring> active_messages;
     for (const auto& [is_active, msg] : messages)
@@ -77,13 +77,13 @@ bool confirm_user_exit()
 
 void AppActions::update_core_fast_forward()
 {
-    g_main_wnd.core_ctx->vr_set_fast_forward(g_main_wnd.fast_forward || g_main_wnd.core_ctx->vcr_is_seeking() || CLI::wants_fast_forward() || Compare::active());
+    g_main_ctx.core_ctx->vr_set_fast_forward(g_main_ctx.fast_forward || g_main_ctx.core_ctx->vcr_is_seeking() || CLI::wants_fast_forward() || Compare::active());
 }
 
 void AppActions::load_rom_from_path(const std::wstring& path)
 {
     ThreadPool::submit_task([=] {
-        const auto result = g_main_wnd.core_ctx->vr_start_rom(path);
+        const auto result = g_main_ctx.core_ctx->vr_start_rom(path);
         show_error_dialog_for_result(result);
     });
 }
@@ -101,7 +101,7 @@ static void load_rom()
 {
     BetterEmulationLock lock;
 
-    const auto path = FilePicker::show_open_dialog(L"o_rom", g_main_wnd.main_hwnd, L"*.n64;*.z64;*.v64;*.rom;*.bin;*.zip;*.usa;*.eur;*.jap");
+    const auto path = FilePicker::show_open_dialog(L"o_rom", g_main_ctx.main_hwnd, L"*.n64;*.z64;*.v64;*.rom;*.bin;*.zip;*.usa;*.eur;*.jap");
 
     if (path.empty())
     {
@@ -129,7 +129,7 @@ static void close_rom()
         return;
 
     ThreadPool::submit_task([] {
-        const auto result = g_main_wnd.core_ctx->vr_close_rom(true);
+        const auto result = g_main_ctx.core_ctx->vr_close_rom(true);
         show_error_dialog_for_result(result);
     },
                             ASYNC_KEY_CLOSE_ROM);
@@ -137,13 +137,13 @@ static void close_rom()
 
 static void reset_rom()
 {
-    const bool reset_will_continue_recording = g_config.core.is_reset_recording_enabled && g_main_wnd.core_ctx->vcr_get_task() == task_recording;
+    const bool reset_will_continue_recording = g_config.core.is_reset_recording_enabled && g_main_ctx.core_ctx->vcr_get_task() == task_recording;
 
     if (!reset_will_continue_recording && !confirm_user_exit())
         return;
 
     ThreadPool::submit_task([] {
-        const auto result = g_main_wnd.core_ctx->vr_reset_rom(false, true);
+        const auto result = g_main_ctx.core_ctx->vr_reset_rom(false, true);
         show_error_dialog_for_result(result);
     },
                             ASYNC_KEY_RESET_ROM);
@@ -151,7 +151,7 @@ static void reset_rom()
 
 static void refresh_rombrowser()
 {
-    if (!g_main_wnd.core_ctx->vr_get_launched())
+    if (!g_main_ctx.core_ctx->vr_get_launched())
     {
         RomBrowser::build();
     }
@@ -159,7 +159,7 @@ static void refresh_rombrowser()
 
 static void exit_app()
 {
-    DestroyWindow(g_main_wnd.main_hwnd);
+    DestroyWindow(g_main_ctx.main_hwnd);
 }
 
 #pragma endregion
@@ -169,32 +169,32 @@ static void exit_app()
 static void pause_emu()
 {
     // FIXME: While this is a beautiful and clean solution, there has to be a better way to handle this
-    if (g_main_wnd.in_menu_loop)
+    if (g_main_ctx.in_menu_loop)
     {
-        if (g_main_wnd.paused_before_menu)
+        if (g_main_ctx.paused_before_menu)
         {
-            g_main_wnd.core_ctx->vr_resume_emu();
-            g_main_wnd.paused_before_menu = false;
+            g_main_ctx.core_ctx->vr_resume_emu();
+            g_main_ctx.paused_before_menu = false;
             return;
         }
-        g_main_wnd.paused_before_menu = true;
-        g_main_wnd.core_ctx->vr_pause_emu();
+        g_main_ctx.paused_before_menu = true;
+        g_main_ctx.core_ctx->vr_pause_emu();
     }
     else
     {
-        if (g_main_wnd.core_ctx->vr_get_paused())
+        if (g_main_ctx.core_ctx->vr_get_paused())
         {
-            g_main_wnd.core_ctx->vr_resume_emu();
+            g_main_ctx.core_ctx->vr_resume_emu();
             return;
         }
-        g_main_wnd.core_ctx->vr_pause_emu();
+        g_main_ctx.core_ctx->vr_pause_emu();
     }
 }
 
 static void increment_speed(const int value)
 {
     g_config.core.fps_modifier = clamp(g_config.core.fps_modifier + value, 5, 1000);
-    g_main_wnd.core_ctx->vr_on_speed_modifier_changed();
+    g_main_ctx.core_ctx->vr_on_speed_modifier_changed();
     Messenger::broadcast(Messenger::Message::SpeedModifierChanged, g_config.core.fps_modifier);
 }
 
@@ -211,93 +211,93 @@ static void speed_up()
 static void speed_reset()
 {
     g_config.core.fps_modifier = 100;
-    g_main_wnd.core_ctx->vr_on_speed_modifier_changed();
+    g_main_ctx.core_ctx->vr_on_speed_modifier_changed();
     Messenger::broadcast(Messenger::Message::SpeedModifierChanged, g_config.core.fps_modifier);
 }
 
 static void frame_advance()
 {
-    g_main_wnd.fast_forward = false;
+    g_main_ctx.fast_forward = false;
     AppActions::update_core_fast_forward();
 
-    g_main_wnd.core_ctx->vr_frame_advance(1);
-    g_main_wnd.core_ctx->vr_resume_emu();
+    g_main_ctx.core_ctx->vr_frame_advance(1);
+    g_main_ctx.core_ctx->vr_resume_emu();
 }
 
 static void multi_frame_advance()
 {
     if (g_config.multi_frame_advance_count > 0)
     {
-        g_main_wnd.core_ctx->vr_frame_advance(g_config.multi_frame_advance_count);
+        g_main_ctx.core_ctx->vr_frame_advance(g_config.multi_frame_advance_count);
     }
     else
     {
         ThreadPool::submit_task([] {
-            const auto result = g_main_wnd.core_ctx->vcr_begin_seek(std::to_wstring(g_config.multi_frame_advance_count), true);
+            const auto result = g_main_ctx.core_ctx->vcr_begin_seek(std::to_wstring(g_config.multi_frame_advance_count), true);
             show_error_dialog_for_result(result);
         });
     }
-    g_main_wnd.core_ctx->vr_resume_emu();
+    g_main_ctx.core_ctx->vr_resume_emu();
 }
 
 static void fastforward_enable()
 {
-    g_main_wnd.fast_forward = true;
+    g_main_ctx.fast_forward = true;
     Messenger::broadcast(Messenger::Message::FastForwardNeedsUpdate, nullptr);
 }
 
 static void fastforward_disable()
 {
-    g_main_wnd.fast_forward = false;
+    g_main_ctx.fast_forward = false;
     Messenger::broadcast(Messenger::Message::FastForwardNeedsUpdate, nullptr);
 }
 
 static bool fastforward_active()
 {
-    return g_main_wnd.fast_forward;
+    return g_main_ctx.fast_forward;
 }
 
 static void gs_button_enable()
 {
-    g_main_wnd.core_ctx->vr_set_gs_button(true);
+    g_main_ctx.core_ctx->vr_set_gs_button(true);
     ActionManager::notify_active_changed(AppActions::GS_BUTTON);
 }
 
 static void gs_button_disable()
 {
-    g_main_wnd.core_ctx->vr_set_gs_button(false);
+    g_main_ctx.core_ctx->vr_set_gs_button(false);
     ActionManager::notify_active_changed(AppActions::GS_BUTTON);
 }
 
 static bool gs_button_active()
 {
-    if (!g_main_wnd.core_ctx->vr_get_core_executing())
+    if (!g_main_ctx.core_ctx->vr_get_core_executing())
     {
         return false;
     }
-    return g_main_wnd.core_ctx->vr_get_gs_button();
+    return g_main_ctx.core_ctx->vr_get_gs_button();
 }
 
 static void save_slot()
 {
-    g_main_wnd.core_ctx->vr_wait_increment();
+    g_main_ctx.core_ctx->vr_wait_increment();
     if (g_config.increment_slot)
     {
         g_config.st_slot >= 9 ? g_config.st_slot = 0 : g_config.st_slot++;
         Messenger::broadcast(Messenger::Message::SlotChanged, (size_t)g_config.st_slot);
     }
     ThreadPool::submit_task([=] {
-        g_main_wnd.core_ctx->vr_wait_decrement();
-        g_main_wnd.core_ctx->st_do_file(get_st_with_slot_path(g_config.st_slot), core_st_job_save, nullptr, false);
+        g_main_ctx.core_ctx->vr_wait_decrement();
+        g_main_ctx.core_ctx->st_do_file(get_st_with_slot_path(g_config.st_slot), core_st_job_save, nullptr, false);
     });
 }
 
 static void load_slot()
 {
-    g_main_wnd.core_ctx->vr_wait_increment();
+    g_main_ctx.core_ctx->vr_wait_increment();
     ThreadPool::submit_task([=] {
-        g_main_wnd.core_ctx->vr_wait_decrement();
-        g_main_wnd.core_ctx->st_do_file(get_st_with_slot_path(g_config.st_slot), core_st_job_load, nullptr, false);
+        g_main_ctx.core_ctx->vr_wait_decrement();
+        g_main_ctx.core_ctx->st_do_file(get_st_with_slot_path(g_config.st_slot), core_st_job_load, nullptr, false);
     });
 }
 
@@ -305,16 +305,16 @@ static void save_state_as()
 {
     BetterEmulationLock lock;
 
-    const auto path = FilePicker::show_save_dialog(L"s_savestate", g_main_wnd.main_hwnd, L"*.st;*.savestate");
+    const auto path = FilePicker::show_save_dialog(L"s_savestate", g_main_ctx.main_hwnd, L"*.st;*.savestate");
     if (path.empty())
     {
         return;
     }
 
-    g_main_wnd.core_ctx->vr_wait_increment();
+    g_main_ctx.core_ctx->vr_wait_increment();
     ThreadPool::submit_task([=] {
-        g_main_wnd.core_ctx->vr_wait_decrement();
-        (void)g_main_wnd.core_ctx->st_do_file(path, core_st_job_save, nullptr, false);
+        g_main_ctx.core_ctx->vr_wait_decrement();
+        (void)g_main_ctx.core_ctx->st_do_file(path, core_st_job_save, nullptr, false);
     });
 }
 
@@ -322,27 +322,27 @@ static void load_state_as()
 {
     BetterEmulationLock lock;
 
-    const auto path = FilePicker::show_open_dialog(L"o_state", g_main_wnd.main_hwnd, L"*.st;*.savestate;*.st0;*.st1;*.st2;*.st3;*.st4;*.st5;*.st6;*.st7;*.st8;*.st9,*.st10");
+    const auto path = FilePicker::show_open_dialog(L"o_state", g_main_ctx.main_hwnd, L"*.st;*.savestate;*.st0;*.st1;*.st2;*.st3;*.st4;*.st5;*.st6;*.st7;*.st8;*.st9,*.st10");
     if (path.empty())
     {
         return;
     }
 
-    g_main_wnd.core_ctx->vr_wait_increment();
+    g_main_ctx.core_ctx->vr_wait_increment();
     ThreadPool::submit_task([=] {
-        g_main_wnd.core_ctx->vr_wait_decrement();
-        (void)g_main_wnd.core_ctx->st_do_file(path, core_st_job_load, nullptr, false);
+        g_main_ctx.core_ctx->vr_wait_decrement();
+        (void)g_main_ctx.core_ctx->st_do_file(path, core_st_job_load, nullptr, false);
     });
 }
 
 static void undo_load_state()
 {
-    g_main_wnd.core_ctx->vr_wait_increment();
+    g_main_ctx.core_ctx->vr_wait_increment();
     ThreadPool::submit_task([=] {
-        g_main_wnd.core_ctx->vr_wait_decrement();
+        g_main_ctx.core_ctx->vr_wait_decrement();
 
         std::vector<uint8_t> buf{};
-        g_main_wnd.core_ctx->st_get_undo_savestate(buf);
+        g_main_ctx.core_ctx->st_get_undo_savestate(buf);
 
         if (buf.empty())
         {
@@ -350,7 +350,7 @@ static void undo_load_state()
             return;
         }
 
-        (void)g_main_wnd.core_ctx->st_do_memory(buf, core_st_job_load, [](const core_st_callback_info& info, auto) {
+        (void)g_main_ctx.core_ctx->st_do_memory(buf, core_st_job_load, [](const core_st_callback_info& info, auto) {
             if (info.result == Res_Ok)
             {
                 Statusbar::post(L"Undid load");
@@ -407,13 +407,13 @@ static void set_save_slot(const size_t slot)
 static void toggle_fullscreen()
 {
     g_view_plugin_funcs.video_change_window();
-    g_main_wnd.fullscreen ^= true;
+    g_main_ctx.fullscreen ^= true;
     ActionManager::notify_active_changed(AppActions::FULL_SCREEN);
 }
 
 static bool fullscreen_active()
 {
-    return g_main_wnd.fullscreen;
+    return g_main_ctx.fullscreen;
 }
 
 static void show_plugin_settings_dialog(const std::unique_ptr<Plugin>& plugin)
@@ -422,7 +422,7 @@ static void show_plugin_settings_dialog(const std::unique_ptr<Plugin>& plugin)
 
     if (plugin != nullptr)
     {
-        plugin->config(g_main_wnd.main_hwnd);
+        plugin->config(g_main_ctx.main_hwnd);
     }
 }
 
@@ -473,10 +473,10 @@ static void start_movie_recording()
         return;
     }
 
-    g_main_wnd.core_ctx->vr_wait_increment();
-    g_main_wnd.core.submit_task([=] {
-        auto vcr_result = g_main_wnd.core_ctx->vcr_start_record(movie_dialog_result.path, movie_dialog_result.start_flag, g_main_wnd.io_service.wstring_to_string(movie_dialog_result.author), g_main_wnd.io_service.wstring_to_string(movie_dialog_result.description));
-        g_main_wnd.core_ctx->vr_wait_decrement();
+    g_main_ctx.core_ctx->vr_wait_increment();
+    g_main_ctx.core.submit_task([=] {
+        auto vcr_result = g_main_ctx.core_ctx->vcr_start_record(movie_dialog_result.path, movie_dialog_result.start_flag, g_main_ctx.io_service.wstring_to_string(movie_dialog_result.author), g_main_ctx.io_service.wstring_to_string(movie_dialog_result.description));
+        g_main_ctx.core_ctx->vr_wait_decrement();
         if (!show_error_dialog_for_result(vcr_result))
         {
             g_config.last_movie_author = movie_dialog_result.author;
@@ -496,29 +496,29 @@ static void start_movie_playback()
         return;
     }
 
-    g_main_wnd.core_ctx->vcr_replace_author_info(result.path, g_main_wnd.io_service.wstring_to_string(result.author), g_main_wnd.io_service.wstring_to_string(result.description));
+    g_main_ctx.core_ctx->vcr_replace_author_info(result.path, g_main_ctx.io_service.wstring_to_string(result.author), g_main_ctx.io_service.wstring_to_string(result.description));
 
     g_config.core.pause_at_frame = result.pause_at;
     g_config.core.pause_at_last_frame = result.pause_at_last;
 
     ThreadPool::submit_task([result] {
-        auto vcr_result = g_main_wnd.core_ctx->vcr_start_playback(result.path);
+        auto vcr_result = g_main_ctx.core_ctx->vcr_start_playback(result.path);
         show_error_dialog_for_result(vcr_result);
     });
 }
 
 static void stop_movie()
 {
-    g_main_wnd.core_ctx->vr_wait_increment();
-    g_main_wnd.core.submit_task([] {
-        g_main_wnd.core_ctx->vcr_stop_all();
-        g_main_wnd.core_ctx->vr_wait_decrement();
+    g_main_ctx.core_ctx->vr_wait_increment();
+    g_main_ctx.core.submit_task([] {
+        g_main_ctx.core_ctx->vcr_stop_all();
+        g_main_ctx.core_ctx->vr_wait_decrement();
     });
 }
 
 static void create_movie_backup()
 {
-    const auto result = g_main_wnd.core_ctx->vcr_write_backup();
+    const auto result = g_main_ctx.core_ctx->vcr_write_backup();
     show_error_dialog_for_result(result);
 }
 
@@ -534,7 +534,7 @@ static void load_recent_movie(size_t i)
     g_config.core.vcr_readonly = true;
     Messenger::broadcast(Messenger::Message::ReadonlyChanged, (bool)g_config.core.vcr_readonly);
     ThreadPool::submit_task([=] {
-        const auto result = g_main_wnd.core_ctx->vcr_start_playback(path);
+        const auto result = g_main_ctx.core_ctx->vcr_start_playback(path);
         show_error_dialog_for_result(result);
     },
                             ASYNC_KEY_PLAY_MOVIE);
@@ -567,13 +567,13 @@ static void show_ram_start()
     BetterEmulationLock lock;
 
     wchar_t ram_start[20] = {0};
-    wsprintfW(ram_start, L"0x%p", static_cast<void*>(g_main_wnd.core_ctx->rdram));
+    wsprintfW(ram_start, L"0x%p", static_cast<void*>(g_main_ctx.core_ctx->rdram));
 
     wchar_t proc_name[MAX_PATH] = {0};
     GetModuleFileName(NULL, proc_name, MAX_PATH);
 
     PlatformService::t_path_segment_info info;
-    if (!g_main_wnd.io_service.get_path_segment_info(proc_name, info))
+    if (!g_main_ctx.io_service.get_path_segment_info(proc_name, info))
     {
         return;
     }
@@ -594,7 +594,7 @@ static void show_ram_start()
 
     if (result == 0)
     {
-        copy_to_clipboard(g_main_wnd.main_hwnd, stroop_line);
+        copy_to_clipboard(g_main_ctx.main_hwnd, stroop_line);
     }
 }
 
@@ -604,7 +604,7 @@ static void show_statistics()
 
     auto str = std::format(L"Total playtime: {}\r\nTotal rerecords: {}", format_duration(g_config.core.total_frames / 30), g_config.core.total_rerecords);
 
-    MessageBox(g_main_wnd.main_hwnd,
+    MessageBox(g_main_ctx.main_hwnd,
                str.c_str(),
                L"Statistics",
                MB_ICONINFORMATION);
@@ -612,9 +612,9 @@ static void show_statistics()
 
 static void stop_tracelog()
 {
-    if (g_main_wnd.core_ctx->tl_active())
+    if (g_main_ctx.core_ctx->tl_active())
     {
-        g_main_wnd.core_ctx->tl_stop();
+        g_main_ctx.core_ctx->tl_stop();
     }
 }
 
@@ -622,16 +622,16 @@ static void start_tracelog()
 {
     stop_tracelog();
 
-    auto path = FilePicker::show_save_dialog(L"s_tracelog", g_main_wnd.main_hwnd, L"*.log");
+    auto path = FilePicker::show_save_dialog(L"s_tracelog", g_main_ctx.main_hwnd, L"*.log");
 
     if (path.empty())
     {
         return;
     }
 
-    auto result = MessageBox(g_main_wnd.main_hwnd, L"Should the trace log be generated in a binary format?", L"Trace Logger", MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON1);
+    auto result = MessageBox(g_main_ctx.main_hwnd, L"Should the trace log be generated in a binary format?", L"Trace Logger", MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON1);
 
-    g_main_wnd.core_ctx->tl_start(path, result == IDYES, false);
+    g_main_ctx.core_ctx->tl_start(path, result == IDYES, false);
 }
 
 static void show_debugger()
@@ -664,19 +664,19 @@ static void show_piano_roll()
 
 static void screenshot()
 {
-    g_main_wnd.core.plugin_funcs.video_capture_screen(Config::screenshot_directory().string().data());
+    g_main_ctx.core.plugin_funcs.video_capture_screen(Config::screenshot_directory().string().data());
 }
 
 static void start_capture(const bool ask_preset)
 {
-    if (!g_main_wnd.core_ctx->vr_get_launched())
+    if (!g_main_ctx.core_ctx->vr_get_launched())
     {
         return;
     }
 
     BetterEmulationLock lock;
 
-    auto path = FilePicker::show_save_dialog(L"s_capture", g_main_wnd.main_hwnd, L"*.avi");
+    auto path = FilePicker::show_save_dialog(L"s_capture", g_main_ctx.main_hwnd, L"*.avi");
     if (path.empty())
     {
         return;
@@ -766,32 +766,32 @@ static void close_all_lua_scripts()
 
 static bool enable_when_emu_launched()
 {
-    return g_main_wnd.core_ctx->vr_get_launched();
+    return g_main_ctx.core_ctx->vr_get_launched();
 }
 
 static bool disable_when_emu_launched()
 {
-    return !g_main_wnd.core_ctx->vr_get_launched();
+    return !g_main_ctx.core_ctx->vr_get_launched();
 }
 
 static bool enable_when_emu_launched_and_vcr_active()
 {
-    return g_main_wnd.core_ctx->vr_get_launched() && g_main_wnd.core_ctx->vcr_get_task() != task_idle;
+    return g_main_ctx.core_ctx->vr_get_launched() && g_main_ctx.core_ctx->vcr_get_task() != task_idle;
 }
 
 static bool enable_when_emu_launched_and_capturing()
 {
-    return g_main_wnd.core_ctx->vr_get_launched() && EncodingManager::is_capturing();
+    return g_main_ctx.core_ctx->vr_get_launched() && EncodingManager::is_capturing();
 }
 
 static bool enable_when_emu_launched_and_core_is_pure_interpreter()
 {
-    return g_main_wnd.core_ctx->vr_get_launched() && g_config.core.core_type == 2;
+    return g_main_ctx.core_ctx->vr_get_launched() && g_config.core.core_type == 2;
 }
 
 static bool enable_when_tracelog_active()
 {
-    return g_main_wnd.core_ctx->tl_active();
+    return g_main_ctx.core_ctx->tl_active();
 }
 
 static bool always_enabled()
@@ -933,14 +933,14 @@ void AppActions::add()
         const int32_t load_key = VK_F1 + i;
 
         const auto do_work = [=](const core_st_job job) {
-            g_main_wnd.core_ctx->vr_wait_increment();
+            g_main_ctx.core_ctx->vr_wait_increment();
 
             g_config.st_slot = i;
             Messenger::broadcast(Messenger::Message::SlotChanged, (size_t)g_config.st_slot);
 
             ThreadPool::submit_task([=] {
-                g_main_wnd.core_ctx->vr_wait_decrement();
-                g_main_wnd.core_ctx->st_do_file(get_st_with_slot_path(i), job, nullptr, false);
+                g_main_ctx.core_ctx->vr_wait_decrement();
+                g_main_ctx.core_ctx->st_do_file(get_st_with_slot_path(i), job, nullptr, false);
             });
         };
 

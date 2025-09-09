@@ -15,7 +15,7 @@ size_t DialogService::show_multiple_choice_dialog(const std::string& id, const s
 {
     if (g_config.silent_mode)
     {
-        const auto default_index = g_config.silent_mode_dialog_choices[g_main_wnd.io_service.string_to_wstring(id)];
+        const auto default_index = g_config.silent_mode_dialog_choices[g_main_ctx.io_service.string_to_wstring(id)];
         g_view_logger->trace(L"[FrontendService] show_multiple_choice_dialog: '{}', silent mode answer: {}", str, default_index);
         return std::stoi(default_index);
     }
@@ -51,7 +51,7 @@ size_t DialogService::show_multiple_choice_dialog(const std::string& id, const s
 
     TASKDIALOGCONFIG task_dialog_config = {
     .cbSize = sizeof(TASKDIALOGCONFIG),
-    .hwndParent = static_cast<HWND>(hwnd ? hwnd : g_main_wnd.main_hwnd),
+    .hwndParent = static_cast<HWND>(hwnd ? hwnd : g_main_ctx.main_hwnd),
     .pszWindowTitle = title,
     .pszMainIcon = icon,
     .pszContent = str,
@@ -111,7 +111,7 @@ void DialogService::show_dialog(const wchar_t* str, const wchar_t* title, core_d
 
     if (!g_config.silent_mode)
     {
-        MessageBox(static_cast<HWND>(hwnd ? hwnd : g_main_wnd.main_hwnd), str, title, icon);
+        MessageBox(static_cast<HWND>(hwnd ? hwnd : g_main_ctx.main_hwnd), str, title, icon);
     }
 }
 

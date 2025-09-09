@@ -166,59 +166,59 @@ void load_gfx(HMODULE handle)
     FUNC(receive_extended_funcs, RECEIVEEXTENDEDFUNCS, dummy_receive_extended_funcs, "ReceiveExtendedFuncs");
 
     FUNC(g_view_plugin_funcs.video_change_window, CHANGEWINDOW, dummy_void, "ChangeWindow");
-    FUNC(g_main_wnd.core.plugin_funcs.video_close_dll, CLOSEDLL, dummy_void, "CloseDLL");
+    FUNC(g_main_ctx.core.plugin_funcs.video_close_dll, CLOSEDLL, dummy_void, "CloseDLL");
     FUNC(initiate_gfx, INITIATEGFX, dummy_initiate_gfx, "InitiateGFX");
-    FUNC(g_main_wnd.core.plugin_funcs.video_process_dlist, PROCESSDLIST, dummy_void, "ProcessDList");
-    FUNC(g_main_wnd.core.plugin_funcs.video_process_rdp_list, PROCESSRDPLIST, dummy_void, "ProcessRDPList");
-    FUNC(g_main_wnd.core.plugin_funcs.video_rom_closed, ROMCLOSED, dummy_void, "RomClosed");
-    FUNC(g_main_wnd.core.plugin_funcs.video_rom_open, ROMOPEN, dummy_void, "RomOpen");
-    FUNC(g_main_wnd.core.plugin_funcs.video_show_cfb, SHOWCFB, dummy_void, "ShowCFB");
-    FUNC(g_main_wnd.core.plugin_funcs.video_update_screen, UPDATESCREEN, dummy_void, "UpdateScreen");
-    FUNC(g_main_wnd.core.plugin_funcs.video_vi_status_changed, VISTATUSCHANGED, dummy_void, "ViStatusChanged");
-    FUNC(g_main_wnd.core.plugin_funcs.video_vi_width_changed, VIWIDTHCHANGED, dummy_void, "ViWidthChanged");
-    FUNC(g_main_wnd.core.plugin_funcs.video_move_screen, MOVESCREEN, dummy_move_screen, "MoveScreen");
-    FUNC(g_main_wnd.core.plugin_funcs.video_capture_screen, CAPTURESCREEN, nullptr, "CaptureScreen");
-    FUNC(g_main_wnd.core.plugin_funcs.video_read_screen, READSCREEN, (READSCREEN)GetProcAddress(handle, "ReadScreen2"), "ReadScreen");
-    FUNC(g_main_wnd.core.plugin_funcs.video_get_video_size, GETVIDEOSIZE, nullptr, "mge_get_video_size");
-    FUNC(g_main_wnd.core.plugin_funcs.video_read_video, READVIDEO, nullptr, "mge_read_video");
-    FUNC(g_main_wnd.core.plugin_funcs.video_fb_read, FBREAD, dummy_fb_read, "FBRead");
-    FUNC(g_main_wnd.core.plugin_funcs.video_fb_write, FBWRITE, dummy_fb_write, "FBWrite");
-    FUNC(g_main_wnd.core.plugin_funcs.video_fb_get_frame_buffer_info, FBGETFRAMEBUFFERINFO, dummy_fb_get_framebuffer_info, "FBGetFrameBufferInfo");
-    g_main_wnd.core.plugin_funcs.video_dll_crt_free = get_free_function_in_module(handle);
+    FUNC(g_main_ctx.core.plugin_funcs.video_process_dlist, PROCESSDLIST, dummy_void, "ProcessDList");
+    FUNC(g_main_ctx.core.plugin_funcs.video_process_rdp_list, PROCESSRDPLIST, dummy_void, "ProcessRDPList");
+    FUNC(g_main_ctx.core.plugin_funcs.video_rom_closed, ROMCLOSED, dummy_void, "RomClosed");
+    FUNC(g_main_ctx.core.plugin_funcs.video_rom_open, ROMOPEN, dummy_void, "RomOpen");
+    FUNC(g_main_ctx.core.plugin_funcs.video_show_cfb, SHOWCFB, dummy_void, "ShowCFB");
+    FUNC(g_main_ctx.core.plugin_funcs.video_update_screen, UPDATESCREEN, dummy_void, "UpdateScreen");
+    FUNC(g_main_ctx.core.plugin_funcs.video_vi_status_changed, VISTATUSCHANGED, dummy_void, "ViStatusChanged");
+    FUNC(g_main_ctx.core.plugin_funcs.video_vi_width_changed, VIWIDTHCHANGED, dummy_void, "ViWidthChanged");
+    FUNC(g_main_ctx.core.plugin_funcs.video_move_screen, MOVESCREEN, dummy_move_screen, "MoveScreen");
+    FUNC(g_main_ctx.core.plugin_funcs.video_capture_screen, CAPTURESCREEN, nullptr, "CaptureScreen");
+    FUNC(g_main_ctx.core.plugin_funcs.video_read_screen, READSCREEN, (READSCREEN)GetProcAddress(handle, "ReadScreen2"), "ReadScreen");
+    FUNC(g_main_ctx.core.plugin_funcs.video_get_video_size, GETVIDEOSIZE, nullptr, "mge_get_video_size");
+    FUNC(g_main_ctx.core.plugin_funcs.video_read_video, READVIDEO, nullptr, "mge_read_video");
+    FUNC(g_main_ctx.core.plugin_funcs.video_fb_read, FBREAD, dummy_fb_read, "FBRead");
+    FUNC(g_main_ctx.core.plugin_funcs.video_fb_write, FBWRITE, dummy_fb_write, "FBWrite");
+    FUNC(g_main_ctx.core.plugin_funcs.video_fb_get_frame_buffer_info, FBGETFRAMEBUFFERINFO, dummy_fb_get_framebuffer_info, "FBGetFrameBufferInfo");
+    g_main_ctx.core.plugin_funcs.video_dll_crt_free = get_free_function_in_module(handle);
 
-    gfx_info.main_hwnd = g_main_wnd.main_hwnd;
+    gfx_info.main_hwnd = g_main_ctx.main_hwnd;
     gfx_info.statusbar_hwnd = g_config.is_statusbar_enabled ? Statusbar::hwnd() : nullptr;
     gfx_info.byteswapped = 1;
-    gfx_info.rom = g_main_wnd.core_ctx->rom;
-    gfx_info.rdram = (uint8_t*)g_main_wnd.core_ctx->rdram;
-    gfx_info.dmem = (uint8_t*)g_main_wnd.core_ctx->SP_DMEM;
-    gfx_info.imem = (uint8_t*)g_main_wnd.core_ctx->SP_IMEM;
-    gfx_info.mi_intr_reg = &g_main_wnd.core_ctx->MI_register->mi_intr_reg;
-    gfx_info.dpc_start_reg = &g_main_wnd.core_ctx->dpc_register->dpc_start;
-    gfx_info.dpc_end_reg = &g_main_wnd.core_ctx->dpc_register->dpc_end;
-    gfx_info.dpc_current_reg = &g_main_wnd.core_ctx->dpc_register->dpc_current;
-    gfx_info.dpc_status_reg = &g_main_wnd.core_ctx->dpc_register->dpc_status;
-    gfx_info.dpc_clock_reg = &g_main_wnd.core_ctx->dpc_register->dpc_clock;
-    gfx_info.dpc_bufbusy_reg = &g_main_wnd.core_ctx->dpc_register->dpc_bufbusy;
-    gfx_info.dpc_pipebusy_reg = &g_main_wnd.core_ctx->dpc_register->dpc_pipebusy;
-    gfx_info.dpc_tmem_reg = &g_main_wnd.core_ctx->dpc_register->dpc_tmem;
-    gfx_info.vi_status_reg = &g_main_wnd.core_ctx->vi_register->vi_status;
-    gfx_info.vi_origin_reg = &g_main_wnd.core_ctx->vi_register->vi_origin;
-    gfx_info.vi_width_reg = &g_main_wnd.core_ctx->vi_register->vi_width;
-    gfx_info.vi_intr_reg = &g_main_wnd.core_ctx->vi_register->vi_v_intr;
-    gfx_info.vi_v_current_line_reg = &g_main_wnd.core_ctx->vi_register->vi_current;
-    gfx_info.vi_timing_reg = &g_main_wnd.core_ctx->vi_register->vi_burst;
-    gfx_info.vi_v_sync_reg = &g_main_wnd.core_ctx->vi_register->vi_v_sync;
-    gfx_info.vi_h_sync_reg = &g_main_wnd.core_ctx->vi_register->vi_h_sync;
-    gfx_info.vi_leap_reg = &g_main_wnd.core_ctx->vi_register->vi_leap;
-    gfx_info.vi_h_start_reg = &g_main_wnd.core_ctx->vi_register->vi_h_start;
-    gfx_info.vi_v_start_reg = &g_main_wnd.core_ctx->vi_register->vi_v_start;
-    gfx_info.vi_v_burst_reg = &g_main_wnd.core_ctx->vi_register->vi_v_burst;
-    gfx_info.vi_x_scale_reg = &g_main_wnd.core_ctx->vi_register->vi_x_scale;
-    gfx_info.vi_y_scale_reg = &g_main_wnd.core_ctx->vi_register->vi_y_scale;
+    gfx_info.rom = g_main_ctx.core_ctx->rom;
+    gfx_info.rdram = (uint8_t*)g_main_ctx.core_ctx->rdram;
+    gfx_info.dmem = (uint8_t*)g_main_ctx.core_ctx->SP_DMEM;
+    gfx_info.imem = (uint8_t*)g_main_ctx.core_ctx->SP_IMEM;
+    gfx_info.mi_intr_reg = &g_main_ctx.core_ctx->MI_register->mi_intr_reg;
+    gfx_info.dpc_start_reg = &g_main_ctx.core_ctx->dpc_register->dpc_start;
+    gfx_info.dpc_end_reg = &g_main_ctx.core_ctx->dpc_register->dpc_end;
+    gfx_info.dpc_current_reg = &g_main_ctx.core_ctx->dpc_register->dpc_current;
+    gfx_info.dpc_status_reg = &g_main_ctx.core_ctx->dpc_register->dpc_status;
+    gfx_info.dpc_clock_reg = &g_main_ctx.core_ctx->dpc_register->dpc_clock;
+    gfx_info.dpc_bufbusy_reg = &g_main_ctx.core_ctx->dpc_register->dpc_bufbusy;
+    gfx_info.dpc_pipebusy_reg = &g_main_ctx.core_ctx->dpc_register->dpc_pipebusy;
+    gfx_info.dpc_tmem_reg = &g_main_ctx.core_ctx->dpc_register->dpc_tmem;
+    gfx_info.vi_status_reg = &g_main_ctx.core_ctx->vi_register->vi_status;
+    gfx_info.vi_origin_reg = &g_main_ctx.core_ctx->vi_register->vi_origin;
+    gfx_info.vi_width_reg = &g_main_ctx.core_ctx->vi_register->vi_width;
+    gfx_info.vi_intr_reg = &g_main_ctx.core_ctx->vi_register->vi_v_intr;
+    gfx_info.vi_v_current_line_reg = &g_main_ctx.core_ctx->vi_register->vi_current;
+    gfx_info.vi_timing_reg = &g_main_ctx.core_ctx->vi_register->vi_burst;
+    gfx_info.vi_v_sync_reg = &g_main_ctx.core_ctx->vi_register->vi_v_sync;
+    gfx_info.vi_h_sync_reg = &g_main_ctx.core_ctx->vi_register->vi_h_sync;
+    gfx_info.vi_leap_reg = &g_main_ctx.core_ctx->vi_register->vi_leap;
+    gfx_info.vi_h_start_reg = &g_main_ctx.core_ctx->vi_register->vi_h_start;
+    gfx_info.vi_v_start_reg = &g_main_ctx.core_ctx->vi_register->vi_v_start;
+    gfx_info.vi_v_burst_reg = &g_main_ctx.core_ctx->vi_register->vi_v_burst;
+    gfx_info.vi_x_scale_reg = &g_main_ctx.core_ctx->vi_register->vi_x_scale;
+    gfx_info.vi_y_scale_reg = &g_main_ctx.core_ctx->vi_register->vi_y_scale;
     gfx_info.check_interrupts = dummy_void;
 
-    receive_extended_funcs(&g_main_wnd.core.plugin_funcs.video_extended_funcs);
+    receive_extended_funcs(&g_main_ctx.core.plugin_funcs.video_extended_funcs);
     initiate_gfx(gfx_info);
 }
 
@@ -230,10 +230,10 @@ void load_input(uint16_t version, HMODULE handle)
     RECEIVEEXTENDEDFUNCS receive_extended_funcs;
     FUNC(receive_extended_funcs, RECEIVEEXTENDEDFUNCS, dummy_receive_extended_funcs, "ReceiveExtendedFuncs");
 
-    FUNC(g_main_wnd.core.plugin_funcs.input_close_dll, CLOSEDLL, dummy_void, "CloseDLL");
-    FUNC(g_main_wnd.core.plugin_funcs.input_controller_command, CONTROLLERCOMMAND, dummy_controller_command, "ControllerCommand");
-    FUNC(g_main_wnd.core.plugin_funcs.input_get_keys, GETKEYS, dummy_get_keys, "GetKeys");
-    FUNC(g_main_wnd.core.plugin_funcs.input_set_keys, SETKEYS, dummy_set_keys, "SetKeys");
+    FUNC(g_main_ctx.core.plugin_funcs.input_close_dll, CLOSEDLL, dummy_void, "CloseDLL");
+    FUNC(g_main_ctx.core.plugin_funcs.input_controller_command, CONTROLLERCOMMAND, dummy_controller_command, "ControllerCommand");
+    FUNC(g_main_ctx.core.plugin_funcs.input_get_keys, GETKEYS, dummy_get_keys, "GetKeys");
+    FUNC(g_main_ctx.core.plugin_funcs.input_set_keys, SETKEYS, dummy_set_keys, "SetKeys");
     if (version == 0x0101)
     {
         FUNC(initiate_controllers, INITIATECONTROLLERS, dummy_initiate_controllers, "InitiateControllers");
@@ -242,31 +242,31 @@ void load_input(uint16_t version, HMODULE handle)
     {
         FUNC(old_initiate_controllers, OLD_INITIATECONTROLLERS, nullptr, "InitiateControllers");
     }
-    FUNC(g_main_wnd.core.plugin_funcs.input_read_controller, READCONTROLLER, dummy_read_controller, "ReadController");
-    FUNC(g_main_wnd.core.plugin_funcs.input_rom_closed, ROMCLOSED, dummy_void, "RomClosed");
-    FUNC(g_main_wnd.core.plugin_funcs.input_rom_open, ROMOPEN, dummy_void, "RomOpen");
-    FUNC(g_main_wnd.core.plugin_funcs.input_key_down, KEYDOWN, dummy_key_down, "WM_KeyDown");
-    FUNC(g_main_wnd.core.plugin_funcs.input_key_up, KEYUP, dummy_key_up, "WM_KeyUp");
+    FUNC(g_main_ctx.core.plugin_funcs.input_read_controller, READCONTROLLER, dummy_read_controller, "ReadController");
+    FUNC(g_main_ctx.core.plugin_funcs.input_rom_closed, ROMCLOSED, dummy_void, "RomClosed");
+    FUNC(g_main_ctx.core.plugin_funcs.input_rom_open, ROMOPEN, dummy_void, "RomOpen");
+    FUNC(g_main_ctx.core.plugin_funcs.input_key_down, KEYDOWN, dummy_key_down, "WM_KeyDown");
+    FUNC(g_main_ctx.core.plugin_funcs.input_key_up, KEYUP, dummy_key_up, "WM_KeyUp");
 
-    control_info.main_hwnd = g_main_wnd.main_hwnd;
-    control_info.hinst = g_main_wnd.app_instance;
+    control_info.main_hwnd = g_main_ctx.main_hwnd;
+    control_info.hinst = g_main_ctx.app_instance;
     control_info.byteswapped = 1;
-    control_info.header = g_main_wnd.core_ctx->rom;
-    control_info.controllers = g_main_wnd.core.controls;
-    for (auto& controller : g_main_wnd.core.controls)
+    control_info.header = g_main_ctx.core_ctx->rom;
+    control_info.controllers = g_main_ctx.core.controls;
+    for (auto& controller : g_main_ctx.core.controls)
     {
         controller.Present = 0;
         controller.RawData = 0;
         controller.Plugin = (int32_t)ce_none;
     }
-    receive_extended_funcs(&g_main_wnd.core.plugin_funcs.input_extended_funcs);
+    receive_extended_funcs(&g_main_ctx.core.plugin_funcs.input_extended_funcs);
     if (version == 0x0101)
     {
         initiate_controllers(control_info);
     }
     else
     {
-        old_initiate_controllers(g_main_wnd.main_hwnd, g_main_wnd.core.controls);
+        old_initiate_controllers(g_main_ctx.main_hwnd, g_main_ctx.core.controls);
     }
 }
 
@@ -278,34 +278,34 @@ void load_audio(HMODULE handle)
     RECEIVEEXTENDEDFUNCS receive_extended_funcs;
     FUNC(receive_extended_funcs, RECEIVEEXTENDEDFUNCS, dummy_receive_extended_funcs, "ReceiveExtendedFuncs");
 
-    FUNC(g_main_wnd.core.plugin_funcs.audio_close_dll_audio, CLOSEDLL, dummy_void, "CloseDLL");
-    FUNC(g_main_wnd.core.plugin_funcs.audio_ai_dacrate_changed, AIDACRATECHANGED, dummy_ai_dacrate_changed, "AiDacrateChanged");
-    FUNC(g_main_wnd.core.plugin_funcs.audio_ai_len_changed, AILENCHANGED, dummy_void, "AiLenChanged");
-    FUNC(g_main_wnd.core.plugin_funcs.audio_ai_read_length, AIREADLENGTH, dummy_ai_read_length, "AiReadLength");
+    FUNC(g_main_ctx.core.plugin_funcs.audio_close_dll_audio, CLOSEDLL, dummy_void, "CloseDLL");
+    FUNC(g_main_ctx.core.plugin_funcs.audio_ai_dacrate_changed, AIDACRATECHANGED, dummy_ai_dacrate_changed, "AiDacrateChanged");
+    FUNC(g_main_ctx.core.plugin_funcs.audio_ai_len_changed, AILENCHANGED, dummy_void, "AiLenChanged");
+    FUNC(g_main_ctx.core.plugin_funcs.audio_ai_read_length, AIREADLENGTH, dummy_ai_read_length, "AiReadLength");
     FUNC(initiate_audio, INITIATEAUDIO, dummy_initiate_audio, "InitiateAudio");
-    FUNC(g_main_wnd.core.plugin_funcs.audio_rom_closed, ROMCLOSED, dummy_void, "RomClosed");
-    FUNC(g_main_wnd.core.plugin_funcs.audio_rom_open, ROMOPEN, dummy_void, "RomOpen");
-    FUNC(g_main_wnd.core.plugin_funcs.audio_process_alist, PROCESSALIST, dummy_void, "ProcessAList");
-    FUNC(g_main_wnd.core.plugin_funcs.audio_ai_update, AIUPDATE, dummy_ai_update, "AiUpdate");
+    FUNC(g_main_ctx.core.plugin_funcs.audio_rom_closed, ROMCLOSED, dummy_void, "RomClosed");
+    FUNC(g_main_ctx.core.plugin_funcs.audio_rom_open, ROMOPEN, dummy_void, "RomOpen");
+    FUNC(g_main_ctx.core.plugin_funcs.audio_process_alist, PROCESSALIST, dummy_void, "ProcessAList");
+    FUNC(g_main_ctx.core.plugin_funcs.audio_ai_update, AIUPDATE, dummy_ai_update, "AiUpdate");
 
-    audio_info.main_hwnd = g_main_wnd.main_hwnd;
-    audio_info.hinst = g_main_wnd.app_instance;
+    audio_info.main_hwnd = g_main_ctx.main_hwnd;
+    audio_info.hinst = g_main_ctx.app_instance;
     audio_info.byteswapped = 1;
-    audio_info.rom = g_main_wnd.core_ctx->rom;
-    audio_info.rdram = (uint8_t*)g_main_wnd.core_ctx->rdram;
-    audio_info.dmem = (uint8_t*)g_main_wnd.core_ctx->SP_DMEM;
-    audio_info.imem = (uint8_t*)g_main_wnd.core_ctx->SP_IMEM;
+    audio_info.rom = g_main_ctx.core_ctx->rom;
+    audio_info.rdram = (uint8_t*)g_main_ctx.core_ctx->rdram;
+    audio_info.dmem = (uint8_t*)g_main_ctx.core_ctx->SP_DMEM;
+    audio_info.imem = (uint8_t*)g_main_ctx.core_ctx->SP_IMEM;
     audio_info.mi_intr_reg = &dummy_dw;
-    audio_info.ai_dram_addr_reg = &g_main_wnd.core_ctx->ai_register->ai_dram_addr;
-    audio_info.ai_len_reg = &g_main_wnd.core_ctx->ai_register->ai_len;
-    audio_info.ai_control_reg = &g_main_wnd.core_ctx->ai_register->ai_control;
+    audio_info.ai_dram_addr_reg = &g_main_ctx.core_ctx->ai_register->ai_dram_addr;
+    audio_info.ai_len_reg = &g_main_ctx.core_ctx->ai_register->ai_len;
+    audio_info.ai_control_reg = &g_main_ctx.core_ctx->ai_register->ai_control;
     audio_info.ai_status_reg = &dummy_dw;
-    audio_info.ai_dacrate_reg = &g_main_wnd.core_ctx->ai_register->ai_dacrate;
-    audio_info.ai_bitrate_reg = &g_main_wnd.core_ctx->ai_register->ai_bitrate;
+    audio_info.ai_dacrate_reg = &g_main_ctx.core_ctx->ai_register->ai_dacrate;
+    audio_info.ai_bitrate_reg = &g_main_ctx.core_ctx->ai_register->ai_bitrate;
 
     audio_info.check_interrupts = dummy_void;
 
-    receive_extended_funcs(&g_main_wnd.core.plugin_funcs.audio_extended_funcs);
+    receive_extended_funcs(&g_main_ctx.core.plugin_funcs.audio_extended_funcs);
     initiate_audio(audio_info);
 }
 
@@ -316,40 +316,40 @@ void load_rsp(HMODULE handle)
     RECEIVEEXTENDEDFUNCS receive_extended_funcs;
     FUNC(receive_extended_funcs, RECEIVEEXTENDEDFUNCS, dummy_receive_extended_funcs, "ReceiveExtendedFuncs");
 
-    FUNC(g_main_wnd.core.plugin_funcs.rsp_close_dll, CLOSEDLL, dummy_void, "CloseDLL");
-    FUNC(g_main_wnd.core.plugin_funcs.rsp_do_rsp_cycles, DORSPCYCLES, dummy_do_rsp_cycles, "DoRspCycles");
+    FUNC(g_main_ctx.core.plugin_funcs.rsp_close_dll, CLOSEDLL, dummy_void, "CloseDLL");
+    FUNC(g_main_ctx.core.plugin_funcs.rsp_do_rsp_cycles, DORSPCYCLES, dummy_do_rsp_cycles, "DoRspCycles");
     FUNC(initiate_rsp, INITIATERSP, dummy_initiate_rsp, "InitiateRSP");
-    FUNC(g_main_wnd.core.plugin_funcs.rsp_rom_closed, ROMCLOSED, dummy_void, "RomClosed");
+    FUNC(g_main_ctx.core.plugin_funcs.rsp_rom_closed, ROMCLOSED, dummy_void, "RomClosed");
 
     rsp_info.byteswapped = 1;
-    rsp_info.rdram = (uint8_t*)g_main_wnd.core_ctx->rdram;
-    rsp_info.dmem = (uint8_t*)g_main_wnd.core_ctx->SP_DMEM;
-    rsp_info.imem = (uint8_t*)g_main_wnd.core_ctx->SP_IMEM;
-    rsp_info.mi_intr_reg = &g_main_wnd.core_ctx->MI_register->mi_intr_reg;
-    rsp_info.sp_mem_addr_reg = &g_main_wnd.core_ctx->sp_register->sp_mem_addr_reg;
-    rsp_info.sp_dram_addr_reg = &g_main_wnd.core_ctx->sp_register->sp_dram_addr_reg;
-    rsp_info.sp_rd_len_reg = &g_main_wnd.core_ctx->sp_register->sp_rd_len_reg;
-    rsp_info.sp_wr_len_reg = &g_main_wnd.core_ctx->sp_register->sp_wr_len_reg;
-    rsp_info.sp_status_reg = &g_main_wnd.core_ctx->sp_register->sp_status_reg;
-    rsp_info.sp_dma_full_reg = &g_main_wnd.core_ctx->sp_register->sp_dma_full_reg;
-    rsp_info.sp_dma_busy_reg = &g_main_wnd.core_ctx->sp_register->sp_dma_busy_reg;
-    rsp_info.sp_pc_reg = &g_main_wnd.core_ctx->rsp_register->rsp_pc;
-    rsp_info.sp_semaphore_reg = &g_main_wnd.core_ctx->sp_register->sp_semaphore_reg;
-    rsp_info.dpc_start_reg = &g_main_wnd.core_ctx->dpc_register->dpc_start;
-    rsp_info.dpc_end_reg = &g_main_wnd.core_ctx->dpc_register->dpc_end;
-    rsp_info.dpc_current_reg = &g_main_wnd.core_ctx->dpc_register->dpc_current;
-    rsp_info.dpc_status_reg = &g_main_wnd.core_ctx->dpc_register->dpc_status;
-    rsp_info.dpc_clock_reg = &g_main_wnd.core_ctx->dpc_register->dpc_clock;
-    rsp_info.dpc_bufbusy_reg = &g_main_wnd.core_ctx->dpc_register->dpc_bufbusy;
-    rsp_info.dpc_pipebusy_reg = &g_main_wnd.core_ctx->dpc_register->dpc_pipebusy;
-    rsp_info.dpc_tmem_reg = &g_main_wnd.core_ctx->dpc_register->dpc_tmem;
+    rsp_info.rdram = (uint8_t*)g_main_ctx.core_ctx->rdram;
+    rsp_info.dmem = (uint8_t*)g_main_ctx.core_ctx->SP_DMEM;
+    rsp_info.imem = (uint8_t*)g_main_ctx.core_ctx->SP_IMEM;
+    rsp_info.mi_intr_reg = &g_main_ctx.core_ctx->MI_register->mi_intr_reg;
+    rsp_info.sp_mem_addr_reg = &g_main_ctx.core_ctx->sp_register->sp_mem_addr_reg;
+    rsp_info.sp_dram_addr_reg = &g_main_ctx.core_ctx->sp_register->sp_dram_addr_reg;
+    rsp_info.sp_rd_len_reg = &g_main_ctx.core_ctx->sp_register->sp_rd_len_reg;
+    rsp_info.sp_wr_len_reg = &g_main_ctx.core_ctx->sp_register->sp_wr_len_reg;
+    rsp_info.sp_status_reg = &g_main_ctx.core_ctx->sp_register->sp_status_reg;
+    rsp_info.sp_dma_full_reg = &g_main_ctx.core_ctx->sp_register->sp_dma_full_reg;
+    rsp_info.sp_dma_busy_reg = &g_main_ctx.core_ctx->sp_register->sp_dma_busy_reg;
+    rsp_info.sp_pc_reg = &g_main_ctx.core_ctx->rsp_register->rsp_pc;
+    rsp_info.sp_semaphore_reg = &g_main_ctx.core_ctx->sp_register->sp_semaphore_reg;
+    rsp_info.dpc_start_reg = &g_main_ctx.core_ctx->dpc_register->dpc_start;
+    rsp_info.dpc_end_reg = &g_main_ctx.core_ctx->dpc_register->dpc_end;
+    rsp_info.dpc_current_reg = &g_main_ctx.core_ctx->dpc_register->dpc_current;
+    rsp_info.dpc_status_reg = &g_main_ctx.core_ctx->dpc_register->dpc_status;
+    rsp_info.dpc_clock_reg = &g_main_ctx.core_ctx->dpc_register->dpc_clock;
+    rsp_info.dpc_bufbusy_reg = &g_main_ctx.core_ctx->dpc_register->dpc_bufbusy;
+    rsp_info.dpc_pipebusy_reg = &g_main_ctx.core_ctx->dpc_register->dpc_pipebusy;
+    rsp_info.dpc_tmem_reg = &g_main_ctx.core_ctx->dpc_register->dpc_tmem;
     rsp_info.check_interrupts = dummy_void;
-    rsp_info.process_dlist_list = g_main_wnd.core.plugin_funcs.video_process_dlist;
-    rsp_info.process_alist_list = g_main_wnd.core.plugin_funcs.audio_process_alist;
-    rsp_info.process_rdp_list = g_main_wnd.core.plugin_funcs.video_process_rdp_list;
-    rsp_info.show_cfb = g_main_wnd.core.plugin_funcs.video_show_cfb;
+    rsp_info.process_dlist_list = g_main_ctx.core.plugin_funcs.video_process_dlist;
+    rsp_info.process_alist_list = g_main_ctx.core.plugin_funcs.audio_process_alist;
+    rsp_info.process_rdp_list = g_main_ctx.core.plugin_funcs.video_process_rdp_list;
+    rsp_info.show_cfb = g_main_ctx.core.plugin_funcs.video_show_cfb;
 
-    receive_extended_funcs(&g_main_wnd.core.plugin_funcs.rsp_extended_funcs);
+    receive_extended_funcs(&g_main_ctx.core.plugin_funcs.rsp_extended_funcs);
 
     int32_t i = 4;
     initiate_rsp(rsp_info, (uint32_t*)&i);
@@ -414,7 +414,7 @@ void Plugin::config(const HWND hwnd)
 
         if (!dll_config)
         {
-            DialogService::show_dialog(std::format(L"'{}' has no configuration.", g_main_wnd.io_service.string_to_wstring(this->name())).c_str(), L"Plugin", fsvc_error, hwnd);
+            DialogService::show_dialog(std::format(L"'{}' has no configuration.", g_main_ctx.io_service.string_to_wstring(this->name())).c_str(), L"Plugin", fsvc_error, hwnd);
             goto cleanup;
         }
 
@@ -422,7 +422,7 @@ void Plugin::config(const HWND hwnd)
 
     cleanup:
 
-        if (g_main_wnd.core_ctx->vr_get_launched())
+        if (g_main_ctx.core_ctx->vr_get_launched())
         {
             return;
         }
@@ -436,7 +436,7 @@ void Plugin::config(const HWND hwnd)
     {
     case plugin_video:
         {
-            if (!g_main_wnd.core_ctx->vr_get_launched())
+            if (!g_main_ctx.core_ctx->vr_get_launched())
             {
                 // NOTE: Since olden days, dummy render target hwnd was the statusbar.
                 dummy_gfx_info.main_hwnd = Statusbar::hwnd();
@@ -455,7 +455,7 @@ void Plugin::config(const HWND hwnd)
         }
     case plugin_audio:
         {
-            if (!g_main_wnd.core_ctx->vr_get_launched())
+            if (!g_main_ctx.core_ctx->vr_get_launched())
             {
                 const auto initiate_audio = (INITIATEAUDIO)GetProcAddress(m_module, "InitiateAudio");
                 if (initiate_audio && !initiate_audio(dummy_audio_info))
@@ -470,7 +470,7 @@ void Plugin::config(const HWND hwnd)
         }
     case plugin_input:
         {
-            if (!g_main_wnd.core_ctx->vr_get_launched())
+            if (!g_main_ctx.core_ctx->vr_get_launched())
             {
                 if (m_version == 0x0101)
                 {
@@ -482,7 +482,7 @@ void Plugin::config(const HWND hwnd)
                 {
                     const auto old_initiate_controllers = (OLD_INITIATECONTROLLERS)GetProcAddress(m_module, "InitiateControllers");
                     if (old_initiate_controllers)
-                        old_initiate_controllers(g_main_wnd.main_hwnd, g_main_wnd.core.controls);
+                        old_initiate_controllers(g_main_ctx.main_hwnd, g_main_ctx.core.controls);
                 }
             }
 
@@ -492,7 +492,7 @@ void Plugin::config(const HWND hwnd)
         }
     case plugin_rsp:
         {
-            if (!g_main_wnd.core_ctx->vr_get_launched())
+            if (!g_main_ctx.core_ctx->vr_get_launched())
             {
                 auto initiateRSP = (INITIATERSP)GetProcAddress(m_module, "InitiateRSP");
                 uint32_t i = 0;
@@ -551,98 +551,98 @@ void setup_dummy_info()
 
     dummy_gfx_info.byteswapped = 1;
     dummy_gfx_info.rom = (uint8_t*)dummy_header;
-    dummy_gfx_info.rdram = (uint8_t*)g_main_wnd.core_ctx->rdram;
-    dummy_gfx_info.dmem = (uint8_t*)g_main_wnd.core_ctx->SP_DMEM;
-    dummy_gfx_info.imem = (uint8_t*)g_main_wnd.core_ctx->SP_IMEM;
-    dummy_gfx_info.mi_intr_reg = &g_main_wnd.core_ctx->MI_register->mi_intr_reg;
-    dummy_gfx_info.dpc_start_reg = &g_main_wnd.core_ctx->dpc_register->dpc_start;
-    dummy_gfx_info.dpc_end_reg = &g_main_wnd.core_ctx->dpc_register->dpc_end;
-    dummy_gfx_info.dpc_current_reg = &g_main_wnd.core_ctx->dpc_register->dpc_current;
-    dummy_gfx_info.dpc_status_reg = &g_main_wnd.core_ctx->dpc_register->dpc_status;
-    dummy_gfx_info.dpc_clock_reg = &g_main_wnd.core_ctx->dpc_register->dpc_clock;
-    dummy_gfx_info.dpc_bufbusy_reg = &g_main_wnd.core_ctx->dpc_register->dpc_bufbusy;
-    dummy_gfx_info.dpc_pipebusy_reg = &g_main_wnd.core_ctx->dpc_register->dpc_pipebusy;
-    dummy_gfx_info.dpc_tmem_reg = &g_main_wnd.core_ctx->dpc_register->dpc_tmem;
-    dummy_gfx_info.vi_status_reg = &g_main_wnd.core_ctx->vi_register->vi_status;
-    dummy_gfx_info.vi_origin_reg = &g_main_wnd.core_ctx->vi_register->vi_origin;
-    dummy_gfx_info.vi_width_reg = &g_main_wnd.core_ctx->vi_register->vi_width;
-    dummy_gfx_info.vi_intr_reg = &g_main_wnd.core_ctx->vi_register->vi_v_intr;
-    dummy_gfx_info.vi_v_current_line_reg = &g_main_wnd.core_ctx->vi_register->vi_current;
-    dummy_gfx_info.vi_timing_reg = &g_main_wnd.core_ctx->vi_register->vi_burst;
-    dummy_gfx_info.vi_v_sync_reg = &g_main_wnd.core_ctx->vi_register->vi_v_sync;
-    dummy_gfx_info.vi_h_sync_reg = &g_main_wnd.core_ctx->vi_register->vi_h_sync;
-    dummy_gfx_info.vi_leap_reg = &g_main_wnd.core_ctx->vi_register->vi_leap;
-    dummy_gfx_info.vi_h_start_reg = &g_main_wnd.core_ctx->vi_register->vi_h_start;
-    dummy_gfx_info.vi_v_start_reg = &g_main_wnd.core_ctx->vi_register->vi_v_start;
-    dummy_gfx_info.vi_v_burst_reg = &g_main_wnd.core_ctx->vi_register->vi_v_burst;
-    dummy_gfx_info.vi_x_scale_reg = &g_main_wnd.core_ctx->vi_register->vi_x_scale;
-    dummy_gfx_info.vi_y_scale_reg = &g_main_wnd.core_ctx->vi_register->vi_y_scale;
+    dummy_gfx_info.rdram = (uint8_t*)g_main_ctx.core_ctx->rdram;
+    dummy_gfx_info.dmem = (uint8_t*)g_main_ctx.core_ctx->SP_DMEM;
+    dummy_gfx_info.imem = (uint8_t*)g_main_ctx.core_ctx->SP_IMEM;
+    dummy_gfx_info.mi_intr_reg = &g_main_ctx.core_ctx->MI_register->mi_intr_reg;
+    dummy_gfx_info.dpc_start_reg = &g_main_ctx.core_ctx->dpc_register->dpc_start;
+    dummy_gfx_info.dpc_end_reg = &g_main_ctx.core_ctx->dpc_register->dpc_end;
+    dummy_gfx_info.dpc_current_reg = &g_main_ctx.core_ctx->dpc_register->dpc_current;
+    dummy_gfx_info.dpc_status_reg = &g_main_ctx.core_ctx->dpc_register->dpc_status;
+    dummy_gfx_info.dpc_clock_reg = &g_main_ctx.core_ctx->dpc_register->dpc_clock;
+    dummy_gfx_info.dpc_bufbusy_reg = &g_main_ctx.core_ctx->dpc_register->dpc_bufbusy;
+    dummy_gfx_info.dpc_pipebusy_reg = &g_main_ctx.core_ctx->dpc_register->dpc_pipebusy;
+    dummy_gfx_info.dpc_tmem_reg = &g_main_ctx.core_ctx->dpc_register->dpc_tmem;
+    dummy_gfx_info.vi_status_reg = &g_main_ctx.core_ctx->vi_register->vi_status;
+    dummy_gfx_info.vi_origin_reg = &g_main_ctx.core_ctx->vi_register->vi_origin;
+    dummy_gfx_info.vi_width_reg = &g_main_ctx.core_ctx->vi_register->vi_width;
+    dummy_gfx_info.vi_intr_reg = &g_main_ctx.core_ctx->vi_register->vi_v_intr;
+    dummy_gfx_info.vi_v_current_line_reg = &g_main_ctx.core_ctx->vi_register->vi_current;
+    dummy_gfx_info.vi_timing_reg = &g_main_ctx.core_ctx->vi_register->vi_burst;
+    dummy_gfx_info.vi_v_sync_reg = &g_main_ctx.core_ctx->vi_register->vi_v_sync;
+    dummy_gfx_info.vi_h_sync_reg = &g_main_ctx.core_ctx->vi_register->vi_h_sync;
+    dummy_gfx_info.vi_leap_reg = &g_main_ctx.core_ctx->vi_register->vi_leap;
+    dummy_gfx_info.vi_h_start_reg = &g_main_ctx.core_ctx->vi_register->vi_h_start;
+    dummy_gfx_info.vi_v_start_reg = &g_main_ctx.core_ctx->vi_register->vi_v_start;
+    dummy_gfx_info.vi_v_burst_reg = &g_main_ctx.core_ctx->vi_register->vi_v_burst;
+    dummy_gfx_info.vi_x_scale_reg = &g_main_ctx.core_ctx->vi_register->vi_x_scale;
+    dummy_gfx_info.vi_y_scale_reg = &g_main_ctx.core_ctx->vi_register->vi_y_scale;
     dummy_gfx_info.check_interrupts = dummy_void;
 
     /////// AUDIO /////////////////////////
-    dummy_audio_info.main_hwnd = g_main_wnd.main_hwnd;
-    dummy_audio_info.hinst = g_main_wnd.app_instance;
+    dummy_audio_info.main_hwnd = g_main_ctx.main_hwnd;
+    dummy_audio_info.hinst = g_main_ctx.app_instance;
     dummy_audio_info.byteswapped = 1;
     dummy_audio_info.rom = (uint8_t*)dummy_header;
-    dummy_audio_info.rdram = (uint8_t*)g_main_wnd.core_ctx->rdram;
-    dummy_audio_info.dmem = (uint8_t*)g_main_wnd.core_ctx->SP_DMEM;
-    dummy_audio_info.imem = (uint8_t*)g_main_wnd.core_ctx->SP_IMEM;
-    dummy_audio_info.mi_intr_reg = &g_main_wnd.core_ctx->MI_register->mi_intr_reg;
-    dummy_audio_info.ai_dram_addr_reg = &g_main_wnd.core_ctx->ai_register->ai_dram_addr;
-    dummy_audio_info.ai_len_reg = &g_main_wnd.core_ctx->ai_register->ai_len;
-    dummy_audio_info.ai_control_reg = &g_main_wnd.core_ctx->ai_register->ai_control;
-    dummy_audio_info.ai_status_reg = &g_main_wnd.core_ctx->ai_register->ai_status;
-    dummy_audio_info.ai_dacrate_reg = &g_main_wnd.core_ctx->ai_register->ai_dacrate;
-    dummy_audio_info.ai_bitrate_reg = &g_main_wnd.core_ctx->ai_register->ai_bitrate;
+    dummy_audio_info.rdram = (uint8_t*)g_main_ctx.core_ctx->rdram;
+    dummy_audio_info.dmem = (uint8_t*)g_main_ctx.core_ctx->SP_DMEM;
+    dummy_audio_info.imem = (uint8_t*)g_main_ctx.core_ctx->SP_IMEM;
+    dummy_audio_info.mi_intr_reg = &g_main_ctx.core_ctx->MI_register->mi_intr_reg;
+    dummy_audio_info.ai_dram_addr_reg = &g_main_ctx.core_ctx->ai_register->ai_dram_addr;
+    dummy_audio_info.ai_len_reg = &g_main_ctx.core_ctx->ai_register->ai_len;
+    dummy_audio_info.ai_control_reg = &g_main_ctx.core_ctx->ai_register->ai_control;
+    dummy_audio_info.ai_status_reg = &g_main_ctx.core_ctx->ai_register->ai_status;
+    dummy_audio_info.ai_dacrate_reg = &g_main_ctx.core_ctx->ai_register->ai_dacrate;
+    dummy_audio_info.ai_bitrate_reg = &g_main_ctx.core_ctx->ai_register->ai_bitrate;
     dummy_audio_info.check_interrupts = dummy_void;
 
     ///// CONTROLS ///////////////////////////
-    dummy_control_info.main_hwnd = g_main_wnd.main_hwnd;
-    dummy_control_info.hinst = g_main_wnd.app_instance;
+    dummy_control_info.main_hwnd = g_main_ctx.main_hwnd;
+    dummy_control_info.hinst = g_main_ctx.app_instance;
     dummy_control_info.byteswapped = 1;
     dummy_control_info.header = (uint8_t*)dummy_header;
-    dummy_control_info.controllers = g_main_wnd.core.controls;
+    dummy_control_info.controllers = g_main_ctx.core.controls;
     for (i = 0; i < 4; i++)
     {
-        g_main_wnd.core.controls[i].Present = 0;
-        g_main_wnd.core.controls[i].RawData = 0;
-        g_main_wnd.core.controls[i].Plugin = (int32_t)ce_none;
+        g_main_ctx.core.controls[i].Present = 0;
+        g_main_ctx.core.controls[i].RawData = 0;
+        g_main_ctx.core.controls[i].Plugin = (int32_t)ce_none;
     }
 
     //////// RSP /////////////////////////////
     dummy_rsp_info.byteswapped = 1;
-    dummy_rsp_info.rdram = (uint8_t*)g_main_wnd.core_ctx->rdram;
-    dummy_rsp_info.dmem = (uint8_t*)g_main_wnd.core_ctx->SP_DMEM;
-    dummy_rsp_info.imem = (uint8_t*)g_main_wnd.core_ctx->SP_IMEM;
-    dummy_rsp_info.mi_intr_reg = &g_main_wnd.core_ctx->MI_register->mi_intr_reg;
-    dummy_rsp_info.sp_mem_addr_reg = &g_main_wnd.core_ctx->sp_register->sp_mem_addr_reg;
-    dummy_rsp_info.sp_dram_addr_reg = &g_main_wnd.core_ctx->sp_register->sp_dram_addr_reg;
-    dummy_rsp_info.sp_rd_len_reg = &g_main_wnd.core_ctx->sp_register->sp_rd_len_reg;
-    dummy_rsp_info.sp_wr_len_reg = &g_main_wnd.core_ctx->sp_register->sp_wr_len_reg;
-    dummy_rsp_info.sp_status_reg = &g_main_wnd.core_ctx->sp_register->sp_status_reg;
-    dummy_rsp_info.sp_dma_full_reg = &g_main_wnd.core_ctx->sp_register->sp_dma_full_reg;
-    dummy_rsp_info.sp_dma_busy_reg = &g_main_wnd.core_ctx->sp_register->sp_dma_busy_reg;
-    dummy_rsp_info.sp_pc_reg = &g_main_wnd.core_ctx->rsp_register->rsp_pc;
-    dummy_rsp_info.sp_semaphore_reg = &g_main_wnd.core_ctx->sp_register->sp_semaphore_reg;
-    dummy_rsp_info.dpc_start_reg = &g_main_wnd.core_ctx->dpc_register->dpc_start;
-    dummy_rsp_info.dpc_end_reg = &g_main_wnd.core_ctx->dpc_register->dpc_end;
-    dummy_rsp_info.dpc_current_reg = &g_main_wnd.core_ctx->dpc_register->dpc_current;
-    dummy_rsp_info.dpc_status_reg = &g_main_wnd.core_ctx->dpc_register->dpc_status;
-    dummy_rsp_info.dpc_clock_reg = &g_main_wnd.core_ctx->dpc_register->dpc_clock;
-    dummy_rsp_info.dpc_bufbusy_reg = &g_main_wnd.core_ctx->dpc_register->dpc_bufbusy;
-    dummy_rsp_info.dpc_pipebusy_reg = &g_main_wnd.core_ctx->dpc_register->dpc_pipebusy;
-    dummy_rsp_info.dpc_tmem_reg = &g_main_wnd.core_ctx->dpc_register->dpc_tmem;
+    dummy_rsp_info.rdram = (uint8_t*)g_main_ctx.core_ctx->rdram;
+    dummy_rsp_info.dmem = (uint8_t*)g_main_ctx.core_ctx->SP_DMEM;
+    dummy_rsp_info.imem = (uint8_t*)g_main_ctx.core_ctx->SP_IMEM;
+    dummy_rsp_info.mi_intr_reg = &g_main_ctx.core_ctx->MI_register->mi_intr_reg;
+    dummy_rsp_info.sp_mem_addr_reg = &g_main_ctx.core_ctx->sp_register->sp_mem_addr_reg;
+    dummy_rsp_info.sp_dram_addr_reg = &g_main_ctx.core_ctx->sp_register->sp_dram_addr_reg;
+    dummy_rsp_info.sp_rd_len_reg = &g_main_ctx.core_ctx->sp_register->sp_rd_len_reg;
+    dummy_rsp_info.sp_wr_len_reg = &g_main_ctx.core_ctx->sp_register->sp_wr_len_reg;
+    dummy_rsp_info.sp_status_reg = &g_main_ctx.core_ctx->sp_register->sp_status_reg;
+    dummy_rsp_info.sp_dma_full_reg = &g_main_ctx.core_ctx->sp_register->sp_dma_full_reg;
+    dummy_rsp_info.sp_dma_busy_reg = &g_main_ctx.core_ctx->sp_register->sp_dma_busy_reg;
+    dummy_rsp_info.sp_pc_reg = &g_main_ctx.core_ctx->rsp_register->rsp_pc;
+    dummy_rsp_info.sp_semaphore_reg = &g_main_ctx.core_ctx->sp_register->sp_semaphore_reg;
+    dummy_rsp_info.dpc_start_reg = &g_main_ctx.core_ctx->dpc_register->dpc_start;
+    dummy_rsp_info.dpc_end_reg = &g_main_ctx.core_ctx->dpc_register->dpc_end;
+    dummy_rsp_info.dpc_current_reg = &g_main_ctx.core_ctx->dpc_register->dpc_current;
+    dummy_rsp_info.dpc_status_reg = &g_main_ctx.core_ctx->dpc_register->dpc_status;
+    dummy_rsp_info.dpc_clock_reg = &g_main_ctx.core_ctx->dpc_register->dpc_clock;
+    dummy_rsp_info.dpc_bufbusy_reg = &g_main_ctx.core_ctx->dpc_register->dpc_bufbusy;
+    dummy_rsp_info.dpc_pipebusy_reg = &g_main_ctx.core_ctx->dpc_register->dpc_pipebusy;
+    dummy_rsp_info.dpc_tmem_reg = &g_main_ctx.core_ctx->dpc_register->dpc_tmem;
     dummy_rsp_info.check_interrupts = dummy_void;
-    dummy_rsp_info.process_dlist_list = g_main_wnd.core.plugin_funcs.video_process_dlist;
-    dummy_rsp_info.process_alist_list = g_main_wnd.core.plugin_funcs.audio_process_alist;
-    dummy_rsp_info.process_rdp_list = g_main_wnd.core.plugin_funcs.video_process_rdp_list;
-    dummy_rsp_info.show_cfb = g_main_wnd.core.plugin_funcs.video_show_cfb;
+    dummy_rsp_info.process_dlist_list = g_main_ctx.core.plugin_funcs.video_process_dlist;
+    dummy_rsp_info.process_alist_list = g_main_ctx.core.plugin_funcs.audio_process_alist;
+    dummy_rsp_info.process_rdp_list = g_main_ctx.core.plugin_funcs.video_process_rdp_list;
+    dummy_rsp_info.show_cfb = g_main_ctx.core.plugin_funcs.video_show_cfb;
 }
 
 t_plugin_discovery_result PluginUtil::discover_plugins(const std::filesystem::path& directory)
 {
     std::vector<std::unique_ptr<Plugin>> plugins;
-    const auto files = g_main_wnd.io_service.get_files_with_extension_in_directory(directory, L"dll");
+    const auto files = g_main_ctx.io_service.get_files_with_extension_in_directory(directory, L"dll");
 
     std::vector<std::pair<std::filesystem::path, std::wstring>> results;
     for (const auto& file : files)

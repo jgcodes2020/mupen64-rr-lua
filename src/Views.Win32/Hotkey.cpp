@@ -311,7 +311,7 @@ bool Hotkey::show_prompt(const HWND hwnd, const std::wstring& caption, t_hotkey&
     hotkey = t_hotkey::make_unassigned();
     auto params = new t_hotkey_dialog_params{.headline = caption, .hotkey = hotkey};
 
-    const INT_PTR result = DialogBoxParam(g_main_wnd.app_instance, MAKEINTRESOURCE(IDD_HOTKEY), hwnd, dlgproc, reinterpret_cast<LPARAM>(params));
+    const INT_PTR result = DialogBoxParam(g_main_ctx.app_instance, MAKEINTRESOURCE(IDD_HOTKEY), hwnd, dlgproc, reinterpret_cast<LPARAM>(params));
     const bool confirmed = result == IDOK;
 
     if (confirmed)

@@ -47,7 +47,7 @@ namespace EncodingManager
 
     void readscreen_plugin(int32_t* width = nullptr, int32_t* height = nullptr)
     {
-        if (g_main_wnd.core_ctx->vr_get_mge_available())
+        if (g_main_ctx.core_ctx->vr_get_mge_available())
         {
             MGECompositor::copy_video(m_video_buf);
             MGECompositor::get_video_size(width, height);
@@ -57,9 +57,9 @@ namespace EncodingManager
             void* buf = nullptr;
             int32_t w;
             int32_t h;
-            g_main_wnd.core.plugin_funcs.video_read_screen(&buf, &w, &h);
+            g_main_ctx.core.plugin_funcs.video_read_screen(&buf, &w, &h);
             memcpy(m_video_buf, buf, w * h * 3);
-            g_main_wnd.core.plugin_funcs.video_dll_crt_free(buf);
+            g_main_ctx.core.plugin_funcs.video_dll_crt_free(buf);
 
             if (width)
             {
@@ -74,8 +74,8 @@ namespace EncodingManager
 
     void readscreen_window()
     {
-        g_main_wnd.main_window_dispatcher->invoke([] {
-            HDC dc = GetDC(g_main_wnd.main_hwnd);
+        g_main_ctx.main_window_dispatcher->invoke([] {
+            HDC dc = GetDC(g_main_ctx.main_hwnd);
             HDC compat_dc = CreateCompatibleDC(dc);
             HBITMAP bitmap = CreateCompatibleBitmap(dc, m_video_width, m_video_height);
 
@@ -96,15 +96,15 @@ namespace EncodingManager
             SelectObject(compat_dc, nullptr);
             DeleteObject(bitmap);
             DeleteDC(compat_dc);
-            ReleaseDC(g_main_wnd.main_hwnd, dc);
+            ReleaseDC(g_main_ctx.main_hwnd, dc);
         });
     }
 
     void readscreen_desktop()
     {
-        g_main_wnd.main_window_dispatcher->invoke([] {
+        g_main_ctx.main_window_dispatcher->invoke([] {
             POINT pt{};
-            ClientToScreen(g_main_wnd.main_hwnd, &pt);
+            ClientToScreen(g_main_ctx.main_hwnd, &pt);
 
             HDC dc = GetDC(nullptr);
             HDC compat_dc = CreateCompatibleDC(dc);
@@ -138,7 +138,7 @@ namespace EncodingManager
 
         // UI resources, must be accessed from UI thread
         // To avoid GDI weirdness with cross-thread resources, we do all GDI work on UI thread.
-        g_main_wnd.main_window_dispatcher->invoke([&] {
+        g_main_ctx.main_window_dispatcher->invoke([&] {
             // Since atupdatescreen might not have occured for a long time, we force it now.
             // This avoids "outdated" visuals, which are otherwise acceptable during normal gameplay, being blitted to the video stream.
             LuaRenderer::repaint_visuals();
@@ -148,7 +148,7 @@ namespace EncodingManager
             if (!hy_dc)
             {
                 g_view_logger->trace("Creating hybrid capture resources...");
-                hy_main_dc = GetDC(g_main_wnd.main_hwnd);
+                hy_main_dc = GetDC(g_main_ctx.main_hwnd);
                 hy_dc = CreateCompatibleDC(hy_main_dc);
                 hy_bmp = CreateCompatibleBitmap(hy_main_dc, m_video_width, m_video_height);
                 SelectObject(hy_dc, hy_bmp);
@@ -235,7 +235,7 @@ namespace EncodingManager
      */
     static bool check_readscreen_available()
     {
-        bool has_no_mge_or_readscreen = !g_main_wnd.core_ctx->vr_get_mge_available() && !g_main_wnd.core.plugin_funcs.video_read_screen;
+        bool has_no_mge_or_readscreen = !g_main_ctx.core_ctx->vr_get_mge_available() && !g_main_ctx.core.plugin_funcs.video_read_screen;
         if ((g_config.capture_mode == 0 || g_config.capture_mode == 3) && has_no_mge_or_readscreen)
         {
             DialogService::show_dialog(READSCREEN_MISSING_MSG, L"Capture", fsvc_error);
@@ -249,19 +249,19 @@ namespace EncodingManager
     {
         if (g_config.capture_mode == 0)
         {
-            if (g_main_wnd.core_ctx->vr_get_mge_available())
+            if (g_main_ctx.core_ctx->vr_get_mge_available())
             {
                 MGECompositor::get_video_size(width, height);
             }
-            else if (g_main_wnd.core.plugin_funcs.video_get_video_size)
+            else if (g_main_ctx.core.plugin_funcs.video_get_video_size)
             {
-                g_main_wnd.core.plugin_funcs.video_get_video_size(width, height);
+                g_main_ctx.core.plugin_funcs.video_get_video_size(width, height);
             }
             else
             {
                 void* buf = nullptr;
-                g_main_wnd.core.plugin_funcs.video_read_screen(&buf, width, height);
-                g_main_wnd.core.plugin_funcs.video_dll_crt_free(buf);
+                g_main_ctx.core.plugin_funcs.video_read_screen(&buf, width, height);
+                g_main_ctx.core.plugin_funcs.video_dll_crt_free(buf);
             }
         }
         else if (g_config.capture_mode == 1 || g_config.capture_mode == 2 || g_config.capture_mode == 3)
@@ -293,7 +293,7 @@ namespace EncodingManager
 
         m_encoder.release();
 
-        g_main_wnd.main_window_dispatcher->invoke([] {
+        g_main_ctx.main_window_dispatcher->invoke([] {
             SelectObject(hy_dc, nullptr);
 
             DeleteObject(hy_bmp);
@@ -302,7 +302,7 @@ namespace EncodingManager
             DeleteDC(hy_dc);
             hy_dc = nullptr;
 
-            ReleaseDC(g_main_wnd.main_hwnd, hy_main_dc);
+            ReleaseDC(g_main_ctx.main_hwnd, hy_main_dc);
             hy_main_dc = nullptr;
         });
 
@@ -367,7 +367,7 @@ namespace EncodingManager
         .path = m_current_path,
         .width = (uint32_t)m_video_width,
         .height = (uint32_t)m_video_height,
-        .fps = g_main_wnd.core_ctx->vr_get_vis_per_second(g_main_wnd.core_ctx->vr_get_rom_header()->Country_code),
+        .fps = g_main_ctx.core_ctx->vr_get_vis_per_second(g_main_ctx.core_ctx->vr_get_rom_header()->Country_code),
         .arate = (uint32_t)m_audio_freq,
         .ask_for_encoding_settings = ask_for_encoding_settings,
         });
@@ -392,27 +392,27 @@ namespace EncodingManager
 
     void start_capture(std::filesystem::path path, t_config::EncoderType encoder_type, const bool ask_for_encoding_settings, const std::function<void(bool)>& callback)
     {
-        g_main_wnd.core_ctx->vr_wait_increment();
+        g_main_ctx.core_ctx->vr_wait_increment();
         ThreadPool::submit_task([=] {
             const auto result = start_capture_impl(path, encoder_type, ask_for_encoding_settings);
             if (callback)
             {
                 callback(result);
             }
-            g_main_wnd.core_ctx->vr_wait_decrement();
+            g_main_ctx.core_ctx->vr_wait_decrement();
         });
     }
 
     void stop_capture(const std::function<void(bool)>& callback)
     {
-        g_main_wnd.core_ctx->vr_wait_increment();
+        g_main_ctx.core_ctx->vr_wait_increment();
         ThreadPool::submit_task([=] {
             const auto result = stop_capture_impl();
             if (callback)
             {
                 callback(result);
             }
-            g_main_wnd.core_ctx->vr_wait_decrement();
+            g_main_ctx.core_ctx->vr_wait_decrement();
         });
     }
 
@@ -449,11 +449,11 @@ namespace EncodingManager
     {
         std::lock_guard lock(m_mutex);
 
-        const auto p = reinterpret_cast<short*>((char*)g_main_wnd.core_ctx->rdram + (g_main_wnd.core_ctx->ai_register->ai_dram_addr & 0xFFFFFF));
+        const auto p = reinterpret_cast<short*>((char*)g_main_ctx.core_ctx->rdram + (g_main_ctx.core_ctx->ai_register->ai_dram_addr & 0xFFFFFF));
         const auto buf = (char*)p;
-        const int ai_len = (int)g_main_wnd.core_ctx->ai_register->ai_len;
+        const int ai_len = (int)g_main_ctx.core_ctx->ai_register->ai_len;
 
-        m_audio_bitrate = (int)g_main_wnd.core_ctx->ai_register->ai_bitrate + 1;
+        m_audio_bitrate = (int)g_main_ctx.core_ctx->ai_register->ai_bitrate + 1;
 
         if (!m_capturing)
         {
@@ -484,15 +484,15 @@ namespace EncodingManager
             return;
         }
 
-        m_audio_bitrate = (int)g_main_wnd.core_ctx->ai_register->ai_bitrate + 1;
+        m_audio_bitrate = (int)g_main_ctx.core_ctx->ai_register->ai_bitrate + 1;
 
         switch (type)
         {
         case sys_ntsc:
-            m_audio_freq = (int)(48681812 / (g_main_wnd.core_ctx->ai_register->ai_dacrate + 1));
+            m_audio_freq = (int)(48681812 / (g_main_ctx.core_ctx->ai_register->ai_dacrate + 1));
             break;
         case sys_pal:
-            m_audio_freq = (int)(49656530 / (g_main_wnd.core_ctx->ai_register->ai_dacrate + 1));
+            m_audio_freq = (int)(49656530 / (g_main_ctx.core_ctx->ai_register->ai_dacrate + 1));
             break;
         default:
             assert(false);

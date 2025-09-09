@@ -22,7 +22,7 @@ namespace LuaCore::Movie
         g_config.core.vcr_readonly = true;
         Messenger::broadcast(Messenger::Message::ReadonlyChanged, (bool)g_config.core.vcr_readonly);
         ThreadPool::submit_task([=] {
-            g_main_wnd.core_ctx->vcr_start_playback(path);
+            g_main_ctx.core_ctx->vcr_start_playback(path);
         });
 
         lua_pushinteger(L, Res_Ok);
@@ -31,21 +31,21 @@ namespace LuaCore::Movie
 
     static int stop(lua_State* L)
     {
-        const auto result = g_main_wnd.core_ctx->vcr_stop_all();
+        const auto result = g_main_ctx.core_ctx->vcr_stop_all();
         lua_pushinteger(L, result);
         return 1;
     }
 
     static int GetMovieFilename(lua_State* L)
     {
-        if (g_main_wnd.core_ctx->vcr_get_task() == task_idle)
+        if (g_main_ctx.core_ctx->vcr_get_task() == task_idle)
         {
             luaL_error(L, "No movie is currently playing");
             lua_pushstring(L, "");
         }
         else
         {
-            lua_pushstring(L, g_main_wnd.core_ctx->vcr_get_path().string().c_str());
+            lua_pushstring(L, g_main_ctx.core_ctx->vcr_get_path().string().c_str());
         }
         return 1;
     }
@@ -65,28 +65,28 @@ namespace LuaCore::Movie
 
     static int begin_seek(lua_State* L)
     {
-        auto str = g_main_wnd.io_service.string_to_wstring(lua_tostring(L, 1));
+        auto str = g_main_ctx.io_service.string_to_wstring(lua_tostring(L, 1));
         bool pause_at_end = lua_toboolean(L, 2);
 
-        lua_pushinteger(L, static_cast<int32_t>(g_main_wnd.core_ctx->vcr_begin_seek(str, pause_at_end)));
+        lua_pushinteger(L, static_cast<int32_t>(g_main_ctx.core_ctx->vcr_begin_seek(str, pause_at_end)));
         return 1;
     }
 
     static int stop_seek(lua_State* L)
     {
-        g_main_wnd.core_ctx->vcr_stop_seek();
+        g_main_ctx.core_ctx->vcr_stop_seek();
         return 0;
     }
 
     static int is_seeking(lua_State* L)
     {
-        lua_pushboolean(L, g_main_wnd.core_ctx->vcr_is_seeking());
+        lua_pushboolean(L, g_main_ctx.core_ctx->vcr_is_seeking());
         return 1;
     }
 
     static int get_seek_completion(lua_State* L)
     {
-        const core_vcr_seek_info info = g_main_wnd.core_ctx->vcr_get_seek_info();
+        const core_vcr_seek_info info = g_main_ctx.core_ctx->vcr_get_seek_info();
 
         lua_newtable(L);
         lua_pushinteger(L, info.current_sample);
@@ -203,7 +203,7 @@ namespace LuaCore::Movie
             lua_pop(L, 1);
         }
 
-        auto result = g_main_wnd.core_ctx->vcr_begin_warp_modify(inputs);
+        auto result = g_main_ctx.core_ctx->vcr_begin_warp_modify(inputs);
 
         lua_pushinteger(L, static_cast<int32_t>(result));
         return 1;

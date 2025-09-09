@@ -20,21 +20,21 @@ namespace LuaCore::IOHelper
         BetterEmulationLock lock;
         WindowDisabler disabler(LuaDialog::hwnd());
 
-        auto filter = g_main_wnd.io_service.string_to_wstring(std::string(luaL_checkstring(L, 1)));
+        auto filter = g_main_ctx.io_service.string_to_wstring(std::string(luaL_checkstring(L, 1)));
         const int32_t type = luaL_checkinteger(L, 2);
 
         std::wstring path;
 
         if (type == 0)
         {
-            path = FilePicker::show_open_dialog(L"o_lua_api", g_main_wnd.main_hwnd, filter);
+            path = FilePicker::show_open_dialog(L"o_lua_api", g_main_ctx.main_hwnd, filter);
         }
         else
         {
-            path = FilePicker::show_save_dialog(L"s_lua_api", g_main_wnd.main_hwnd, filter);
+            path = FilePicker::show_save_dialog(L"s_lua_api", g_main_ctx.main_hwnd, filter);
         }
 
-        lua_pushstring(L, g_main_wnd.io_service.wstring_to_string(path).c_str());
+        lua_pushstring(L, g_main_ctx.io_service.wstring_to_string(path).c_str());
         return 1;
     }
 } // namespace LuaCore::IOHelper

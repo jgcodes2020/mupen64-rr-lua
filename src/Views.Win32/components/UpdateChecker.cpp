@@ -211,8 +211,8 @@ namespace UpdateChecker
             return;
         }
 
-        ShellExecute(0, 0, g_main_wnd.io_service.string_to_wstring(download_url).c_str(), 0, 0, SW_SHOW);
-        PostMessage(g_main_wnd.main_hwnd, WM_CLOSE, 0, 0);
+        ShellExecute(0, 0, g_main_ctx.io_service.string_to_wstring(download_url).c_str(), 0, 0, SW_SHOW);
+        PostMessage(g_main_ctx.main_hwnd, WM_CLOSE, 0, 0);
     }
 
     void show_connectivity_error(bool manual)
@@ -259,7 +259,7 @@ namespace UpdateChecker
             return;
         }
 
-        auto version = g_main_wnd.io_service.string_to_wstring(tag_name.get<std::string>());
+        auto version = g_main_ctx.io_service.string_to_wstring(tag_name.get<std::string>());
 
         if (!manual && g_config.ignored_version == version)
         {
@@ -299,7 +299,7 @@ namespace UpdateChecker
             break;
         case 1:
             {
-                const auto changelog = g_main_wnd.io_service.string_to_wstring(body.get<std::string>());
+                const auto changelog = g_main_ctx.io_service.string_to_wstring(body.get<std::string>());
                 TextEditDialog::show({.text = changelog, .caption = L"Changelog", .readonly = true});
                 goto show_prompt;
             }

@@ -108,9 +108,9 @@ namespace PianoRoll
      */
     bool can_modify_inputs()
     {
-        const core_vcr_seek_info info = g_main_wnd.core_ctx->vcr_get_seek_info();
+        const core_vcr_seek_info info = g_main_ctx.core_ctx->vcr_get_seek_info();
 
-        return !g_main_wnd.core_ctx->vcr_get_warp_modify_status() && info.seek_target_sample == SIZE_MAX && g_main_wnd.core_ctx->vcr_get_task() == task_recording && !g_main_wnd.core_ctx->vcr_is_seeking() && !g_config.core.vcr_readonly && g_config.core.seek_savestate_interval > 0 && g_main_wnd.core_ctx->vr_get_paused();
+        return !g_main_ctx.core_ctx->vcr_get_warp_modify_status() && info.seek_target_sample == SIZE_MAX && g_main_ctx.core_ctx->vcr_get_task() == task_recording && !g_main_ctx.core_ctx->vcr_is_seeking() && !g_config.core.vcr_readonly && g_config.core.seek_savestate_interval > 0 && g_main_ctx.core_ctx->vr_get_paused();
     }
 
     /**
@@ -132,19 +132,19 @@ namespace PianoRoll
         }
 
         // If VCR is idle, we can't really show anything.
-        if (g_main_wnd.core_ctx->vcr_get_task() == task_idle)
+        if (g_main_ctx.core_ctx->vcr_get_task() == task_idle)
         {
             ListView_DeleteAllItems(g_lv_hwnd);
         }
 
         // In playback mode, the input buffer can't change so we're safe to only pull it once.
-        if (g_main_wnd.core_ctx->vcr_get_task() == task_playback)
+        if (g_main_ctx.core_ctx->vcr_get_task() == task_playback)
         {
             SetWindowRedraw(g_lv_hwnd, false);
 
             ListView_DeleteAllItems(g_lv_hwnd);
 
-            g_piano_roll_state.inputs = g_main_wnd.core_ctx->vcr_get_inputs();
+            g_piano_roll_state.inputs = g_main_ctx.core_ctx->vcr_get_inputs();
             ListView_SetItemCount(g_lv_hwnd, g_piano_roll_state.inputs.size());
             g_view_logger->info("[PianoRoll] Pulled inputs from core for playback mode, count: {}", g_piano_roll_state.inputs.size());
 
@@ -312,10 +312,10 @@ namespace PianoRoll
     void ensure_relevant_item_visible()
     {
         const int32_t i = ListView_GetNextItem(g_lv_hwnd, -1, LVNI_SELECTED);
-        const core_vcr_seek_info info = g_main_wnd.core_ctx->vcr_get_seek_info();
+        const core_vcr_seek_info info = g_main_ctx.core_ctx->vcr_get_seek_info();
 
         const auto current_sample = std::min(ListView_GetItemCount(g_lv_hwnd), static_cast<int32_t>(info.current_sample) + 10);
-        const auto playhead_sample = g_main_wnd.core_ctx->vcr_get_task() == task_recording ? current_sample - 1 : current_sample;
+        const auto playhead_sample = g_main_ctx.core_ctx->vcr_get_task() == task_recording ? current_sample - 1 : current_sample;
 
         if (g_config.piano_roll_keep_playhead_visible)
         {
@@ -419,7 +419,7 @@ namespace PianoRoll
         // This might be called from UI thread, thus grabbing the VCR lock.
         // Problem is that the VCR lock is already grabbed by the core thread because current sample changed message is executed on core thread.
         ThreadPool::submit_task([=] {
-            auto result = g_main_wnd.core_ctx->vcr_begin_warp_modify(g_piano_roll_state.inputs);
+            auto result = g_main_ctx.core_ctx->vcr_begin_warp_modify(g_piano_roll_state.inputs);
 
             g_piano_roll_dispatcher->invoke([=] {
                 if (result == Res_Ok)
@@ -436,7 +436,7 @@ namespace PianoRoll
 
                     ListView_DeleteAllItems(g_lv_hwnd);
 
-                    g_piano_roll_state.inputs = g_main_wnd.core_ctx->vcr_get_inputs();
+                    g_piano_roll_state.inputs = g_main_ctx.core_ctx->vcr_get_inputs();
                     ListView_SetItemCount(g_lv_hwnd, g_piano_roll_state.inputs.size());
                     g_view_logger->info("[PianoRoll] Pulled inputs from core for recording mode due to warp modify failing, count: {}", g_piano_roll_state.inputs.size());
 
@@ -651,13 +651,13 @@ namespace PianoRoll
 
     void update_groupbox_status_text()
     {
-        if (g_main_wnd.core_ctx->vcr_get_warp_modify_status())
+        if (g_main_ctx.core_ctx->vcr_get_warp_modify_status())
         {
             SetDlgItemText(g_hwnd, IDC_STATIC, L"Input - Warping...");
             return;
         }
 
-        if (!g_main_wnd.core_ctx->vr_get_paused())
+        if (!g_main_ctx.core_ctx->vr_get_paused())
         {
             SetDlgItemText(g_hwnd, IDC_STATIC, L"Input - Resumed (readonly)");
             return;
@@ -720,19 +720,19 @@ namespace PianoRoll
             auto value = std::any_cast<int32_t>(data);
             static auto previous_value = value;
 
-            if (g_main_wnd.core_ctx->vcr_get_warp_modify_status() || g_main_wnd.core_ctx->vcr_is_seeking())
+            if (g_main_ctx.core_ctx->vcr_get_warp_modify_status() || g_main_ctx.core_ctx->vcr_is_seeking())
             {
                 goto exit;
             }
 
-            if (g_main_wnd.core_ctx->vcr_get_task() == task_idle)
+            if (g_main_ctx.core_ctx->vcr_get_task() == task_idle)
             {
                 goto exit;
             }
 
-            if (g_main_wnd.core_ctx->vcr_get_task() == task_recording)
+            if (g_main_ctx.core_ctx->vcr_get_task() == task_recording)
             {
-                g_piano_roll_state.inputs = g_main_wnd.core_ctx->vcr_get_inputs();
+                g_piano_roll_state.inputs = g_main_ctx.core_ctx->vcr_get_inputs();
                 ListView_SetItemCountEx(g_lv_hwnd, g_piano_roll_state.inputs.size(), LVSICF_NOSCROLL);
             }
 
@@ -749,7 +749,7 @@ namespace PianoRoll
     void on_unfreeze_completed(std::any)
     {
         g_piano_roll_dispatcher->invoke([=] {
-            if (g_main_wnd.core_ctx->vcr_get_warp_modify_status() || g_main_wnd.core_ctx->vcr_is_seeking())
+            if (g_main_ctx.core_ctx->vcr_get_warp_modify_status() || g_main_ctx.core_ctx->vcr_is_seeking())
             {
                 return;
             }
@@ -758,11 +758,11 @@ namespace PianoRoll
 
             ListView_DeleteAllItems(g_lv_hwnd);
 
-            g_piano_roll_state.inputs = g_main_wnd.core_ctx->vcr_get_inputs();
+            g_piano_roll_state.inputs = g_main_ctx.core_ctx->vcr_get_inputs();
 
-            const core_vcr_seek_info info = g_main_wnd.core_ctx->vcr_get_seek_info();
+            const core_vcr_seek_info info = g_main_ctx.core_ctx->vcr_get_seek_info();
 
-            const auto item_count = g_main_wnd.core_ctx->vcr_get_task() == task_recording
+            const auto item_count = g_main_ctx.core_ctx->vcr_get_task() == task_recording
             ? std::min(info.current_sample, g_piano_roll_state.inputs.size())
             : g_piano_roll_state.inputs.size();
 
@@ -795,7 +795,7 @@ namespace PianoRoll
     {
         g_piano_roll_dispatcher->invoke([=] {
             auto value = std::any_cast<size_t>(data);
-            g_main_wnd.core_ctx->vcr_get_seek_savestate_frames(g_seek_savestate_frames);
+            g_main_ctx.core_ctx->vcr_get_seek_savestate_frames(g_seek_savestate_frames);
             ListView_Update(g_lv_hwnd, value);
         });
     }
@@ -803,7 +803,7 @@ namespace PianoRoll
     void on_emu_paused_changed(std::any)
     {
         // Redrawing during frame advance (paused on, then off next frame) causes ugly flicker, so we'll just not do that
-        if (g_main_wnd.core_ctx->vr_get_frame_advance() && !g_main_wnd.core_ctx->vr_get_paused())
+        if (g_main_ctx.core_ctx->vr_get_frame_advance() && !g_main_ctx.core_ctx->vr_get_paused())
         {
             return;
         }
@@ -1203,7 +1203,7 @@ namespace PianoRoll
             }
 
             ThreadPool::submit_task([=] {
-                g_main_wnd.core_ctx->vcr_begin_seek(std::to_wstring(lplvhtti.iItem), true);
+                g_main_ctx.core_ctx->vcr_begin_seek(std::to_wstring(lplvhtti.iItem), true);
             });
             return 0;
         }
@@ -1259,10 +1259,10 @@ namespace PianoRoll
             {
                 // We create all the child controls here because windows dialog scaling would mess our stuff up when mixing dialog manager and manual creation
                 g_hwnd = hwnd;
-                g_joy_hwnd = CreateWindowEx(WS_EX_STATICEDGE, JOYSTICK_CLASS, L"", WS_CHILD | WS_VISIBLE, 17, 30, 131, 131, g_hwnd, nullptr, g_main_wnd.app_instance, nullptr);
-                CreateWindowEx(0, WC_STATIC, L"History", WS_CHILD | WS_VISIBLE | WS_GROUP | SS_LEFT | SS_CENTERIMAGE, 17, 166, 131, 15, g_hwnd, nullptr, g_main_wnd.app_instance, nullptr);
-                g_hist_hwnd = CreateWindowEx(WS_EX_CLIENTEDGE, WC_LISTBOX, L"", WS_CHILD | WS_VISIBLE | WS_VSCROLL | LBS_NOINTEGRALHEIGHT | LBS_NOTIFY, 17, 186, 131, 181, g_hwnd, nullptr, g_main_wnd.app_instance, nullptr);
-                g_status_hwnd = CreateWindowEx(0, WC_STATIC, L"", WS_CHILD | WS_VISIBLE | WS_GROUP | SS_LEFT, 17, 370, 131, 60, g_hwnd, nullptr, g_main_wnd.app_instance, nullptr);
+                g_joy_hwnd = CreateWindowEx(WS_EX_STATICEDGE, JOYSTICK_CLASS, L"", WS_CHILD | WS_VISIBLE, 17, 30, 131, 131, g_hwnd, nullptr, g_main_ctx.app_instance, nullptr);
+                CreateWindowEx(0, WC_STATIC, L"History", WS_CHILD | WS_VISIBLE | WS_GROUP | SS_LEFT | SS_CENTERIMAGE, 17, 166, 131, 15, g_hwnd, nullptr, g_main_ctx.app_instance, nullptr);
+                g_hist_hwnd = CreateWindowEx(WS_EX_CLIENTEDGE, WC_LISTBOX, L"", WS_CHILD | WS_VISIBLE | WS_VSCROLL | LBS_NOINTEGRALHEIGHT | LBS_NOTIFY, 17, 186, 131, 181, g_hwnd, nullptr, g_main_ctx.app_instance, nullptr);
+                g_status_hwnd = CreateWindowEx(0, WC_STATIC, L"", WS_CHILD | WS_VISIBLE | WS_GROUP | SS_LEFT, 17, 370, 131, 60, g_hwnd, nullptr, g_main_ctx.app_instance, nullptr);
 
                 // Some controls don't get the font set by default, so we do it manually
                 EnumChildWindows(hwnd, [](HWND hwnd, LPARAM font) {
@@ -1275,15 +1275,15 @@ namespace PianoRoll
 
                 RECT grid_rect = get_window_rect_client_space(hwnd, GetDlgItem(hwnd, IDC_LIST_PIANO_ROLL));
 
-                g_lv_hwnd = CreateWindowEx(WS_EX_CLIENTEDGE, WC_LISTVIEW, nullptr, lv_style, grid_rect.left, grid_rect.top, grid_rect.right - grid_rect.left, grid_rect.bottom - grid_rect.top, hwnd, (HMENU)IDC_PIANO_ROLL_LV, g_main_wnd.app_instance, nullptr);
+                g_lv_hwnd = CreateWindowEx(WS_EX_CLIENTEDGE, WC_LISTVIEW, nullptr, lv_style, grid_rect.left, grid_rect.top, grid_rect.right - grid_rect.left, grid_rect.bottom - grid_rect.top, hwnd, (HMENU)IDC_PIANO_ROLL_LV, g_main_ctx.app_instance, nullptr);
                 SetWindowSubclass(g_lv_hwnd, list_view_proc, 0, 0);
 
                 ListView_SetExtendedListViewStyle(g_lv_hwnd,
                                                   LVS_EX_GRIDLINES | LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER);
 
                 HIMAGELIST image_list = ImageList_Create(16, 16, ILC_COLORDDB | ILC_MASK, 1, 0);
-                ImageList_AddIcon(image_list, LoadIcon(g_main_wnd.app_instance, MAKEINTRESOURCE(IDI_CURRENT)));
-                ImageList_AddIcon(image_list, LoadIcon(g_main_wnd.app_instance, MAKEINTRESOURCE(IDI_MARKER)));
+                ImageList_AddIcon(image_list, LoadIcon(g_main_ctx.app_instance, MAKEINTRESOURCE(IDI_CURRENT)));
+                ImageList_AddIcon(image_list, LoadIcon(g_main_ctx.app_instance, MAKEINTRESOURCE(IDI_MARKER)));
                 ListView_SetImageList(g_lv_hwnd, image_list, LVSIL_SMALL);
 
                 LVCOLUMN lv_column{};
@@ -1321,9 +1321,9 @@ namespace PianoRoll
 
                 // Manually call all the setup-related callbacks
                 update_inputs();
-                on_task_changed(g_main_wnd.core_ctx->vcr_get_task());
+                on_task_changed(g_main_ctx.core_ctx->vcr_get_task());
 
-                const core_vcr_seek_info info = g_main_wnd.core_ctx->vcr_get_seek_info();
+                const core_vcr_seek_info info = g_main_ctx.core_ctx->vcr_get_seek_info();
 
                 // ReSharper disable once CppRedundantCastExpression
                 on_current_sample_changed(static_cast<int32_t>(info.current_sample));
@@ -1428,7 +1428,7 @@ namespace PianoRoll
                         {
                         case 0:
                             {
-                                const core_vcr_seek_info info = g_main_wnd.core_ctx->vcr_get_seek_info();
+                                const core_vcr_seek_info info = g_main_ctx.core_ctx->vcr_get_seek_info();
 
                                 if (info.current_sample == plvdi->item.iItem)
                                 {
@@ -1481,7 +1481,7 @@ namespace PianoRoll
         WNDCLASS wndclass = {0};
         wndclass.style = CS_GLOBALCLASS | CS_HREDRAW | CS_VREDRAW;
         wndclass.lpfnWndProc = (WNDPROC)joystick_proc;
-        wndclass.hInstance = g_main_wnd.app_instance;
+        wndclass.hInstance = g_main_ctx.app_instance;
         wndclass.hCursor = LoadCursor(nullptr, IDC_ARROW);
         wndclass.lpszClassName = JOYSTICK_CLASS;
         RegisterClass(&wndclass);
@@ -1512,7 +1512,7 @@ namespace PianoRoll
             unsubscribe_funcs.push_back(Messenger::subscribe(Messenger::Message::SeekSavestateChanged, on_seek_savestate_changed));
             unsubscribe_funcs.push_back(Messenger::subscribe(Messenger::Message::EmuPausedChanged, on_emu_paused_changed));
 
-            DialogBox(g_main_wnd.app_instance, MAKEINTRESOURCE(IDD_PIANO_ROLL), 0, (DLGPROC)dialog_proc);
+            DialogBox(g_main_ctx.app_instance, MAKEINTRESOURCE(IDD_PIANO_ROLL), 0, (DLGPROC)dialog_proc);
 
             g_view_logger->info("[PianoRoll] Unsubscribing from {} messages...", unsubscribe_funcs.size());
             for (auto unsubscribe_func : unsubscribe_funcs)

@@ -53,7 +53,7 @@ std::optional<std::wstring> TextEditDialog::show(const t_params& params)
     g_ctx = {};
     g_ctx.params = params;
 
-    const auto result = DialogBox(g_main_wnd.app_instance, MAKEINTRESOURCE(IDD_TEXT_EDIT), g_main_wnd.main_hwnd, about_dlg_proc);
+    const auto result = DialogBox(g_main_ctx.app_instance, MAKEINTRESOURCE(IDD_TEXT_EDIT), g_main_ctx.main_hwnd, about_dlg_proc);
 
     if (result == IDCANCEL)
     {

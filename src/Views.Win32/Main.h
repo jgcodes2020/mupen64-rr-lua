@@ -24,7 +24,7 @@
 #define VIEW_DLG_PLUGIN_LOAD_ERROR "VIEW_DLG_PLUGIN_LOAD_ERROR"
 #define VIEW_DLG_RAMSTART "VIEW_DLG_RAMSTART"
 
-struct t_main_window_context {
+struct t_main_context {
     core_params core{};
     core_ctx* core_ctx{};
     PlatformService io_service{};
@@ -59,7 +59,7 @@ struct t_window_info {
 };
 
 
-extern t_main_window_context g_main_wnd;
+extern t_main_context g_main_ctx;
 
 static bool task_is_playback(const core_vcr_task task)
 {

@@ -181,7 +181,7 @@ namespace LuaCore::Action
             std::erase_if(lua->registered_actions, [&](const auto& registered_action) {
                 return registered_action == action;
             });
-            lua_pushstring(L, g_main_wnd.io_service.wstring_to_string(action).c_str());
+            lua_pushstring(L, g_main_ctx.io_service.wstring_to_string(action).c_str());
             lua_seti(L, -2, i++);
         }
 
@@ -241,7 +241,7 @@ namespace LuaCore::Action
 
         const auto result = ActionManager::get_display_name(filter, ignore_override);
 
-        lua_pushstring(L, g_main_wnd.io_service.wstring_to_string(result).c_str());
+        lua_pushstring(L, g_main_ctx.io_service.wstring_to_string(result).c_str());
         return 1;
     }
 
@@ -284,7 +284,7 @@ namespace LuaCore::Action
         size_t i = 1;
         for (const auto& action : actions)
         {
-            lua_pushstring(L, g_main_wnd.io_service.wstring_to_string(action).c_str());
+            lua_pushstring(L, g_main_ctx.io_service.wstring_to_string(action).c_str());
             lua_seti(L, -2, i++);
         }
 

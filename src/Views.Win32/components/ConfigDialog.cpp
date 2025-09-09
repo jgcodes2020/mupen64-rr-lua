@@ -211,7 +211,7 @@ INT_PTR CALLBACK plugin_discovery_dlgproc(HWND hwnd, UINT msg, WPARAM w_param, L
             RECT rect{};
             GetClientRect(hwnd, &rect);
 
-            g_pldlv_hwnd = CreateWindowEx(WS_EX_CLIENTEDGE, WC_LISTVIEW, NULL, WS_TABSTOP | WS_VISIBLE | WS_CHILD | LVS_SINGLESEL | LVS_REPORT | LVS_SHOWSELALWAYS, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, hwnd, nullptr, g_main_wnd.app_instance, NULL);
+            g_pldlv_hwnd = CreateWindowEx(WS_EX_CLIENTEDGE, WC_LISTVIEW, NULL, WS_TABSTOP | WS_VISIBLE | WS_CHILD | LVS_SINGLESEL | LVS_REPORT | LVS_SHOWSELALWAYS, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, hwnd, nullptr, g_main_ctx.app_instance, NULL);
 
             ListView_SetExtendedListViewStyle(g_pldlv_hwnd,
                                               LVS_EX_GRIDLINES |
@@ -345,7 +345,7 @@ INT_PTR CALLBACK directories_cfg(const HWND hwnd, const UINT message, const WPAR
         SetDlgItemText(hwnd, IDC_SCREENSHOTS_DIR, g_config.screenshots_directory.c_str());
         SetDlgItemText(hwnd, IDC_BACKUPS_DIR, g_config.backups_directory.c_str());
 
-        if (g_main_wnd.core_ctx->vr_get_launched())
+        if (g_main_ctx.core_ctx->vr_get_launched())
         {
             EnableWindow(GetDlgItem(hwnd, IDC_DEFAULT_SAVES_CHECK), FALSE);
             EnableWindow(GetDlgItem(hwnd, IDC_SAVES_DIR), FALSE);
@@ -607,10 +607,10 @@ INT_PTR CALLBACK plugins_cfg(const HWND hwnd, const UINT message, const WPARAM w
         break;
     case WM_INITDIALOG:
         {
-            SendDlgItemMessage(hwnd, IDB_DISPLAY, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)LoadImage(g_main_wnd.app_instance, MAKEINTRESOURCE(IDB_DISPLAY), IMAGE_BITMAP, 0, 0, 0));
-            SendDlgItemMessage(hwnd, IDB_CONTROL, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)LoadImage(g_main_wnd.app_instance, MAKEINTRESOURCE(IDB_CONTROL), IMAGE_BITMAP, 0, 0, 0));
-            SendDlgItemMessage(hwnd, IDB_SOUND, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)LoadImage(g_main_wnd.app_instance, MAKEINTRESOURCE(IDB_SOUND), IMAGE_BITMAP, 0, 0, 0));
-            SendDlgItemMessage(hwnd, IDB_RSP, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)LoadImage(g_main_wnd.app_instance, MAKEINTRESOURCE(IDB_RSP), IMAGE_BITMAP, 0, 0, 0));
+            SendDlgItemMessage(hwnd, IDB_DISPLAY, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)LoadImage(g_main_ctx.app_instance, MAKEINTRESOURCE(IDB_DISPLAY), IMAGE_BITMAP, 0, 0, 0));
+            SendDlgItemMessage(hwnd, IDB_CONTROL, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)LoadImage(g_main_ctx.app_instance, MAKEINTRESOURCE(IDB_CONTROL), IMAGE_BITMAP, 0, 0, 0));
+            SendDlgItemMessage(hwnd, IDB_SOUND, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)LoadImage(g_main_ctx.app_instance, MAKEINTRESOURCE(IDB_SOUND), IMAGE_BITMAP, 0, 0, 0));
+            SendDlgItemMessage(hwnd, IDB_RSP, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)LoadImage(g_main_ctx.app_instance, MAKEINTRESOURCE(IDB_RSP), IMAGE_BITMAP, 0, 0, 0));
 
             refresh_plugins_page(hwnd);
 
@@ -663,7 +663,7 @@ INT_PTR CALLBACK plugins_cfg(const HWND hwnd, const UINT message, const WPARAM w
                 }
                 // we add the string and associate a pointer to the plugin with the item
                 const int i = SendDlgItemMessage(hwnd, id, CB_GETCOUNT, 0, 0);
-                SendDlgItemMessage(hwnd, id, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(g_main_wnd.io_service.string_to_wstring(plugin->name()).c_str()));
+                SendDlgItemMessage(hwnd, id, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(g_main_ctx.io_service.string_to_wstring(plugin->name()).c_str()));
                 SendDlgItemMessage(hwnd, id, CB_SETITEMDATA, i, (LPARAM)plugin.get());
             }
 
@@ -687,10 +687,10 @@ INT_PTR CALLBACK plugins_cfg(const HWND hwnd, const UINT message, const WPARAM w
             IDRSPABOUT,
             };
 
-            EnableWindow(GetDlgItem(hwnd, IDC_COMBO_GFX), !g_main_wnd.core_ctx->vr_get_launched());
-            EnableWindow(GetDlgItem(hwnd, IDC_COMBO_INPUT), !g_main_wnd.core_ctx->vr_get_launched());
-            EnableWindow(GetDlgItem(hwnd, IDC_COMBO_SOUND), !g_main_wnd.core_ctx->vr_get_launched());
-            EnableWindow(GetDlgItem(hwnd, IDC_COMBO_RSP), !g_main_wnd.core_ctx->vr_get_launched());
+            EnableWindow(GetDlgItem(hwnd, IDC_COMBO_GFX), !g_main_ctx.core_ctx->vr_get_launched());
+            EnableWindow(GetDlgItem(hwnd, IDC_COMBO_INPUT), !g_main_ctx.core_ctx->vr_get_launched());
+            EnableWindow(GetDlgItem(hwnd, IDC_COMBO_SOUND), !g_main_ctx.core_ctx->vr_get_launched());
+            EnableWindow(GetDlgItem(hwnd, IDC_COMBO_RSP), !g_main_ctx.core_ctx->vr_get_launched());
 
             for (const auto& id : ids_to_enable)
             {
@@ -747,7 +747,7 @@ INT_PTR CALLBACK plugins_cfg(const HWND hwnd, const UINT message, const WPARAM w
             get_selected_plugin(hwnd, IDC_COMBO_RSP)->about(hwnd);
             break;
         case IDC_PLUGIN_DISCOVERY_INFO:
-            DialogBox(g_main_wnd.app_instance, MAKEINTRESOURCE(IDD_PLUGIN_DISCOVERY_RESULTS), hwnd, plugin_discovery_dlgproc);
+            DialogBox(g_main_ctx.app_instance, MAKEINTRESOURCE(IDD_PLUGIN_DISCOVERY_RESULTS), hwnd, plugin_discovery_dlgproc);
             break;
         default:
             break;
@@ -920,7 +920,7 @@ std::vector<t_options_group> get_static_option_groups()
     .tooltip = L"The interval at which to create savestates for seeking. Piano Roll is exclusively read-only if this value is 0.\nHigher numbers will reduce the seek duration at cost of emulator performance, a value of 1 is not allowed.\n0 - Seek savestate generation disabled\nRecommended: 100",
     GENPROPS(int32_t, core.seek_savestate_interval),
     .is_readonly = [] {
-        return g_main_wnd.core_ctx->vcr_get_task() != task_idle;
+        return g_main_ctx.core_ctx->vcr_get_task() != task_idle;
     },
     });
     seek_piano_roll_group.items.emplace_back(t_options_item{
@@ -1044,7 +1044,7 @@ std::vector<t_options_group> get_static_option_groups()
     std::make_pair(L"Pure Interpreter", 2),
     },
     .is_readonly = [] {
-        return g_main_wnd.core_ctx->vr_get_launched();
+        return g_main_ctx.core_ctx->vr_get_launched();
     },
     });
     core_group.items.emplace_back(t_options_item{
@@ -1193,7 +1193,7 @@ std::vector<t_options_group> get_static_option_groups()
     .tooltip = L"Whether the C_EQ_S instruction produces `(NaN == any) == false` when using the Dynamic Recompiler core.\nThe legacy behaviour is `(NaN == any) == true`, but this option is kept for backwards-compatibility.",
     GENPROPS(int32_t, core.c_eq_s_nan_accurate),
     .is_readonly = [] {
-        return g_main_wnd.core_ctx->vr_get_launched();
+        return g_main_ctx.core_ctx->vr_get_launched();
     },
     });
 
@@ -1333,7 +1333,7 @@ bool begin_settings_lv_edit(HWND hwnd, int i)
 
     item_rect.right = lv_rect.right;
 
-    g_edit_hwnd = CreateWindowEx(WS_EX_CLIENTEDGE, L"EDIT", L"", WS_CHILD | WS_VISIBLE | WS_TABSTOP, item_rect.left, item_rect.top, item_rect.right - item_rect.left, item_rect.bottom - item_rect.top, hwnd, 0, g_main_wnd.app_instance, 0);
+    g_edit_hwnd = CreateWindowEx(WS_EX_CLIENTEDGE, L"EDIT", L"", WS_CHILD | WS_VISIBLE | WS_TABSTOP, item_rect.left, item_rect.top, item_rect.right - item_rect.left, item_rect.bottom - item_rect.top, hwnd, 0, g_main_ctx.app_instance, 0);
 
     SendMessage(g_edit_hwnd, WM_SETFONT, (WPARAM)SendMessage(g_lv_hwnd, WM_GETFONT, 0, 0), 0);
 
@@ -1621,7 +1621,7 @@ void ConfigDialog::show_app_settings()
     {
         i.dwSize = sizeof(PROPSHEETPAGE);
         i.dwFlags = PSP_USETITLE;
-        i.hInstance = g_main_wnd.app_instance;
+        i.hInstance = g_main_ctx.app_instance;
     }
 
     psp[0].pszTemplate = MAKEINTRESOURCE(IDD_SETTINGS_PLUGINS);
@@ -1639,8 +1639,8 @@ void ConfigDialog::show_app_settings()
     PROPSHEETHEADER psh = {0};
     psh.dwSize = sizeof(PROPSHEETHEADER);
     psh.dwFlags = PSH_PROPSHEETPAGE | PSH_NOAPPLYNOW | PSH_NOCONTEXTHELP;
-    psh.hwndParent = g_main_wnd.main_hwnd;
-    psh.hInstance = g_main_wnd.app_instance;
+    psh.hwndParent = g_main_ctx.main_hwnd;
+    psh.hInstance = g_main_ctx.app_instance;
     psh.pszCaption = L"Settings";
     psh.nPages = sizeof(psp) / sizeof(PROPSHEETPAGE);
     psh.nStartPage = g_config.settings_tab;
