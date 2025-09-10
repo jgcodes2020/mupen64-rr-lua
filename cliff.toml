@@ -62,13 +62,13 @@ commit_preprocessors = [
 commit_parsers = [
   { message = "^feat", group = "✨ Features" },
   { message = "^perf", group = "⚡ Performance" },
+  { message = "^security", group = "🛡️ Security" },
   { message = "^fix", group = "🐞 Bugfixes" },
   { message = "^doc", group = "📚 Documentation" },
-  { body = ".*security", group = "🛡️ Security" },
 ]
 # filter out the commits that are not matched by commit parsers
 filter_commits = true
 # sort the tags topologically
 topo_order = false
 # sort the commits inside sections by oldest/newest order
-sort_commits = "oldest"
+sort_commits = "newest"
