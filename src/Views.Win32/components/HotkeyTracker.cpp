@@ -18,6 +18,36 @@ struct t_hotkey_tracker_context {
     bool last_xmb2{};
 };
 
+static bool on_key(bool is_up, int32_t key)
+{
+    if (ActionManager::get_hotkeys_locked())
+    {
+        return true;
+    }
+
+    const bool shift = GetKeyState(VK_SHIFT) & 0x8000;
+    const bool ctrl = GetKeyState(VK_CONTROL) & 0x8000;
+    const bool alt = GetKeyState(VK_MENU) & 0x8000;
+    bool hit = false;
+
+    const auto hotkeys = g_config.hotkeys;
+    for (const auto& [path, hotkey] : hotkeys)
+    {
+        if ((int)key == hotkey.key && shift == hotkey.shift && ctrl == hotkey.ctrl && alt == hotkey.alt)
+        {
+            ActionManager::invoke(path, is_up);
+            hit = true;
+        }
+    }
+
+    if (hit)
+    {
+        return true;
+    }
+
+    return false;
+}
+
 static LRESULT CALLBACK action_menu_wnd_subclass_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam, UINT_PTR sId, DWORD_PTR dwRefData)
 {
     auto ctx = static_cast<t_hotkey_tracker_context*>(GetProp(hwnd, HOTKEY_TRACKER_CTX));
@@ -77,33 +107,32 @@ static LRESULT CALLBACK action_menu_wnd_subclass_proc(HWND hwnd, UINT msg, WPARA
     case WM_SYSKEYDOWN:
     case WM_SYSKEYUP:
         {
-            if (ActionManager::get_hotkeys_locked())
-            {
-                break;
-            }
-
-            const bool shift = GetKeyState(VK_SHIFT) & 0x8000;
-            const bool ctrl = GetKeyState(VK_CONTROL) & 0x8000;
-            const bool alt = GetKeyState(VK_MENU) & 0x8000;
-            bool hit = false;
-
-            const bool is_up = (msg == WM_KEYUP || msg == WM_SYSKEYUP);
-
-            const auto hotkeys = g_config.hotkeys;
-            for (const auto& [path, hotkey] : hotkeys)
-            {
-                if ((int)wParam == hotkey.key && shift == hotkey.shift && ctrl == hotkey.ctrl && alt == hotkey.alt)
-                {
-                    ActionManager::invoke(path, is_up);
-                    hit = true;
-                }
-            }
-
-            if (hit)
+            if (on_key(msg == WM_KEYUP || msg == WM_SYSKEYUP, (int)wParam))
             {
                 return 0;
             }
+            break;
+        }
+    case WM_NOTIFY:
+        {
+            auto nmhdr = reinterpret_cast<LPNMHDR>(lParam);
+            if (nmhdr && nmhdr->hwndFrom &&
+                IsWindow(nmhdr->hwndFrom) &&
+                SendMessage(nmhdr->hwndFrom, WM_GETDLGCODE, 0, 0) != 0)
+            {
+                wchar_t class_name[32];
+                GetClassName(nmhdr->hwndFrom, class_name, std::size(class_name));
 
+                if (lstrcmpiW(class_name, WC_LISTVIEWW) == 0 && nmhdr->code == LVN_KEYDOWN)
+                {
+                    auto key = reinterpret_cast<LPNMLVKEYDOWN>(lParam)->wVKey;
+
+                    if (on_key(false, key))
+                    {
+                        return TRUE;
+                    }
+                }
+            }
             break;
         }
     default:
