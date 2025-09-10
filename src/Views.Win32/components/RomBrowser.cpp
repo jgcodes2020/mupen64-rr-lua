@@ -130,7 +130,7 @@ namespace RomBrowser
         const HIMAGELIST h_small = ImageList_Create(16, 16, ILC_COLORDDB | ILC_MASK, 11, 0);
         HICON h_icon;
 
-#define ADD_ICON(id)                                        \
+#define ADD_ICON(id)                                          \
     h_icon = LoadIcon(g_main_ctx.hinst, MAKEINTRESOURCE(id)); \
     ImageList_AddIcon(h_small, h_icon)
 
@@ -313,6 +313,23 @@ namespace RomBrowser
         MoveWindow(rombrowser_hwnd, 0, y, n_width, n_height - y, TRUE);
     }
 
+    void invoke_selected_item()
+    {
+        int32_t i = ListView_GetNextItem(
+        rombrowser_hwnd,
+        -1,
+        LVNI_SELECTED);
+
+        if (i == -1)
+            return;
+
+        LVITEM item = {0};
+        item.mask = LVIF_PARAM;
+        item.iItem = i;
+        ListView_GetItem(rombrowser_hwnd, &item);
+        auto path = rombrowser_entries[item.lParam]->path;
+        AppActions::load_rom_from_path(path);
+    }
 
     LRESULT notify(LPARAM lparam)
     {
@@ -368,23 +385,20 @@ namespace RomBrowser
 
                 break;
             }
-        case NM_DBLCLK:
+        case LVN_KEYDOWN:
             {
-                int32_t i = ListView_GetNextItem(
-                rombrowser_hwnd,
-                -1,
-                LVNI_SELECTED);
+                auto key = reinterpret_cast<LPNMLVKEYDOWN>(lparam)->wVKey;
 
-                if (i == -1)
-                    break;
+                if (key == VK_RETURN)
+                {
+                    invoke_selected_item();
+                    return TRUE;
+                }
 
-                LVITEM item = {0};
-                item.mask = LVIF_PARAM;
-                item.iItem = i;
-                ListView_GetItem(rombrowser_hwnd, &item);
-                auto path = rombrowser_entries[item.lParam]->path;
-                AppActions::load_rom_from_path(path);
+                break;
             }
+        case NM_DBLCLK:
+            invoke_selected_item();
             break;
         }
         return 0;
