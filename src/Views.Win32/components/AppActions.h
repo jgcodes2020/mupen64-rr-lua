@@ -82,7 +82,7 @@ namespace AppActions
     const std::wstring CHECK_FOR_UPDATES = APP + L"Help > Check for Updates";
     const std::wstring ABOUT = APP + L"Help > About";
 
-    const std::wstring SHOW_LUA_MANAGER = APP + L"Lua Script > Show Manager ---";
+    const std::wstring SHOW_INSTANCES = APP + L"Lua Script > Show Instances ---";
     const std::wstring RECENT_SCRIPTS = APP + L"Lua Script > Recent Scripts ---";
     const std::wstring CLOSE_ALL = APP + L"Lua Script > Close All";
 

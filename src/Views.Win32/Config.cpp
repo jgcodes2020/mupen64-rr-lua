@@ -518,7 +518,7 @@ static void migrate_config(t_config& config, const mINI::INIStructure& ini)
     migrate_hotkey("Take screenshot", AppActions::SCREENSHOT);
     migrate_hotkey("Play latest movie", AppActions::RECENT_MOVIES + L" > Load Recent Item 1");
     migrate_hotkey("Load latest script", AppActions::RECENT_SCRIPTS + L" > Load Recent Item 1");
-    migrate_hotkey("New Lua Instance", AppActions::SHOW_LUA_MANAGER);
+    migrate_hotkey("New Lua Instance", AppActions::SHOW_INSTANCES);
     migrate_hotkey("Close all Lua Instances", AppActions::CLOSE_ALL);
     migrate_hotkey("Load ROM", AppActions::LOAD_ROM);
     migrate_hotkey("Close ROM", AppActions::CLOSE_ROM);

@@ -1017,7 +1017,7 @@ void AppActions::add()
     add_action(CHECK_FOR_UPDATES, Hotkey::t_hotkey::make_empty(), check_for_updates_manual);
     add_action(ABOUT, Hotkey::t_hotkey::make_empty(), show_about_dialog);
 
-    add_action(SHOW_LUA_MANAGER, Hotkey::t_hotkey('N', true), show_lua_dialog);
+    add_action(SHOW_INSTANCES, Hotkey::t_hotkey('N', true), show_lua_dialog);
     generate_path_recent_menu(RECENT_SCRIPTS, Hotkey::t_hotkey('K', true, true), &g_config.recent_lua_script_paths, &g_config.is_recent_scripts_frozen, load_recent_script);
     add_action(CLOSE_ALL, Hotkey::t_hotkey('W', true, true), close_all_lua_scripts);
 
