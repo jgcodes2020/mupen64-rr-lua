@@ -953,7 +953,7 @@ void AppActions::add()
         };
 
         size_t visual_slot = i + 1;
-        add_action(std::vformat(SAVE_SLOT_X, std::make_wformat_args(visual_slot)), Hotkey::t_hotkey(save_key, true), save, enable_when_emu_launched);
+        add_action(std::vformat(SAVE_SLOT_X, std::make_wformat_args(visual_slot)), Hotkey::t_hotkey(save_key, false, true), save, enable_when_emu_launched);
         add_action(std::vformat(LOAD_SLOT_X, std::make_wformat_args(visual_slot)), Hotkey::t_hotkey(load_key), load, enable_when_emu_launched);
     }
     for (size_t i = 0; i < 10; ++i)
