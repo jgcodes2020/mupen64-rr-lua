@@ -18,9 +18,9 @@
 
 # Quickstart
 
-The latest release is available on the [releases page](https://github.com/mkdasher/mupen64-rr-lua-/releases/latest/)
+Since Mupen64 requires plugins to run, the easiest way to get started is by downloading the Mupen64 Repack from the [Mupen64 Homepage](https://mupen64.com).
 
-If any issues arise or you need help, join the [discord server](https://discord.gg/eZXbmguKEq)
+If any issues arise or you need help, join the [Mupen64 Community Discord](https://discord.gg/eZXbmguKEq).
 
 Cutting-edge features with potential instability are available for download as a zipped binary under the latest commit's artifact. 
 
