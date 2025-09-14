@@ -233,7 +233,6 @@
     <ClCompile Include="src\Core\r4300\tracelog.cpp" />
     <ClCompile Include="src\Core\r4300\vcr.cpp" />
     <ClCompile Include="src\Core\r4300\x86\assemble.cpp" />
-    <ClCompile Include="src\Core\r4300\x86\debug.cpp" />
     <ClCompile Include="src\Core\r4300\x86\gbc.cpp" />
     <ClCompile Include="src\Core\r4300\x86\gcop0.cpp" />
     <ClCompile Include="src\Core\r4300\x86\gcop1.cpp" />

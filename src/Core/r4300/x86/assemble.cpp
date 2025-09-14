@@ -76,6 +76,10 @@ void passe2(precomp_instr* dest, int32_t start, int32_t end, precomp_block* bloc
     code_length = real_code_length;
 }
 
+void debug()
+{
+}
+
 inline void put8(unsigned char octet)
 {
     (*inst_pointer)[code_length] = octet;

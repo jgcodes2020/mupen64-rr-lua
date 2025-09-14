@@ -44,7 +44,6 @@ extern int32_t branch_taken;
 
 void debug();
 
-
 void put8(unsigned char octet);
 extern void put32(uint32_t dword);
 void put16(uint16_t word);
