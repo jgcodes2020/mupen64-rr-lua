@@ -19,6 +19,17 @@
 #include <r4300/r4300.h>
 #include <r4300/rom.h>
 
+static bool validate_dma()
+{
+    if (si_register.si_pif_addr_wr64b != 0x1FC007C0)
+    {
+        critical_stop(std::format(L"Unknown SI DMA PIF address {:#08x}", si_register.si_pif_addr_wr64b));
+        return false;
+    }
+
+    return true;
+}
+
 void dma_pi_read()
 {
     uint32_t longueur;
@@ -254,9 +265,9 @@ void dma_sp_read()
 
 void dma_si_write()
 {
-    if (si_register.si_pif_addr_wr64b != 0x1FC007C0)
+    if (!validate_dma())
     {
-        critical_stop(L"Unknown SI use");
+        return;
     }
     if (!check_register_validity(&si_register))
     {
@@ -272,18 +283,22 @@ void dma_si_write()
 
 void dma_si_read()
 {
-    if (si_register.si_pif_addr_rd64b != 0x1FC007C0)
+    if (!validate_dma())
     {
-        critical_stop(L"Unknown SI use");
+        return;
     }
+
     update_pif_read();
+
     if (!check_register_validity(&si_register))
     {
         critical_stop(L"Invalid SI register contents in dma_si_read");
         return;
     }
+
     for (int32_t i = 0; i < (64 / 4); i++)
         rdram[si_register.si_dram_addr / 4 + i] = std::byteswap(PIF_RAM[i]);
+    
     if (!g_st_skip_dma) // st already did this, see savestates.cpp, we still copy pif ram tho because it has new inputs
     {
         update_count();
