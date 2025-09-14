@@ -322,6 +322,7 @@ bool Hotkey::show_prompt(const HWND hwnd, const std::wstring& caption, t_hotkey&
     {
         hotkey = prev_hotkey;
     }
+    hotkey.assigned = true;
 
     delete params;
 
