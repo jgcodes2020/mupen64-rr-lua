@@ -1009,10 +1009,10 @@ void AppActions::add()
     add_action(DEBUGGER, Hotkey::t_hotkey::make_empty(), show_debugger, enable_when_emu_launched);
     add_action(START_TRACE_LOGGER, Hotkey::t_hotkey::make_empty(), start_tracelog, enable_when_emu_launched_and_core_is_pure_interpreter);
     add_action(STOP_TRACE_LOGGER, Hotkey::t_hotkey::make_empty(), stop_tracelog, enable_when_tracelog_active);
-    add_action(SCREENSHOT, Hotkey::t_hotkey(VK_F12), screenshot, enable_when_emu_launched);
     add_action(VIDEO_CAPTURE_START, Hotkey::t_hotkey::make_empty(), start_capture_normal, enable_when_emu_launched);
     add_action(VIDEO_CAPTURE_START_PRESET, Hotkey::t_hotkey::make_empty(), start_capture_from_preset, enable_when_emu_launched);
     add_action(VIDEO_CAPTURE_STOP, Hotkey::t_hotkey::make_empty(), stop_capture, enable_when_emu_launched_and_capturing);
+    add_action(SCREENSHOT, Hotkey::t_hotkey(VK_F12), screenshot, enable_when_emu_launched);
 
     add_action(CHECK_FOR_UPDATES, Hotkey::t_hotkey::make_empty(), check_for_updates_manual);
     add_action(ABOUT, Hotkey::t_hotkey::make_empty(), show_about_dialog);

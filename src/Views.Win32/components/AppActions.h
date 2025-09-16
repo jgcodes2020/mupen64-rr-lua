@@ -74,10 +74,10 @@ namespace AppActions
     const std::wstring START_TRACE_LOGGER = APP + L"Utilities > Start Trace Logger...";
     const std::wstring STOP_TRACE_LOGGER = APP + L"Utilities > Stop Trace Logger ---";
     const std::wstring VIDEO_CAPTURE = APP + L"Utilities > Video Capture > ";
-    const std::wstring SCREENSHOT = VIDEO_CAPTURE + L"Take Screenshot ---";
     const std::wstring VIDEO_CAPTURE_START = VIDEO_CAPTURE + L"Start Capture...";
     const std::wstring VIDEO_CAPTURE_START_PRESET = VIDEO_CAPTURE + L"Start Capture from Preset... ---";
-    const std::wstring VIDEO_CAPTURE_STOP = VIDEO_CAPTURE + L"Stop Capture";
+    const std::wstring VIDEO_CAPTURE_STOP = VIDEO_CAPTURE + L"Stop Capture ---";
+    const std::wstring SCREENSHOT = VIDEO_CAPTURE + L"Take Screenshot";
 
     const std::wstring CHECK_FOR_UPDATES = APP + L"Help > Check for Updates";
     const std::wstring ABOUT = APP + L"Help > About";
