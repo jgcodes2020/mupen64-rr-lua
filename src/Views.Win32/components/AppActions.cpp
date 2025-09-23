@@ -11,7 +11,6 @@
 #include <ThreadPool.h>
 #include <Plugin.h>
 #include <capture/EncodingManager.h>
-#include <components/AboutDialog.h>
 #include <components/AppActions.h>
 #include <components/CLI.h>
 #include <components/Cheats.h>
@@ -736,7 +735,19 @@ static void check_for_updates_manual()
 static void show_about_dialog()
 {
     BetterEmulationLock lock;
-    AboutDialog::show();
+    const auto msg = L"Mupen64 - Advanced N64 TASing emulator."
+                     L"\r\n"
+                     L"\r\n"
+                     L"Copyright ©️ 2025"
+                     L"\r\n"
+                     L"Mupen64 maintainers, contributors, and original authors (Hacktarux, ShadowPrince, linker).";
+    const auto result = DialogService::show_multiple_choice_dialog(VIEW_DLG_ABOUT, {L"Website", L"OK"}, msg, L"About",
+                                                                   fsvc_information);
+
+    if (result == 0)
+    {
+        ShellExecute(0, 0, L"https://mupen64.com", 0, 0, SW_SHOW);
+    }
 }
 
 #pragma endregion
