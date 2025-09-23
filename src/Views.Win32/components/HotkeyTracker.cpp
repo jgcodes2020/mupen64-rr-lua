@@ -6,6 +6,7 @@
 
 #include "stdafx.h"
 #include <ActionManager.h>
+#include <components/AppActions.h>
 #include <components/HotkeyTracker.h>
 
 const auto HOTKEY_TRACKER_CTX = L"Mupen64_HotkeyTrackerContext";
@@ -36,7 +37,11 @@ static bool on_key(bool is_up, int32_t key)
     {
         if ((int)key == hotkey.key && shift == hotkey.shift && ctrl == hotkey.ctrl && alt == hotkey.alt)
         {
-            ActionManager::invoke(path, is_up);
+            // HACK: Fast Forward is a special case: we don't want it to be constantly toggled on and off because it
+            // messes up flow
+            const bool release_on_repress = path != AppActions::FAST_FORWARD;
+
+            ActionManager::invoke(path, is_up, release_on_repress);
             hit = true;
         }
     }
