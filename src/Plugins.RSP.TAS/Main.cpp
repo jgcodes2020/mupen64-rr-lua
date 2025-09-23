@@ -18,7 +18,6 @@
 
 core_rsp_info rsp;
 bool g_rsp_alive = false;
-void *audio_plugin = nullptr;
 extern void (*ABI1[0x20])();
 extern void (*ABI2[0x20])();
 extern void (*ABI3[0x20])();
@@ -36,9 +35,6 @@ static uint32_t fake_AI_CONTROL_REG;
 static uint32_t fake_AI_STATUS_REG;
 static uint32_t fake_AI_DACRATE_REG;
 static uint32_t fake_AI_BITRATE_REG;
-
-// ProcessAList function from audio plugin, only populated when audio_external is true
-void (*g_processAList)() = nullptr;
 
 /**
  * \brief Loads the audio plugin's globals
@@ -200,14 +196,7 @@ uint32_t do_rsp_cycles(uint32_t Cycles)
 
     g_rsp_alive = true;
 
-    // For first-time initialization of audio plugin
-    // I think it's safe to keep the plugin loaded across emulation starts...
-    if (config.audio_external && !audio_plugin)
-    {
-        audio_plugin = plugin_load(config.audio_path);
-    }
-
-    if (task->type == 1 && task->data_ptr != 0 && config.graphics_hle)
+    if (task->type == 1 && task->data_ptr != 0)
     {
         if (rsp.process_dlist_list)
         {
@@ -221,23 +210,6 @@ uint32_t do_rsp_cycles(uint32_t Cycles)
         }
 
         *rsp.dpc_status_reg &= ~0x0002;
-        return Cycles;
-    }
-
-    if (task->type == 2 && config.audio_hle)
-    {
-        if (config.audio_external)
-            g_processAList();
-        else if (rsp.process_alist_list != NULL)
-        {
-            rsp.process_alist_list();
-        }
-        *rsp.sp_status_reg |= 0x0203;
-        if ((*rsp.sp_status_reg & 0x40) != 0)
-        {
-            *rsp.mi_intr_reg |= 0x1;
-            rsp.check_interrupts();
-        }
         return Cycles;
     }
 
@@ -351,41 +323,6 @@ BOOL APIENTRY DllMain(HINSTANCE hinst, DWORD reason, LPVOID)
     }
 
     return TRUE;
-}
-
-void *plugin_load(const std::filesystem::path &path)
-{
-    const auto module = LoadLibrary(path.wstring().c_str());
-
-    if (!module)
-    {
-        MessageBox(NULL, L"Failed to load the external audio plugin.\nEmulation will not behave as expected.", L"Error",
-                   MB_OK | MB_ICONERROR);
-        return nullptr;
-    }
-
-    core_audio_info info;
-    // FIXME: Do we have to provide hwnd?
-    info.main_hwnd = NULL;
-    info.hinst = (HINSTANCE)rsp.hinst;
-    info.byteswapped = TRUE;
-    info.rom = fake_header;
-    info.rdram = rsp.rdram;
-    info.dmem = rsp.dmem;
-    info.imem = rsp.imem;
-    info.mi_intr_reg = rsp.mi_intr_reg;
-    info.ai_dram_addr_reg = &fake_AI_DRAM_ADDR_REG;
-    info.ai_len_reg = &fake_AI_LEN_REG;
-    info.ai_control_reg = &fake_AI_CONTROL_REG;
-    info.ai_status_reg = &fake_AI_STATUS_REG;
-    info.ai_dacrate_reg = &fake_AI_DACRATE_REG;
-    info.ai_bitrate_reg = &fake_AI_BITRATE_REG;
-    info.check_interrupts = rsp.check_interrupts;
-    auto initiateAudio = (BOOL(__cdecl *)(core_audio_info))GetProcAddress(module, "InitiateAudio");
-    g_processAList = (void(__cdecl *)(void))GetProcAddress(module, "ProcessAList");
-    initiateAudio(info);
-
-    return module;
 }
 
 EXPORT void CALL DllAbout(void *hwnd)

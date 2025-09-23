@@ -20,21 +20,8 @@ INT_PTR CALLBACK ConfigDlgProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lP
     case WM_INITDIALOG:
         config_load();
         memcpy(&prev_config, &config, sizeof(t_config));
-
-        if (!config.audio_hle && !config.audio_external)
-        {
-            CheckDlgButton(hwnd, IDC_ALISTS_INSIDE_RSP, BST_CHECKED);
-        }
-        if (config.audio_hle && !config.audio_external)
-        {
-            CheckDlgButton(hwnd, IDC_ALISTS_EMU_DEFINED_PLUGIN, BST_CHECKED);
-        }
-        if (config.audio_hle && config.audio_external)
-        {
-            CheckDlgButton(hwnd, IDC_ALISTS_RSP_DEFINED_PLUGIN, BST_CHECKED);
-        }
         CheckDlgButton(hwnd, IDC_UCODE_CACHE_VERIFY, config.ucode_cache_verify ? BST_CHECKED : BST_UNCHECKED);
-        goto refresh;
+        break;
     case WM_CLOSE:
         config_save();
         EndDialog(hwnd, IDOK);
@@ -52,64 +39,20 @@ INT_PTR CALLBACK ConfigDlgProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lP
             config_save();
             EndDialog(hwnd, IDCANCEL);
             break;
-        case IDC_ALISTS_INSIDE_RSP:
-            config.audio_hle = FALSE;
-            config.audio_external = FALSE;
-            goto refresh;
-        case IDC_ALISTS_EMU_DEFINED_PLUGIN:
-            config.audio_hle = TRUE;
-            config.audio_external = FALSE;
-            goto refresh;
-        case IDC_ALISTS_RSP_DEFINED_PLUGIN:
-            config.audio_hle = TRUE;
-            config.audio_external = TRUE;
-            goto refresh;
-        case IDC_BROWSE_AUDIO_PLUGIN:
-            MessageBox(hwnd,
-                       L"Warning: use this feature at your own risk\n"
-                       "It allows you to use a second audio plugin to process alists\n"
-                       "before they are sent\n"
-                       "Example: jabo's sound plugin in emu config to output sound\n"
-                       "        +azimer's sound plugin in rsp config to process alists\n"
-                       "Do not choose the same plugin in both place, or it'll probably crash\n"
-                       "For more informations, please read the README",
-                       L"Warning",
-                       MB_OK);
-
-            wchar_t path[std::size(config.audio_path)] = {0};
-            OPENFILENAME ofn{};
-            ofn.lStructSize = sizeof(ofn);
-            ofn.hwndOwner = hwnd;
-            ofn.lpstrFile = path;
-            ofn.nMaxFile = sizeof(path);
-            ofn.lpstrFilter = L"DLL Files (*.dll)\0*.dll";
-            ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_EXPLORER;
-
-            if (GetOpenFileName(&ofn))
-            {
-                lstrcpynW(config.audio_path, path, std::size(config.audio_path));
-            }
-
-            goto refresh;
+        default:
+            break;
         }
         break;
     default:
-        return FALSE;
+        break;
     }
-    return TRUE;
-
-refresh:
-    EnableWindow(GetDlgItem(hwnd, IDC_EDIT_AUDIO_PLUGIN), config.audio_external);
-    EnableWindow(GetDlgItem(hwnd, IDC_BROWSE_AUDIO_PLUGIN), config.audio_external);
-    SetDlgItemText(hwnd, IDC_EDIT_AUDIO_PLUGIN, config.audio_path);
-
-    return TRUE;
+    return FALSE;
 }
 
 void config_save()
 {
     printf("[RSP] Saving config...\n");
-    FILE* f = fopen(CONFIG_PATH, "wb");
+    FILE *f = fopen(CONFIG_PATH, "wb");
     if (!f)
     {
         printf("[RSP] Can't save config\n");
@@ -134,7 +77,7 @@ void config_load()
     }
     else
     {
-        uint8_t* ptr = buffer.data();
+        uint8_t *ptr = buffer.data();
         MiscHelpers::memread(&ptr, &loaded_config, sizeof(t_config));
     }
 
@@ -147,7 +90,6 @@ void config_load()
 
     memcpy(&config, &loaded_config, sizeof(t_config));
 }
-
 
 void config_show_dialog(HWND hwnd)
 {
