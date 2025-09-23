@@ -93,4 +93,8 @@
         <ClInclude Include="src\Plugins.RSP.TAS\Config.h"/>
         <ClInclude Include="src\Plugins.RSP.TAS\Resource.h" />
     </ItemGroup>
+
+    <ItemGroup>
+        <ResourceCompile Include="src\Plugins.RSP.TAS\Resource.rc"/>
+    </ItemGroup>
 </Project>

@@ -18,7 +18,7 @@
 
 core_rsp_info rsp;
 bool g_rsp_alive = false;
-void* audio_plugin = nullptr;
+void *audio_plugin = nullptr;
 extern void (*ABI1[0x20])();
 extern void (*ABI2[0x20])();
 extern void (*ABI3[0x20])();
@@ -45,15 +45,15 @@ void (*g_processAList)() = nullptr;
  * \param path Path to an audio plugin dll
  * \returns Handle to the audio plugin, or nullptr.
  */
-void* plugin_load(const std::filesystem::path& path);
+void *plugin_load(const std::filesystem::path &path);
 
-
-void handle_unknown_task(const OSTask_t* task, const uint32_t sum)
+void handle_unknown_task(const OSTask_t *task, const uint32_t sum)
 {
-    const auto message = std::format(L"unknown task:\n\ttype: {}\n\tsum: {}\n\tPC: {}", task->type, sum, static_cast<void*>(rsp.sp_pc_reg));
+    const auto message = std::format(L"unknown task:\n\ttype: {}\n\tsum: {}\n\tPC: {}", task->type, sum,
+                                     static_cast<void *>(rsp.sp_pc_reg));
     MessageBox(NULL, message.c_str(), L"unknown task", MB_OK);
 
-    FILE* f;
+    FILE *f;
 
     if (task->ucode_size <= 0x1000)
     {
@@ -68,7 +68,7 @@ void handle_unknown_task(const OSTask_t* task, const uint32_t sum)
         f = fopen("disasm.txt", "wb");
         memcpy(rsp.dmem, rsp.rdram + task->ucode_data, task->ucode_data_size);
         memcpy(rsp.imem + 0x80, rsp.rdram + task->ucode, 0xF7F);
-        disasm(f, (unsigned long*)(rsp.imem));
+        disasm(f, (unsigned long *)(rsp.imem));
         fclose(f);
     }
     else
@@ -82,7 +82,7 @@ void handle_unknown_task(const OSTask_t* task, const uint32_t sum)
         fclose(f);
 
         f = fopen("disasm.txt", "wb");
-        disasm(f, (unsigned long*)(rsp.imem));
+        disasm(f, (unsigned long *)(rsp.imem));
         fclose(f);
     }
 }
@@ -102,22 +102,19 @@ void audio_ucode_zelda()
     memcpy(ABI, ABI3, sizeof(ABI[0]) * 0x20);
 }
 
-
-int audio_ucode_detect_type(const OSTask_t* task)
+int audio_ucode_detect_type(const OSTask_t *task)
 {
-    if (*(unsigned long*)(rsp.rdram + task->ucode_data + 0) != 0x1)
+    if (*(unsigned long *)(rsp.rdram + task->ucode_data + 0) != 0x1)
     {
-        if (*(rsp.rdram + task->ucode_data + (0 ^ 3 - S8)) == 0xF)
-            return 4;
+        if (*(rsp.rdram + task->ucode_data + (0 ^ 3 - S8)) == 0xF) return 4;
         return 3;
     }
 
-    if (*(unsigned long*)(rsp.rdram + task->ucode_data + 0x30) == 0xF0000F00)
-        return 1;
+    if (*(unsigned long *)(rsp.rdram + task->ucode_data + 0x30) == 0xF0000F00) return 1;
     return 2;
 }
 
-void audio_ucode_verify_cache(const OSTask_t* task)
+void audio_ucode_verify_cache(const OSTask_t *task)
 {
     // In debug mode, we want to verify that the ucode type hasn't changed
     const auto ucode_type = audio_ucode_detect_type(task);
@@ -138,7 +135,7 @@ void audio_ucode_verify_cache(const OSTask_t* task)
     }
 }
 
-int audio_ucode(OSTask_t* task)
+int audio_ucode(OSTask_t *task)
 {
     if (!g_audio_ucode_func)
     {
@@ -170,7 +167,7 @@ int audio_ucode(OSTask_t* task)
 
     g_audio_ucode_func();
 
-    const auto p_alist = (unsigned long*)(rsp.rdram + task->data_ptr);
+    const auto p_alist = (unsigned long *)(rsp.rdram + task->data_ptr);
 
     for (unsigned int i = 0; i < task->data_size / 4; i += 2)
     {
@@ -198,7 +195,7 @@ void on_rom_closed()
 
 uint32_t do_rsp_cycles(uint32_t Cycles)
 {
-    OSTask_t* task = (OSTask_t*)(rsp.dmem + 0xFC0);
+    OSTask_t *task = (OSTask_t *)(rsp.dmem + 0xFC0);
     unsigned int i, sum = 0;
 
     g_rsp_alive = true;
@@ -209,7 +206,6 @@ uint32_t do_rsp_cycles(uint32_t Cycles)
     {
         audio_plugin = plugin_load(config.audio_path);
     }
-
 
     if (task->type == 1 && task->data_ptr != 0 && config.graphics_hle)
     {
@@ -259,8 +255,7 @@ uint32_t do_rsp_cycles(uint32_t Cycles)
 
     if (task->ucode_size <= 0x1000)
     {
-        for (i = 0; i < task->ucode_size / 2; i++)
-            sum += *(rsp.rdram + task->ucode + i);
+        for (i = 0; i < task->ucode_size / 2; i++) sum += *(rsp.rdram + task->ucode + i);
     }
     else
         for (i = 0; i < 0x1000 / 2; i++)
@@ -268,28 +263,27 @@ uint32_t do_rsp_cycles(uint32_t Cycles)
             sum += *(rsp.imem + i);
         }
 
-
     if (task->ucode_size > 0x1000)
     {
         switch (sum)
         {
         case 0x9E2: // banjo tooie (U) boot code
-            {
-                int i, j;
-                memcpy(rsp.imem + 0x120, rsp.rdram + 0x1e8, 0x1e8);
-                for (j = 0; j < 0xfc; j++)
-                    for (i = 0; i < 8; i++)
-                        *(rsp.rdram + (0x2fb1f0 + j * 0xff0 + i ^ S8)) = *(rsp.imem + (0x120 + j * 8 + i ^ S8));
-            }
+        {
+            int i, j;
+            memcpy(rsp.imem + 0x120, rsp.rdram + 0x1e8, 0x1e8);
+            for (j = 0; j < 0xfc; j++)
+                for (i = 0; i < 8; i++)
+                    *(rsp.rdram + (0x2fb1f0 + j * 0xff0 + i ^ S8)) = *(rsp.imem + (0x120 + j * 8 + i ^ S8));
+        }
             return Cycles;
         case 0x9F2: // banjo tooie (E) + zelda oot (E) boot code
-            {
-                int i, j;
-                memcpy(rsp.imem + 0x120, rsp.rdram + 0x1e8, 0x1e8);
-                for (j = 0; j < 0xfc; j++)
-                    for (i = 0; i < 8; i++)
-                        *(rsp.rdram + (0x2fb1f0 + j * 0xff0 + i ^ S8)) = *(rsp.imem + (0x120 + j * 8 + i ^ S8));
-            }
+        {
+            int i, j;
+            memcpy(rsp.imem + 0x120, rsp.rdram + 0x1e8, 0x1e8);
+            for (j = 0; j < 0xfc; j++)
+                for (i = 0; i < 8; i++)
+                    *(rsp.rdram + (0x2fb1f0 + j * 0xff0 + i ^ S8)) = *(rsp.imem + (0x120 + j * 8 + i ^ S8));
+        }
             return Cycles;
         }
     }
@@ -298,8 +292,7 @@ uint32_t do_rsp_cycles(uint32_t Cycles)
         switch (task->type)
         {
         case 2: // audio
-            if (audio_ucode(task) == 0)
-                return Cycles;
+            if (audio_ucode(task) == 0) return Cycles;
             break;
         case 4: // jpeg
             switch (sum)
@@ -336,8 +329,7 @@ std::filesystem::path get_app_full_path()
     return path;
 }
 
-
-char* getExtension(char* str)
+char *getExtension(char *str)
 {
     if (strlen(str) > 3)
         return str + strlen(str) - 3;
@@ -361,13 +353,14 @@ BOOL APIENTRY DllMain(HINSTANCE hinst, DWORD reason, LPVOID)
     return TRUE;
 }
 
-void* plugin_load(const std::filesystem::path& path)
+void *plugin_load(const std::filesystem::path &path)
 {
     const auto module = LoadLibrary(path.wstring().c_str());
 
     if (!module)
     {
-        MessageBox(NULL, L"Failed to load the external audio plugin.\nEmulation will not behave as expected.", L"Error", MB_OK | MB_ICONERROR);
+        MessageBox(NULL, L"Failed to load the external audio plugin.\nEmulation will not behave as expected.", L"Error",
+                   MB_OK | MB_ICONERROR);
         return nullptr;
     }
 
@@ -388,35 +381,35 @@ void* plugin_load(const std::filesystem::path& path)
     info.ai_dacrate_reg = &fake_AI_DACRATE_REG;
     info.ai_bitrate_reg = &fake_AI_BITRATE_REG;
     info.check_interrupts = rsp.check_interrupts;
-    auto initiateAudio = (BOOL(__cdecl*)(core_audio_info))GetProcAddress(module, "InitiateAudio");
-    g_processAList = (void(__cdecl*)(void))GetProcAddress(module, "ProcessAList");
+    auto initiateAudio = (BOOL(__cdecl *)(core_audio_info))GetProcAddress(module, "InitiateAudio");
+    g_processAList = (void(__cdecl *)(void))GetProcAddress(module, "ProcessAList");
     initiateAudio(info);
 
     return module;
 }
 
-EXPORT void CALL DllAbout(HWND hwnd)
+EXPORT void CALL DllAbout(void *hwnd)
 {
     const auto msg = PLUGIN_NAME L"\n"
                                  L"Part of the Mupen64 project family."
                                  L"\n\n"
                                  L"https://github.com/mupen64/mupen64-rr-lua";
 
-    MessageBox(hwnd, msg, L"About", MB_ICONINFORMATION | MB_OK);
+    MessageBox((HWND)hwnd, msg, L"About", MB_ICONINFORMATION | MB_OK);
 }
 
-EXPORT void CALL DllConfig(HWND hwnd)
+EXPORT void CALL DllConfig(void *hwnd)
 {
     if (rsp_alive())
     {
-        MessageBox(hwnd, L"Close the ROM before configuring the plugin.", L"Error", MB_OK | MB_ICONERROR);
+        MessageBox((HWND)hwnd, L"Close the ROM before configuring the plugin.", L"Error", MB_OK | MB_ICONERROR);
         return;
     }
 
-    config_show_dialog(hwnd);
+    config_show_dialog((HWND)hwnd);
 }
 
-EXPORT void CALL GetDllInfo(core_plugin_info* PluginInfo)
+EXPORT void CALL GetDllInfo(core_plugin_info *PluginInfo)
 {
     PluginInfo->ver = 0x0101;
     PluginInfo->type = (int16_t)plugin_rsp;
@@ -425,7 +418,7 @@ EXPORT void CALL GetDllInfo(core_plugin_info* PluginInfo)
     PluginInfo->unused_byteswapped = 1;
 }
 
-EXPORT void CALL InitiateRSP(core_rsp_info Rsp_Info, uint32_t* CycleCount)
+EXPORT void CALL InitiateRSP(core_rsp_info Rsp_Info, uint32_t *CycleCount)
 {
     rsp = Rsp_Info;
 }
