@@ -23,26 +23,26 @@ t_config g_config;
 constexpr auto FLAT_FIELD_KEY = "config";
 
 const std::unordered_map<std::string, size_t> DIALOG_SILENT_MODE_CHOICES = {
-{CORE_DLG_FLOAT_EXCEPTION, 0},
-{CORE_DLG_ST_HASH_MISMATCH, 0},
-{CORE_DLG_ST_UNFREEZE_WARNING, 0},
-{CORE_DLG_ST_NOT_FROM_MOVIE, 0},
-{CORE_DLG_VCR_RAWDATA_WARNING, 0},
-{CORE_DLG_VCR_WIIVC_WARNING, 0},
-{CORE_DLG_VCR_ROM_NAME_WARNING, 0},
-{CORE_DLG_VCR_ROM_CCODE_WARNING, 0},
-{CORE_DLG_VCR_ROM_CRC_WARNING, 0},
-{CORE_DLG_VCR_CHEAT_LOAD_ERROR, 0},
+    {CORE_DLG_FLOAT_EXCEPTION, 0},
+    {CORE_DLG_ST_HASH_MISMATCH, 0},
+    {CORE_DLG_ST_UNFREEZE_WARNING, 0},
+    {CORE_DLG_ST_NOT_FROM_MOVIE, 0},
+    {CORE_DLG_VCR_RAWDATA_WARNING, 0},
+    {CORE_DLG_VCR_WIIVC_WARNING, 0},
+    {CORE_DLG_VCR_ROM_NAME_WARNING, 0},
+    {CORE_DLG_VCR_ROM_CCODE_WARNING, 0},
+    {CORE_DLG_VCR_ROM_CRC_WARNING, 0},
+    {CORE_DLG_VCR_CHEAT_LOAD_ERROR, 0},
 
-{VIEW_DLG_MOVIE_OVERWRITE_WARNING, 0},
-{VIEW_DLG_RESET_SETTINGS, 0},
-{VIEW_DLG_RESET_PLUGIN_SETTINGS, 0},
-{VIEW_DLG_LAG_EXCEEDED, 0},
-{VIEW_DLG_CLOSE_ROM_WARNING, 0},
-{VIEW_DLG_HOTKEY_CONFLICT, 0},
-{VIEW_DLG_UPDATE_DIALOG, 2},
-{VIEW_DLG_PLUGIN_LOAD_ERROR, 0},
-{VIEW_DLG_RAMSTART, 0},
+    {VIEW_DLG_MOVIE_OVERWRITE_WARNING, 0},
+    {VIEW_DLG_RESET_SETTINGS, 0},
+    {VIEW_DLG_RESET_PLUGIN_SETTINGS, 0},
+    {VIEW_DLG_LAG_EXCEEDED, 0},
+    {VIEW_DLG_CLOSE_ROM_WARNING, 0},
+    {VIEW_DLG_HOTKEY_CONFLICT, 0},
+    {VIEW_DLG_UPDATE_DIALOG, 2},
+    {VIEW_DLG_PLUGIN_LOAD_ERROR, 0},
+    {VIEW_DLG_RAMSTART, 0},
 };
 
 const t_config g_default_config = get_default_config();
@@ -51,15 +51,16 @@ static t_config get_default_config()
 {
     t_config config = {};
 
-    for (const auto& pair : DIALOG_SILENT_MODE_CHOICES)
+    for (const auto &pair : DIALOG_SILENT_MODE_CHOICES)
     {
-        config.silent_mode_dialog_choices[g_main_ctx.io_service.string_to_wstring(pair.first)] = std::to_wstring(pair.second);
+        config.silent_mode_dialog_choices[g_main_ctx.io_service.string_to_wstring(pair.first)] =
+            std::to_wstring(pair.second);
     }
 
     return config;
 }
 
-static std::string process_field_name(const std::wstring& field_name)
+static std::string process_field_name(const std::wstring &field_name)
 {
     std::string str = g_main_ctx.io_service.wstring_to_string(field_name);
 
@@ -73,7 +74,8 @@ static std::string process_field_name(const std::wstring& field_name)
     return str;
 }
 
-static void handle_config_value(mINI::INIStructure& ini, const std::wstring& field_name, const int32_t is_reading, int32_t* value)
+static void handle_config_value(mINI::INIStructure &ini, const std::wstring &field_name, const int32_t is_reading,
+                                int32_t *value)
 {
     const auto key = process_field_name(field_name);
 
@@ -93,7 +95,8 @@ static void handle_config_value(mINI::INIStructure& ini, const std::wstring& fie
     }
 }
 
-static void handle_config_value(mINI::INIStructure& ini, const std::wstring& field_name, const int32_t is_reading, uint64_t* value)
+static void handle_config_value(mINI::INIStructure &ini, const std::wstring &field_name, const int32_t is_reading,
+                                uint64_t *value)
 {
     const auto key = process_field_name(field_name);
 
@@ -113,7 +116,8 @@ static void handle_config_value(mINI::INIStructure& ini, const std::wstring& fie
     }
 }
 
-static void handle_config_value(mINI::INIStructure& ini, const std::wstring& field_name, const int32_t is_reading, std::wstring& value)
+static void handle_config_value(mINI::INIStructure &ini, const std::wstring &field_name, const int32_t is_reading,
+                                std::wstring &value)
 {
     const auto key = process_field_name(field_name);
 
@@ -135,7 +139,8 @@ static void handle_config_value(mINI::INIStructure& ini, const std::wstring& fie
     }
 }
 
-static void handle_config_value(mINI::INIStructure& ini, const std::wstring& field_name, const int32_t is_reading, std::vector<std::wstring>& value)
+static void handle_config_value(mINI::INIStructure &ini, const std::wstring &field_name, const int32_t is_reading,
+                                std::vector<std::wstring> &value)
 {
     const auto key = process_field_name(field_name);
 
@@ -166,7 +171,8 @@ static void handle_config_value(mINI::INIStructure& ini, const std::wstring& fie
     }
 }
 
-static void handle_config_value(mINI::INIStructure& ini, const std::wstring& field_name, const int32_t is_reading, std::map<std::wstring, std::wstring>& value)
+static void handle_config_value(mINI::INIStructure &ini, const std::wstring &field_name, const int32_t is_reading,
+                                std::map<std::wstring, std::wstring> &value)
 {
     const auto key = process_field_name(field_name);
 
@@ -177,10 +183,11 @@ static void handle_config_value(mINI::INIStructure& ini, const std::wstring& fie
         {
             return;
         }
-        auto& map = ini[key];
-        for (auto& pair : map)
+        auto &map = ini[key];
+        for (auto &pair : map)
         {
-            value[g_main_ctx.io_service.string_to_wstring(pair.first)] = g_main_ctx.io_service.string_to_wstring(pair.second);
+            value[g_main_ctx.io_service.string_to_wstring(pair.first)] =
+                g_main_ctx.io_service.string_to_wstring(pair.second);
         }
     }
     else
@@ -188,14 +195,16 @@ static void handle_config_value(mINI::INIStructure& ini, const std::wstring& fie
         // create virtual map:
         // [field_name]
         // value = value
-        for (auto& pair : value)
+        for (auto &pair : value)
         {
-            ini[key][g_main_ctx.io_service.wstring_to_string(pair.first)] = g_main_ctx.io_service.wstring_to_string(pair.second);
+            ini[key][g_main_ctx.io_service.wstring_to_string(pair.first)] =
+                g_main_ctx.io_service.wstring_to_string(pair.second);
         }
     }
 }
 
-static void handle_config_value(mINI::INIStructure& ini, const std::wstring& field_name, const int32_t is_reading, std::map<std::wstring, Hotkey::t_hotkey>& value)
+static void handle_config_value(mINI::INIStructure &ini, const std::wstring &field_name, const int32_t is_reading,
+                                std::map<std::wstring, Hotkey::t_hotkey> &value)
 {
     const auto key = process_field_name(field_name);
 
@@ -210,7 +219,7 @@ static void handle_config_value(mINI::INIStructure& ini, const std::wstring& fie
 
     if (is_reading)
     {
-        for (const auto& pair : ini)
+        for (const auto &pair : ini)
         {
             if (!pair.first.starts_with(prefix))
             {
@@ -286,7 +295,7 @@ static void handle_config_value(mINI::INIStructure& ini, const std::wstring& fie
     }
     else
     {
-        for (const auto& [action_path, hotkey] : value)
+        for (const auto &[action_path, hotkey] : value)
         {
             const auto action_key = prefix + g_main_ctx.io_service.wstring_to_string(action_path);
             ini[action_key]["key"] = std::to_string(hotkey.key);
@@ -298,7 +307,8 @@ static void handle_config_value(mINI::INIStructure& ini, const std::wstring& fie
     }
 }
 
-static void handle_config_value(mINI::INIStructure& ini, const std::wstring& field_name, const int32_t is_reading, std::vector<int32_t>& value)
+static void handle_config_value(mINI::INIStructure &ini, const std::wstring &field_name, const int32_t is_reading,
+                                std::vector<int32_t> &value)
 {
     std::vector<std::wstring> string_values;
     for (const auto int_value : value)
@@ -317,14 +327,15 @@ static void handle_config_value(mINI::INIStructure& ini, const std::wstring& fie
     }
 }
 
-static void handle_config_ini(const bool is_reading, mINI::INIStructure& ini)
+static void handle_config_ini(const bool is_reading, mINI::INIStructure &ini)
 {
 #define HANDLE_P_VALUE(x) handle_config_value(ini, L#x, is_reading, &g_config.x);
 #define HANDLE_VALUE(x) handle_config_value(ini, L#x, is_reading, g_config.x);
 
     if (is_reading)
     {
-        // We need to fill the config with latest default values first, because some "new" fields might not exist in the ini
+        // We need to fill the config with latest default values first, because some "new" fields might not exist in the
+        // ini
         g_config = get_default_config();
     }
 
@@ -431,7 +442,7 @@ static std::filesystem::path get_config_path()
 /**
  * \brief Modifies the config to apply value limits and other constraints.
  */
-static void config_patch(t_config& cfg)
+static void config_patch(t_config &cfg)
 {
     // handle edge case: closing while minimized produces bogus values for position
     if (cfg.window_x < -10'000 || cfg.window_y < -10'000)
@@ -456,7 +467,7 @@ static void config_patch(t_config& cfg)
 
     cfg.settings_tab = std::min(std::max(cfg.settings_tab, 0), 2);
 
-    for (const auto& pair : DIALOG_SILENT_MODE_CHOICES)
+    for (const auto &pair : DIALOG_SILENT_MODE_CHOICES)
     {
         const auto key = g_main_ctx.io_service.string_to_wstring(pair.first);
         if (!cfg.silent_mode_dialog_choices.contains(key))
@@ -469,9 +480,9 @@ static void config_patch(t_config& cfg)
 /**
  * \brief Migrates old values from the specified config to new ones if possible.
  */
-static void migrate_config(t_config& config, const mINI::INIStructure& ini)
+static void migrate_config(t_config &config, const mINI::INIStructure &ini)
 {
-    const auto migrate_hotkey = [&](const std::string& old_section_name, std::wstring action) {
+    const auto migrate_hotkey = [&](const std::string &old_section_name, std::wstring action) {
         action = ActionManager::normalize_filter(action);
 
         if (!ini.has(old_section_name))
@@ -480,7 +491,7 @@ static void migrate_config(t_config& config, const mINI::INIStructure& ini)
         }
 
         auto hotkey = Hotkey::t_hotkey::make_empty();
-        const auto& section = ini.get(old_section_name);
+        const auto &section = ini.get(old_section_name);
 
         try
         {
@@ -493,7 +504,8 @@ static void migrate_config(t_config& config, const mINI::INIStructure& ini)
         {
         }
 
-        g_view_logger->info(L"[Config] Migrating {} -> {} ({})", g_main_ctx.io_service.string_to_wstring(old_section_name), action, hotkey.to_wstring());
+        g_view_logger->info(L"[Config] Migrating {} -> {} ({})",
+                            g_main_ctx.io_service.string_to_wstring(old_section_name), action, hotkey.to_wstring());
         config.hotkeys[action] = hotkey;
         config.inital_hotkeys[action] = hotkey;
     };
@@ -540,9 +552,12 @@ static void migrate_config(t_config& config, const mINI::INIStructure& ini)
     migrate_hotkey("Undo load state", AppActions::UNDO_LOAD_STATE);
     for (int i = 0; i < 10; ++i)
     {
-        migrate_hotkey(std::format("Save to slot {}", i), std::vformat(AppActions::SAVE_SLOT_X, std::make_wformat_args(i)));
-        migrate_hotkey(std::format("Load from slot {}", i), std::vformat(AppActions::LOAD_SLOT_X, std::make_wformat_args(i)));
-        migrate_hotkey(std::format("Select slot {}", i), std::vformat(AppActions::SELECT_SLOT_X, std::make_wformat_args(i)));
+        migrate_hotkey(std::format("Save to slot {}", i),
+                       std::vformat(AppActions::SAVE_SLOT_X, std::make_wformat_args(i)));
+        migrate_hotkey(std::format("Load from slot {}", i),
+                       std::vformat(AppActions::LOAD_SLOT_X, std::make_wformat_args(i)));
+        migrate_hotkey(std::format("Select slot {}", i),
+                       std::vformat(AppActions::SELECT_SLOT_X, std::make_wformat_args(i)));
     }
 }
 
@@ -569,7 +584,7 @@ void Config::save()
 void Config::apply_and_save()
 {
     ActionManager::begin_batch_work();
-    for (const auto& [action, hotkey] : g_config.hotkeys)
+    for (const auto &[action, hotkey] : g_config.hotkeys)
     {
         ActionManager::associate_hotkey(action, hotkey, true);
     }

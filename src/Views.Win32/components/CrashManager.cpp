@@ -10,52 +10,55 @@
 
 const std::filesystem::path MINIDUMP_PATH = L"mupen.dmp";
 
-typedef struct StacktraceInfo {
+typedef struct StacktraceInfo
+{
     std::stacktrace stl_stacktrace{};
-    void* rtl_stacktrace[32]{};
+    void *rtl_stacktrace[32]{};
 } t_stacktrace_info;
 
 static t_stacktrace_info stacktrace_info;
 
 #define E(x) {x, L#x}
 const std::unordered_map<int, std::wstring> EXCEPTION_NAMES = {
-E(EXCEPTION_ACCESS_VIOLATION),
-E(EXCEPTION_ACCESS_VIOLATION),
-E(EXCEPTION_DATATYPE_MISALIGNMENT),
-E(EXCEPTION_BREAKPOINT),
-E(EXCEPTION_SINGLE_STEP),
-E(EXCEPTION_ARRAY_BOUNDS_EXCEEDED),
-E(EXCEPTION_FLT_DENORMAL_OPERAND),
-E(EXCEPTION_FLT_DIVIDE_BY_ZERO),
-E(EXCEPTION_FLT_INEXACT_RESULT),
-E(EXCEPTION_FLT_INVALID_OPERATION),
-E(EXCEPTION_FLT_OVERFLOW),
-E(EXCEPTION_FLT_STACK_CHECK),
-E(EXCEPTION_FLT_UNDERFLOW),
-E(EXCEPTION_INT_DIVIDE_BY_ZERO),
-E(EXCEPTION_INT_OVERFLOW),
-E(EXCEPTION_PRIV_INSTRUCTION),
-E(EXCEPTION_IN_PAGE_ERROR),
-E(EXCEPTION_ILLEGAL_INSTRUCTION),
-E(EXCEPTION_NONCONTINUABLE_EXCEPTION),
-E(EXCEPTION_STACK_OVERFLOW),
-E(EXCEPTION_INVALID_DISPOSITION),
-E(EXCEPTION_GUARD_PAGE),
-E(EXCEPTION_INVALID_HANDLE),
+    E(EXCEPTION_ACCESS_VIOLATION),
+    E(EXCEPTION_ACCESS_VIOLATION),
+    E(EXCEPTION_DATATYPE_MISALIGNMENT),
+    E(EXCEPTION_BREAKPOINT),
+    E(EXCEPTION_SINGLE_STEP),
+    E(EXCEPTION_ARRAY_BOUNDS_EXCEEDED),
+    E(EXCEPTION_FLT_DENORMAL_OPERAND),
+    E(EXCEPTION_FLT_DIVIDE_BY_ZERO),
+    E(EXCEPTION_FLT_INEXACT_RESULT),
+    E(EXCEPTION_FLT_INVALID_OPERATION),
+    E(EXCEPTION_FLT_OVERFLOW),
+    E(EXCEPTION_FLT_STACK_CHECK),
+    E(EXCEPTION_FLT_UNDERFLOW),
+    E(EXCEPTION_INT_DIVIDE_BY_ZERO),
+    E(EXCEPTION_INT_OVERFLOW),
+    E(EXCEPTION_PRIV_INSTRUCTION),
+    E(EXCEPTION_IN_PAGE_ERROR),
+    E(EXCEPTION_ILLEGAL_INSTRUCTION),
+    E(EXCEPTION_NONCONTINUABLE_EXCEPTION),
+    E(EXCEPTION_STACK_OVERFLOW),
+    E(EXCEPTION_INVALID_DISPOSITION),
+    E(EXCEPTION_GUARD_PAGE),
+    E(EXCEPTION_INVALID_HANDLE),
 };
 #undef E
 
-void create_minidump(EXCEPTION_POINTERS* e)
+void create_minidump(EXCEPTION_POINTERS *e)
 {
     MINIDUMP_EXCEPTION_INFORMATION info{};
 
-    const HANDLE h_dump_file = CreateFile(MINIDUMP_PATH.wstring().c_str(), GENERIC_WRITE, FILE_SHARE_WRITE | FILE_SHARE_READ, 0, CREATE_ALWAYS, 0, 0);
+    const HANDLE h_dump_file = CreateFile(MINIDUMP_PATH.wstring().c_str(), GENERIC_WRITE,
+                                          FILE_SHARE_WRITE | FILE_SHARE_READ, 0, CREATE_ALWAYS, 0, 0);
 
     info.ThreadId = GetCurrentThreadId();
     info.ExceptionPointers = e;
     info.ClientPointers = TRUE;
 
-    if (!MiniDumpWriteDump(GetCurrentProcess(), GetCurrentProcessId(), h_dump_file, MiniDumpWithDataSegs, &info, NULL, NULL))
+    if (!MiniDumpWriteDump(GetCurrentProcess(), GetCurrentProcessId(), h_dump_file, MiniDumpWithDataSegs, &info, NULL,
+                           NULL))
     {
         g_view_logger->error(L"Couldn't create minidump (error code: {})", GetLastError());
     }
@@ -63,13 +66,12 @@ void create_minidump(EXCEPTION_POINTERS* e)
     CloseHandle(h_dump_file);
 }
 
-
 /**
  * \brief Gets additional information about the exception address
  * \param addr The address where the exception occurred
  * \return A string containing further information about the exception address
  */
-static std::wstring get_metadata_for_exception_address(void* addr)
+static std::wstring get_metadata_for_exception_address(void *addr)
 {
     const HANDLE h_process = GetCurrentProcess();
     DWORD cb_needed;
@@ -99,9 +101,11 @@ static std::wstring get_metadata_for_exception_address(void* addr)
     return std::format(L"Address: {:#08x}", (uintptr_t)addr);
 }
 
-static std::wstring get_exception_code_friendly_name(const _EXCEPTION_POINTERS* e)
+static std::wstring get_exception_code_friendly_name(const _EXCEPTION_POINTERS *e)
 {
-    std::wstring exception_name = EXCEPTION_NAMES.contains(e->ExceptionRecord->ExceptionCode) ? EXCEPTION_NAMES.at(e->ExceptionRecord->ExceptionCode) : L"Unknown exception";
+    std::wstring exception_name = EXCEPTION_NAMES.contains(e->ExceptionRecord->ExceptionCode)
+                                      ? EXCEPTION_NAMES.at(e->ExceptionRecord->ExceptionCode)
+                                      : L"Unknown exception";
 
     return std::format(L"{} ({:#08x})", exception_name, e->ExceptionRecord->ExceptionCode);
 }
@@ -114,14 +118,15 @@ static __forceinline void fill_stacktrace_info()
     CaptureStackBackTrace(0, std::size(stacktrace_info.rtl_stacktrace), stacktrace_info.rtl_stacktrace, NULL);
 }
 
-static void log_crash(const std::wstring& additional_exception_info)
+static void log_crash(const std::wstring &additional_exception_info)
 {
     SYSTEMTIME time;
     GetSystemTime(&time);
 
     g_view_logger->critical(L"Crash!");
     g_view_logger->critical(get_mupen_name());
-    g_view_logger->critical(std::format(L"{:02}/{:02}/{} {:02}:{:02}:{:02}", time.wDay, time.wMonth, time.wYear, time.wHour, time.wMinute, time.wSecond));
+    g_view_logger->critical(std::format(L"{:02}/{:02}/{} {:02}:{:02}:{:02}", time.wDay, time.wMonth, time.wYear,
+                                        time.wHour, time.wMinute, time.wSecond));
     g_view_logger->critical(L"Video: {}", g_config.selected_video_plugin);
     g_view_logger->critical(L"Audio: {}", g_config.selected_audio_plugin);
     g_view_logger->critical(L"Input: {}", g_config.selected_input_plugin);
@@ -131,7 +136,7 @@ static void log_crash(const std::wstring& additional_exception_info)
     g_view_logger->critical(additional_exception_info);
 
     g_view_logger->critical("STL Stacktrace:");
-    for (const auto& stacktrace_entry : stacktrace_info.stl_stacktrace)
+    for (const auto &stacktrace_entry : stacktrace_info.stl_stacktrace)
     {
         g_view_logger->critical(std::format("{}", std::to_string(stacktrace_entry)));
     }
@@ -160,22 +165,27 @@ bool show_crash_dialog(bool continuable)
     int result = 0;
     if (continuable)
     {
-        TaskDialog(g_main_ctx.hwnd, g_main_ctx.hinst, L"Error", L"An error has occured", L"Crash dumps have been automatically generated. You can choose to continue program execution.", TDCBF_RETRY_BUTTON | TDCBF_CLOSE_BUTTON, TD_ERROR_ICON, &result);
+        TaskDialog(g_main_ctx.hwnd, g_main_ctx.hinst, L"Error", L"An error has occured",
+                   L"Crash dumps have been automatically generated. You can choose to continue program execution.",
+                   TDCBF_RETRY_BUTTON | TDCBF_CLOSE_BUTTON, TD_ERROR_ICON, &result);
     }
     else
     {
-        TaskDialog(g_main_ctx.hwnd, g_main_ctx.hinst, L"Error", L"An error has occured", L"Crash dumps have been automatically generated. The program will now exit.", TDCBF_CLOSE_BUTTON, TD_ERROR_ICON, &result);
+        TaskDialog(g_main_ctx.hwnd, g_main_ctx.hinst, L"Error", L"An error has occured",
+                   L"Crash dumps have been automatically generated. The program will now exit.", TDCBF_CLOSE_BUTTON,
+                   TD_ERROR_ICON, &result);
     }
 
     return result == IDCLOSE;
 }
 
-LONG WINAPI exception_handler(_EXCEPTION_POINTERS* e)
+LONG WINAPI exception_handler(_EXCEPTION_POINTERS *e)
 {
     fill_stacktrace_info();
 
     std::wstring exception_info;
-    exception_info += get_metadata_for_exception_address(e->ExceptionRecord->ExceptionAddress) + L" " + get_exception_code_friendly_name(e) + L" ";
+    exception_info += get_metadata_for_exception_address(e->ExceptionRecord->ExceptionAddress) + L" " +
+                      get_exception_code_friendly_name(e) + L" ";
     exception_info += L"(from SetUnhandledExceptionFilter) ";
     log_crash(exception_info);
 
@@ -188,7 +198,8 @@ LONG WINAPI exception_handler(_EXCEPTION_POINTERS* e)
     return close ? EXCEPTION_EXECUTE_HANDLER : EXCEPTION_CONTINUE_EXECUTION;
 }
 
-void invalid_parameter_handler(const wchar_t* expression, const wchar_t* function, const wchar_t* file, unsigned int line, uintptr_t)
+void invalid_parameter_handler(const wchar_t *expression, const wchar_t *function, const wchar_t *file,
+                               unsigned int line, uintptr_t)
 {
     fill_stacktrace_info();
 
@@ -222,10 +233,7 @@ static void enable_crashing_on_crashes()
         }
     }
     BOOL insanity = FALSE;
-    SetUserObjectInformationA(GetCurrentProcess(),
-                              UOI_TIMERPROC_EXCEPTION_SUPPRESSION,
-                              &insanity,
-                              sizeof(insanity));
+    SetUserObjectInformationA(GetCurrentProcess(), UOI_TIMERPROC_EXCEPTION_SUPPRESSION, &insanity, sizeof(insanity));
 }
 
 void CrashManager::init()

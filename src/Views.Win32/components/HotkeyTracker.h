@@ -11,10 +11,10 @@
  */
 namespace HotkeyTracker
 {
-    /**
-     * \brief Attaches a hotkey tracker to a top-level window.
-     * \param hwnd Handle to a top-level window.
-     * \return Whether the operation succeeded.
-     */
-    bool attach(HWND hwnd);
+/**
+ * \brief Attaches a hotkey tracker to a top-level window.
+ * \param hwnd Handle to a top-level window.
+ * \return Whether the operation succeeded.
+ */
+bool attach(HWND hwnd);
 } // namespace HotkeyTracker

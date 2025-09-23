@@ -6,7 +6,8 @@
 
 #pragma once
 
-struct t_vcr_state {
+struct t_vcr_state
+{
     std::filesystem::path movie_path{};
     core_vcr_task task = task_idle;
 
@@ -31,11 +32,12 @@ struct t_vcr_state {
     std::queue<std::function<void()>> post_controller_poll_callbacks{};
 };
 
-
 /**
- * \brief The movie freeze buffer, which is used to store the movie (with only essential data) associated with a savestate inside the savestate.
+ * \brief The movie freeze buffer, which is used to store the movie (with only essential data) associated with a
+ * savestate inside the savestate.
  */
-struct vcr_freeze_info {
+struct vcr_freeze_info
+{
     uint32_t size{};
     uint32_t uid{};
     uint32_t current_sample{};
@@ -52,7 +54,7 @@ extern std::mutex vcr_mtx;
  * \param index The polled controller's index
  * \param input The controller's input data
  */
-void vcr_on_controller_poll(int32_t index, core_buttons* input);
+void vcr_on_controller_poll(int32_t index, core_buttons *input);
 
 /**
  * \brief Notifies VCR engine about a new VI
@@ -66,18 +68,19 @@ bool vcr_allows_core_pause();
 bool vcr_allows_core_unpause();
 bool vcr_is_frame_skipped();
 void vcr_request_reset();
-core_result vcr_read_movie_header(std::vector<uint8_t> buf, core_vcr_movie_header* header);
-core_result vcr_parse_header(std::filesystem::path path, core_vcr_movie_header* header);
-core_result vcr_read_movie_inputs(std::filesystem::path path, std::vector<core_buttons>& inputs);
+core_result vcr_read_movie_header(std::vector<uint8_t> buf, core_vcr_movie_header *header);
+core_result vcr_parse_header(std::filesystem::path path, core_vcr_movie_header *header);
+core_result vcr_read_movie_inputs(std::filesystem::path path, std::vector<core_buttons> &inputs);
 core_result vcr_start_playback(std::filesystem::path path);
 core_result vcr_start_record(std::filesystem::path path, uint16_t flags, std::string author, std::string description);
-core_result vcr_replace_author_info(const std::filesystem::path& path, const std::string& author, const std::string& description);
+core_result vcr_replace_author_info(const std::filesystem::path &path, const std::string &author,
+                                    const std::string &description);
 core_vcr_seek_info vcr_get_seek_info();
 core_result vcr_begin_seek(std::wstring str, bool pause_at_end);
 void vcr_stop_seek();
 bool vcr_is_seeking();
-bool vcr_freeze(vcr_freeze_info& freeze);
-core_result vcr_unfreeze(const vcr_freeze_info& freeze);
+bool vcr_freeze(vcr_freeze_info &freeze);
+core_result vcr_unfreeze(const vcr_freeze_info &freeze);
 core_result vcr_write_backup();
 core_result vcr_stop_all();
 std::filesystem::path vcr_get_path();
@@ -86,8 +89,8 @@ uint32_t vcr_get_length_samples();
 uint32_t vcr_get_length_vis();
 int32_t vcr_get_current_vi();
 std::vector<core_buttons> vcr_get_inputs();
-core_result vcr_begin_warp_modify(const std::vector<core_buttons>& inputs);
+core_result vcr_begin_warp_modify(const std::vector<core_buttons> &inputs);
 bool vcr_get_warp_modify_status();
 size_t vcr_get_warp_modify_first_difference_frame();
-void vcr_get_seek_savestate_frames(std::unordered_map<size_t, bool>& map);
+void vcr_get_seek_savestate_frames(std::unordered_map<size_t, bool> &map);
 bool vcr_has_seek_savestate_at_frame(size_t frame);

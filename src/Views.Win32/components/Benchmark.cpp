@@ -16,13 +16,15 @@ void Benchmark::start()
     start_time = std::chrono::high_resolution_clock::now();
 }
 
-void Benchmark::stop(t_result* result)
+void Benchmark::stop(t_result *result)
 {
     const auto now = std::chrono::high_resolution_clock::now();
-    result->fps = (double)frames / ((double)std::chrono::duration_cast<std::chrono::nanoseconds>(now - start_time).count() / 1000000000.0);
+    result->fps =
+        (double)frames /
+        ((double)std::chrono::duration_cast<std::chrono::nanoseconds>(now - start_time).count() / 1000000000.0);
 }
 
-void Benchmark::save_result_to_file(const std::filesystem::path& path, const t_result& result)
+void Benchmark::save_result_to_file(const std::filesystem::path &path, const t_result &result)
 {
     nlohmann::json j;
     j["fps"] = result.fps;

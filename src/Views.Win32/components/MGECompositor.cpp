@@ -8,15 +8,15 @@
 #include "MGECompositor.h"
 #include <Messenger.h>
 
-
 constexpr auto CONTROL_CLASS_NAME = L"game_control";
 
-struct t_mge_context {
+struct t_mge_context
+{
     int32_t last_width{};
     int32_t last_height{};
     int32_t width{};
     int32_t height{};
-    void* buffer{};
+    void *buffer{};
 
     HWND hwnd{};
     BITMAPINFO bmp_info{};
@@ -31,12 +31,12 @@ static LRESULT CALLBACK wndproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
 {
     switch (msg)
     {
-    case WM_PAINT:
-        {
-            BitBlt(mge_context.front_dc, 0, 0, mge_context.bmp_info.bmiHeader.biWidth, mge_context.bmp_info.bmiHeader.biHeight, mge_context.dc, 0, 0, SRCCOPY);
-            ValidateRect(hwnd, nullptr);
-            return 0;
-        }
+    case WM_PAINT: {
+        BitBlt(mge_context.front_dc, 0, 0, mge_context.bmp_info.bmiHeader.biWidth,
+               mge_context.bmp_info.bmiHeader.biHeight, mge_context.dc, 0, 0, SRCCOPY);
+        ValidateRect(hwnd, nullptr);
+        return 0;
+    }
     default:
         break;
     }
@@ -60,7 +60,8 @@ static void recreate_mge_context()
     const auto mge_dc = GetDC(mge_context.hwnd);
 
     mge_context.dc = CreateCompatibleDC(mge_dc);
-    mge_context.dib = CreateDIBSection(mge_context.dc, &mge_context.bmp_info, DIB_RGB_COLORS, &mge_context.buffer, nullptr, 0);
+    mge_context.dib =
+        CreateDIBSection(mge_context.dc, &mge_context.bmp_info, DIB_RGB_COLORS, &mge_context.buffer, nullptr, 0);
     SelectObject(mge_context.dc, mge_context.dib);
 
     ReleaseDC(mge_context.hwnd, mge_dc);
@@ -68,7 +69,8 @@ static void recreate_mge_context()
 
 void MGECompositor::create(HWND hwnd)
 {
-    mge_context.hwnd = CreateWindow(CONTROL_CLASS_NAME, L"", WS_CHILD | WS_VISIBLE, 0, 0, 1, 1, hwnd, nullptr, g_main_ctx.hinst, nullptr);
+    mge_context.hwnd = CreateWindow(CONTROL_CLASS_NAME, L"", WS_CHILD | WS_VISIBLE, 0, 0, 1, 1, hwnd, nullptr,
+                                    g_main_ctx.hinst, nullptr);
     mge_context.front_dc = GetDC(mge_context.hwnd);
 }
 
@@ -87,7 +89,7 @@ void MGECompositor::init()
     mge_context.bmp_info.bmiHeader.biBitCount = 24;
     mge_context.bmp_info.bmiHeader.biCompression = BI_RGB;
 
-    Messenger::subscribe(Messenger::Message::EmuLaunchedChanged, [](const std::any& data) {
+    Messenger::subscribe(Messenger::Message::EmuLaunchedChanged, [](const std::any &data) {
         const auto value = std::any_cast<bool>(data);
         ShowWindow(mge_context.hwnd, value && g_main_ctx.core_ctx->vr_get_mge_available() ? SW_SHOW : SW_HIDE);
     });
@@ -112,7 +114,7 @@ void MGECompositor::update_screen()
     RedrawWindow(mge_context.hwnd, nullptr, nullptr, RDW_INVALIDATE);
 }
 
-void MGECompositor::get_video_size(int32_t* width, int32_t* height)
+void MGECompositor::get_video_size(int32_t *width, int32_t *height)
 {
     if (width)
     {
@@ -124,12 +126,12 @@ void MGECompositor::get_video_size(int32_t* width, int32_t* height)
     }
 }
 
-void MGECompositor::copy_video(void* buffer)
+void MGECompositor::copy_video(void *buffer)
 {
     memcpy(buffer, mge_context.buffer, mge_context.width * mge_context.height * 3);
 }
 
-void MGECompositor::load_screen(void* data)
+void MGECompositor::load_screen(void *data)
 {
     memcpy(mge_context.buffer, data, mge_context.width * mge_context.height * 3);
     RedrawWindow(mge_context.hwnd, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);

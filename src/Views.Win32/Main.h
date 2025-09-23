@@ -24,9 +24,10 @@
 #define VIEW_DLG_PLUGIN_LOAD_ERROR "VIEW_DLG_PLUGIN_LOAD_ERROR"
 #define VIEW_DLG_RAMSTART "VIEW_DLG_RAMSTART"
 
-struct t_main_context {
+struct t_main_context
+{
     core_params core{};
-    core_ctx* core_ctx{};
+    core_ctx *core_ctx{};
     PlatformService io_service{};
     bool frame_changed{};
     int last_wheel_delta{};
@@ -43,21 +44,22 @@ struct t_main_context {
 /**
  * \brief Pauses the emulation during the object's lifetime, resuming it if previously paused upon being destroyed
  */
-struct BetterEmulationLock {
-private:
+struct BetterEmulationLock
+{
+  private:
     bool was_paused;
 
-public:
+  public:
     BetterEmulationLock();
     ~BetterEmulationLock();
 };
 
-struct t_window_info {
+struct t_window_info
+{
     long width;
     long height;
     long statusbar_height;
 };
-
 
 extern t_main_context g_main_ctx;
 
@@ -68,7 +70,8 @@ static bool task_is_playback(const core_vcr_task task)
 
 static bool vcr_is_task_recording(const core_vcr_task task)
 {
-    return task == task_recording || task == task_start_recording_from_reset || task == task_start_recording_from_existing_snapshot || task == task_start_recording_from_snapshot;
+    return task == task_recording || task == task_start_recording_from_reset ||
+           task == task_start_recording_from_existing_snapshot || task == task_start_recording_from_snapshot;
 }
 
 /**
@@ -99,7 +102,7 @@ bool is_on_gui_thread();
  * \param hwnd The parent window handle for the spawned dialog. If null, the main window is used.
  * \returns Whether the function was able to show an error dialog.
  */
-bool show_error_dialog_for_result(core_result result, void* hwnd = nullptr);
+bool show_error_dialog_for_result(core_result result, void *hwnd = nullptr);
 
 /**
  * \brief Sets the current working directory to the application path.

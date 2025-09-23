@@ -11,25 +11,22 @@
 
 void MFC1()
 {
-    if (check_cop1_unusable())
-        return;
-    rrt32 = *((int32_t*)reg_cop1_simple[core_rfs]);
+    if (check_cop1_unusable()) return;
+    rrt32 = *((int32_t *)reg_cop1_simple[core_rfs]);
     sign_extended(core_rrt);
     PC++;
 }
 
 void DMFC1()
 {
-    if (check_cop1_unusable())
-        return;
-    core_rrt = *((int64_t*)reg_cop1_double[core_rfs]);
+    if (check_cop1_unusable()) return;
+    core_rrt = *((int64_t *)reg_cop1_double[core_rfs]);
     PC++;
 }
 
 void CFC1()
 {
-    if (check_cop1_unusable())
-        return;
+    if (check_cop1_unusable()) return;
     if (core_rfs == 31)
     {
         rrt32 = FCR31;
@@ -45,26 +42,22 @@ void CFC1()
 
 void MTC1()
 {
-    if (check_cop1_unusable())
-        return;
-    *((int32_t*)reg_cop1_simple[core_rfs]) = rrt32;
+    if (check_cop1_unusable()) return;
+    *((int32_t *)reg_cop1_simple[core_rfs]) = rrt32;
     PC++;
 }
 
 void DMTC1()
 {
-    if (check_cop1_unusable())
-        return;
-    *((int64_t*)reg_cop1_double[core_rfs]) = core_rrt;
+    if (check_cop1_unusable()) return;
+    *((int64_t *)reg_cop1_double[core_rfs]) = core_rrt;
     PC++;
 }
 
 void CTC1()
 {
-    if (check_cop1_unusable())
-        return;
-    if (core_rfs == 31)
-        FCR31 = rrt32;
+    if (check_cop1_unusable()) return;
+    if (core_rfs == 31) FCR31 = rrt32;
     switch ((FCR31 & 3))
     {
     case 0:

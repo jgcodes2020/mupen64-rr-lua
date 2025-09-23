@@ -130,31 +130,24 @@ std::wstring get_mupen_name()
 static void prompt_plugin_change()
 {
     auto result = DialogService::show_multiple_choice_dialog(
-    VIEW_DLG_PLUGIN_LOAD_ERROR,
-    {L"Choose Default Plugins", L"Change Plugins", L"Cancel"},
-    L"One or more plugins couldn't be loaded.\r\nHow would you like to proceed?",
-    L"Core",
-    fsvc_error);
+        VIEW_DLG_PLUGIN_LOAD_ERROR, {L"Choose Default Plugins", L"Change Plugins", L"Cancel"},
+        L"One or more plugins couldn't be loaded.\r\nHow would you like to proceed?", L"Core", fsvc_error);
 
     if (result == 0)
     {
         auto plugin_discovery_result = PluginUtil::discover_plugins(Config::plugin_directory());
 
-        auto first_video_plugin = std::ranges::find_if(plugin_discovery_result.plugins, [](const auto& plugin) {
-            return plugin->type() == plugin_video;
-        });
+        auto first_video_plugin = std::ranges::find_if(
+            plugin_discovery_result.plugins, [](const auto &plugin) { return plugin->type() == plugin_video; });
 
-        auto first_audio_plugin = std::ranges::find_if(plugin_discovery_result.plugins, [](const auto& plugin) {
-            return plugin->type() == plugin_audio;
-        });
+        auto first_audio_plugin = std::ranges::find_if(
+            plugin_discovery_result.plugins, [](const auto &plugin) { return plugin->type() == plugin_audio; });
 
-        auto first_input_plugin = std::ranges::find_if(plugin_discovery_result.plugins, [](const auto& plugin) {
-            return plugin->type() == plugin_input;
-        });
+        auto first_input_plugin = std::ranges::find_if(
+            plugin_discovery_result.plugins, [](const auto &plugin) { return plugin->type() == plugin_input; });
 
-        auto first_rsp_plugin = std::ranges::find_if(plugin_discovery_result.plugins, [](const auto& plugin) {
-            return plugin->type() == plugin_rsp;
-        });
+        auto first_rsp_plugin = std::ranges::find_if(plugin_discovery_result.plugins,
+                                                     [](const auto &plugin) { return plugin->type() == plugin_rsp; });
 
         if (first_video_plugin != plugin_discovery_result.plugins.end())
         {
@@ -186,7 +179,7 @@ static void prompt_plugin_change()
     }
 }
 
-bool show_error_dialog_for_result(const core_result result, void* hwnd)
+bool show_error_dialog_for_result(const core_result result, void *hwnd)
 {
     if (result == Res_Ok || result == Res_Cancelled || result == VCR_InvalidControllers)
     {
@@ -309,54 +302,39 @@ bool show_error_dialog_for_result(const core_result result, void* hwnd)
     return true;
 }
 
-const wchar_t* get_input_text()
+const wchar_t *get_input_text()
 {
     static wchar_t text[1024]{};
     memset(text, 0, sizeof(text));
 
     core_buttons b = LuaCallbacks::get_last_controller_data(0);
     wsprintf(text, L"(%d, %d) ", b.y, b.x);
-    if (b.start)
-        lstrcatW(text, L"S");
-    if (b.z)
-        lstrcatW(text, L"Z");
-    if (b.a)
-        lstrcatW(text, L"A");
-    if (b.b)
-        lstrcatW(text, L"B");
-    if (b.l)
-        lstrcatW(text, L"L");
-    if (b.r)
-        lstrcatW(text, L"R");
-    if (b.cu || b.cd || b.cl ||
-        b.cr)
+    if (b.start) lstrcatW(text, L"S");
+    if (b.z) lstrcatW(text, L"Z");
+    if (b.a) lstrcatW(text, L"A");
+    if (b.b) lstrcatW(text, L"B");
+    if (b.l) lstrcatW(text, L"L");
+    if (b.r) lstrcatW(text, L"R");
+    if (b.cu || b.cd || b.cl || b.cr)
     {
         lstrcatW(text, L" C");
-        if (b.cu)
-            lstrcatW(text, L"^");
-        if (b.cd)
-            lstrcatW(text, L"v");
-        if (b.cl)
-            lstrcatW(text, L"<");
-        if (b.cr)
-            lstrcatW(text, L">");
+        if (b.cu) lstrcatW(text, L"^");
+        if (b.cd) lstrcatW(text, L"v");
+        if (b.cl) lstrcatW(text, L"<");
+        if (b.cr) lstrcatW(text, L">");
     }
     if (b.du || b.dd || b.dl || b.dr)
     {
         lstrcatW(text, L"D");
-        if (b.du)
-            lstrcatW(text, L"^");
-        if (b.dd)
-            lstrcatW(text, L"v");
-        if (b.dl)
-            lstrcatW(text, L"<");
-        if (b.dr)
-            lstrcatW(text, L">");
+        if (b.du) lstrcatW(text, L"^");
+        if (b.dd) lstrcatW(text, L"v");
+        if (b.dl) lstrcatW(text, L"<");
+        if (b.dr) lstrcatW(text, L">");
     }
     return text;
 }
 
-const wchar_t* get_status_text()
+const wchar_t *get_status_text()
 {
     static wchar_t text[1024]{};
     memset(text, 0, sizeof(text));
@@ -370,7 +348,8 @@ const wchar_t* get_status_text()
 
     if (g_main_ctx.core_ctx->vcr_get_warp_modify_status())
     {
-        StringCbPrintfW(text, sizeof(text), L"Warping (%.2f%%)", (double)current_sample / (double)g_main_ctx.core_ctx->vcr_get_length_samples() * 100.0);
+        StringCbPrintfW(text, sizeof(text), L"Warping (%.2f%%)",
+                        (double)current_sample / (double)g_main_ctx.core_ctx->vcr_get_length_samples() * 100.0);
         return text;
     }
 
@@ -394,13 +373,13 @@ const wchar_t* get_status_text()
         }
         else
         {
-            wsprintfW(text, L"%d / %d (%d / %d) ", current_vi, g_main_ctx.core_ctx->vcr_get_length_vis(), current_sample - index_adjustment, g_main_ctx.core_ctx->vcr_get_length_samples());
+            wsprintfW(text, L"%d / %d (%d / %d) ", current_vi, g_main_ctx.core_ctx->vcr_get_length_vis(),
+                      current_sample - index_adjustment, g_main_ctx.core_ctx->vcr_get_length_samples());
         }
     }
 
     return text;
 }
-
 
 std::filesystem::path get_summercart_path()
 {
@@ -410,11 +389,13 @@ std::filesystem::path get_summercart_path()
 std::filesystem::path get_st_with_slot_path(const size_t slot)
 {
     const auto hdr = g_main_ctx.core_ctx->vr_get_rom_header();
-    const auto fname = std::format(L"{} {}.st{}", g_main_ctx.io_service.string_to_wstring((const char*)hdr->nom), g_main_ctx.core_ctx->vr_country_code_to_country_name(hdr->Country_code), std::to_wstring(slot));
+    const auto fname =
+        std::format(L"{} {}.st{}", g_main_ctx.io_service.string_to_wstring((const char *)hdr->nom),
+                    g_main_ctx.core_ctx->vr_country_code_to_country_name(hdr->Country_code), std::to_wstring(slot));
     return Config::save_directory() / fname;
 }
 
-void st_callback_wrapper(const core_st_callback_info& info, const std::vector<uint8_t>&)
+void st_callback_wrapper(const core_st_callback_info &info, const std::vector<uint8_t> &)
 {
     if (info.medium == core_st_medium_memory)
     {
@@ -423,7 +404,7 @@ void st_callback_wrapper(const core_st_callback_info& info, const std::vector<ui
 
     if (info.medium == core_st_medium_path)
     {
-        const auto& fname = info.params.path.filename().wstring();
+        const auto &fname = info.params.path.filename().wstring();
         const bool is_slot = fname.find(L".st") != std::wstring::npos && std::isdigit(fname.back());
 
         if (is_slot)
@@ -433,13 +414,15 @@ void st_callback_wrapper(const core_st_callback_info& info, const std::vector<ui
             switch (info.result)
             {
             case Res_Ok:
-                Statusbar::post(std::format(L"{} slot {}", info.job == core_st_job_save ? L"Saved" : L"Loaded", slot + 1));
+                Statusbar::post(
+                    std::format(L"{} slot {}", info.job == core_st_job_save ? L"Saved" : L"Loaded", slot + 1));
                 break;
             case Res_Cancelled:
                 Statusbar::post(std::format(L"Cancelled {}", info.job == core_st_job_save ? L"save" : L"load"));
                 break;
             default:
-                Statusbar::post(std::format(L"Failed to {} slot {}", info.job == core_st_job_save ? L"save" : L"load", slot + 1));
+                Statusbar::post(
+                    std::format(L"Failed to {} slot {}", info.job == core_st_job_save ? L"save" : L"load", slot + 1));
                 break;
             }
             return;
@@ -448,20 +431,20 @@ void st_callback_wrapper(const core_st_callback_info& info, const std::vector<ui
         switch (info.result)
         {
         case Res_Ok:
-            Statusbar::post(std::format(L"{} {}", info.job == core_st_job_save ? L"Saved" : L"Loaded", info.params.path.filename().wstring()));
+            Statusbar::post(std::format(L"{} {}", info.job == core_st_job_save ? L"Saved" : L"Loaded",
+                                        info.params.path.filename().wstring()));
             break;
         case Res_Cancelled:
             Statusbar::post(std::format(L"Cancelled {}", info.job == core_st_job_save ? L"save" : L"load"));
             break;
-        default:
-            {
-                const auto message = std::format(L"Failed to {} {} (error code {}).\nVerify that the savestate is valid and accessible.",
-                                                 info.job == core_st_job_save ? L"save" : L"load",
-                                                 info.params.path.filename().wstring(),
-                                                 (int32_t)info.result);
-                DialogService::show_dialog(message.c_str(), L"Savestate", fsvc_error);
-                break;
-            }
+        default: {
+            const auto message =
+                std::format(L"Failed to {} {} (error code {}).\nVerify that the savestate is valid and accessible.",
+                            info.job == core_st_job_save ? L"save" : L"load", info.params.path.filename().wstring(),
+                            (int32_t)info.result);
+            DialogService::show_dialog(message.c_str(), L"Savestate", fsvc_error);
+            break;
+        }
         }
     }
 }
@@ -509,7 +492,8 @@ void update_titlebar()
 
     if (g_main_ctx.core_ctx->vr_get_launched())
     {
-        text += std::format(L" - {}", g_main_ctx.io_service.string_to_wstring(reinterpret_cast<char*>(g_main_ctx.core_ctx->vr_get_rom_header()->nom)));
+        text += std::format(L" - {}", g_main_ctx.io_service.string_to_wstring(
+                                          reinterpret_cast<char *>(g_main_ctx.core_ctx->vr_get_rom_header()->nom)));
     }
 
     if (g_main_ctx.core_ctx->vcr_get_task() != task_idle)
@@ -534,7 +518,8 @@ void on_script_started(std::any data)
 {
     g_main_ctx.dispatcher->invoke([=] {
         auto value = std::any_cast<std::filesystem::path>(data);
-        RecentMenu::add(AppActions::RECENT_SCRIPTS, g_config.recent_lua_script_paths, value.wstring(), g_config.is_recent_scripts_frozen);
+        RecentMenu::add(AppActions::RECENT_SCRIPTS, g_config.recent_lua_script_paths, value.wstring(),
+                        g_config.is_recent_scripts_frozen);
     });
 }
 
@@ -552,9 +537,12 @@ void on_task_changed(std::any data)
             Statusbar::post(L"Playback stopped");
         }
 
-        if ((vcr_is_task_recording(value) && !vcr_is_task_recording(previous_value)) || task_is_playback(value) && !task_is_playback(previous_value) && !g_main_ctx.core_ctx->vcr_get_path().empty())
+        if ((vcr_is_task_recording(value) && !vcr_is_task_recording(previous_value)) ||
+            task_is_playback(value) && !task_is_playback(previous_value) &&
+                !g_main_ctx.core_ctx->vcr_get_path().empty())
         {
-            RecentMenu::add(AppActions::RECENT_MOVIES, g_config.recent_movie_paths, g_main_ctx.core_ctx->vcr_get_path().wstring(), g_config.is_recent_movie_paths_frozen);
+            RecentMenu::add(AppActions::RECENT_MOVIES, g_config.recent_movie_paths,
+                            g_main_ctx.core_ctx->vcr_get_path().wstring(), g_config.is_recent_movie_paths_frozen);
         }
 
         update_titlebar();
@@ -598,7 +586,8 @@ void on_emu_launched_changed(std::any data)
             const auto rom_path = g_main_ctx.core_ctx->vr_get_rom_path();
             if (!rom_path.empty())
             {
-                RecentMenu::add(AppActions::RECENT_ROMS, g_config.recent_rom_paths, rom_path.wstring(), g_config.is_recent_rom_paths_frozen);
+                RecentMenu::add(AppActions::RECENT_ROMS, g_config.recent_rom_paths, rom_path.wstring(),
+                                g_config.is_recent_rom_paths_frozen);
             }
 
             LuaDialog::load_running_scripts();
@@ -606,7 +595,8 @@ void on_emu_launched_changed(std::any data)
 
         if (!value && previous_value)
         {
-            g_view_logger->info("[View] Restoring window size to {}x{}...", g_config.window_width, g_config.window_height);
+            g_view_logger->info("[View] Restoring window size to {}x{}...", g_config.window_width,
+                                g_config.window_height);
             SetWindowPos(g_main_ctx.hwnd, nullptr, 0, 0, g_config.window_width, g_config.window_height, SWP_NOMOVE);
         }
 
@@ -624,7 +614,8 @@ void on_capturing_changed(std::any data)
         if (value)
         {
             SetWindowLong(g_main_ctx.hwnd, GWL_STYLE, GetWindowLong(g_main_ctx.hwnd, GWL_STYLE) & ~WS_MINIMIZEBOX);
-            // NOTE: WS_EX_LAYERED fixes BitBlt'ing from the window when its off-screen, as it wouldnt redraw otherwise (relevant for Window capture mode)
+            // NOTE: WS_EX_LAYERED fixes BitBlt'ing from the window when its off-screen, as it wouldnt redraw otherwise
+            // (relevant for Window capture mode)
             SetWindowLong(g_main_ctx.hwnd, GWL_EXSTYLE, GetWindowLong(g_main_ctx.hwnd, GWL_EXSTYLE) | WS_EX_LAYERED);
         }
         else
@@ -642,7 +633,8 @@ void on_speed_modifier_changed(std::any data)
 {
     auto value = std::any_cast<int32_t>(data);
 
-    const auto vis_per_second = g_main_ctx.core_ctx->vr_get_vis_per_second(g_main_ctx.core_ctx->vr_get_rom_header()->Country_code);
+    const auto vis_per_second =
+        g_main_ctx.core_ctx->vr_get_vis_per_second(g_main_ctx.core_ctx->vr_get_rom_header()->Country_code);
     const auto effective_vis_per_second = (double)vis_per_second * ((double)value / 100.0);
 
     Statusbar::post(std::format(L"Speed limit: {}% ({:.0f} VI/s)", value, effective_vis_per_second));
@@ -660,7 +652,11 @@ void on_vis_since_input_poll_exceeded(std::any)
         return;
     }
 
-    if (g_config.silent_mode || DialogService::show_ask_dialog(VIEW_DLG_LAG_EXCEEDED, L"An unusual execution pattern was detected. Continuing might leave the emulator in an unusable state.\r\nWould you like to terminate emulation?", L"Warning", true))
+    if (g_config.silent_mode ||
+        DialogService::show_ask_dialog(VIEW_DLG_LAG_EXCEEDED,
+                                       L"An unusual execution pattern was detected. Continuing might leave the "
+                                       L"emulator in an unusable state.\r\nWould you like to terminate emulation?",
+                                       L"Warning", true))
     {
         ThreadPool::submit_task([] {
             const auto result = g_main_ctx.core_ctx->vr_close_rom(true);
@@ -694,13 +690,11 @@ void on_seek_completed(std::any)
     LuaCallbacks::call_seek_completed();
 }
 
-
 void on_warp_modify_status_changed(std::any data)
 {
     auto value = std::any_cast<bool>(data);
     LuaCallbacks::call_warp_modify_status_changed(value);
 }
-
 
 void on_emu_starting_changed(std::any data)
 {
@@ -720,8 +714,7 @@ t_window_info get_window_info()
     info.height = client_rect.bottom - client_rect.top;
 
     RECT statusbar_rect = {0};
-    if (Statusbar::hwnd())
-        GetClientRect(Statusbar::hwnd(), &statusbar_rect);
+    if (Statusbar::hwnd()) GetClientRect(Statusbar::hwnd(), &statusbar_rect);
     info.statusbar_height = statusbar_rect.bottom - statusbar_rect.top;
 
     // subtract size of toolbar and statusbar from buffer dimensions
@@ -758,7 +751,7 @@ std::filesystem::path get_app_full_path()
 void open_console()
 {
     AllocConsole();
-    FILE* f = 0;
+    FILE *f = 0;
     freopen_s(&f, "CONIN$", "r", stdin);
     freopen_s(&f, "CONOUT$", "w", stdout);
     freopen_s(&f, "CONOUT$", "w", stderr);
@@ -772,44 +765,44 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
     case WM_INVALIDATE_LUA:
         LuaRenderer::invalidate_visuals();
         break;
-    case WM_DROPFILES:
+    case WM_DROPFILES: {
+        auto drop = (HDROP)wParam;
+        wchar_t fname[MAX_PATH] = {0};
+        DragQueryFile(drop, 0, fname, std::size(fname));
+
+        std::filesystem::path path = fname;
+        std::string extension = MiscHelpers::to_lower(path.extension().string());
+
+        if (extension == ".n64" || extension == ".z64" || extension == ".v64" || extension == ".rom")
         {
-            auto drop = (HDROP)wParam;
-            wchar_t fname[MAX_PATH] = {0};
-            DragQueryFile(drop, 0, fname, std::size(fname));
-
-            std::filesystem::path path = fname;
-            std::string extension = MiscHelpers::to_lower(path.extension().string());
-
-            if (extension == ".n64" || extension == ".z64" || extension == ".v64" || extension == ".rom")
-            {
-                AppActions::load_rom_from_path(path);
-            }
-            else if (extension == ".m64")
-            {
-                g_config.core.vcr_readonly = true;
-                Messenger::broadcast(Messenger::Message::ReadonlyChanged, (bool)g_config.core.vcr_readonly);
-                ThreadPool::submit_task([fname] {
-                    auto result = g_main_ctx.core_ctx->vcr_start_playback(fname);
-                    show_error_dialog_for_result(result);
-                });
-            }
-            else if (extension == ".st" || extension == ".savestate" || extension == ".st0" || extension == ".st1" || extension == ".st2" || extension == ".st3" || extension == ".st4" || extension == ".st5" || extension == ".st6" || extension == ".st7" || extension == ".st8" || extension == ".st9")
-            {
-                if (!g_main_ctx.core_ctx->vr_get_launched())
-                    break;
-                g_main_ctx.core_ctx->vr_wait_increment();
-                ThreadPool::submit_task([=] {
-                    g_main_ctx.core_ctx->vr_wait_decrement();
-                    g_main_ctx.core_ctx->st_do_file(fname, core_st_job_load, nullptr, false);
-                });
-            }
-            else if (extension == ".lua")
-            {
-                LuaDialog::start_and_add_if_needed(path);
-            }
-            break;
+            AppActions::load_rom_from_path(path);
         }
+        else if (extension == ".m64")
+        {
+            g_config.core.vcr_readonly = true;
+            Messenger::broadcast(Messenger::Message::ReadonlyChanged, (bool)g_config.core.vcr_readonly);
+            ThreadPool::submit_task([fname] {
+                auto result = g_main_ctx.core_ctx->vcr_start_playback(fname);
+                show_error_dialog_for_result(result);
+            });
+        }
+        else if (extension == ".st" || extension == ".savestate" || extension == ".st0" || extension == ".st1" ||
+                 extension == ".st2" || extension == ".st3" || extension == ".st4" || extension == ".st5" ||
+                 extension == ".st6" || extension == ".st7" || extension == ".st8" || extension == ".st9")
+        {
+            if (!g_main_ctx.core_ctx->vr_get_launched()) break;
+            g_main_ctx.core_ctx->vr_wait_increment();
+            ThreadPool::submit_task([=] {
+                g_main_ctx.core_ctx->vr_wait_decrement();
+                g_main_ctx.core_ctx->st_do_file(fname, core_st_job_load, nullptr, false);
+            });
+        }
+        else if (extension == ".lua")
+        {
+            LuaDialog::start_and_add_if_needed(path);
+        }
+        break;
+    }
     case WM_KEYDOWN:
     case WM_SYSKEYDOWN:
         if (g_main_ctx.core.plugin_funcs.input_key_down && g_main_ctx.core_ctx->vr_get_launched())
@@ -826,59 +819,56 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
         // https://github.com/mkdasher/mupen64-rr-lua-/issues/190
         LuaCallbacks::call_window_message(hwnd, Message, wParam, lParam);
         break;
-    case WM_NOTIFY:
+    case WM_NOTIFY: {
+        if (wParam == IDC_ROMLIST)
         {
-            if (wParam == IDC_ROMLIST)
-            {
-                RomBrowser::notify(lParam);
-            }
-            return 0;
+            RomBrowser::notify(lParam);
         }
-    case WM_MOVE:
+        return 0;
+    }
+    case WM_MOVE: {
+        if (g_main_ctx.core_ctx->vr_get_launched())
         {
-            if (g_main_ctx.core_ctx->vr_get_launched())
-            {
-                g_main_ctx.core.plugin_funcs.video_move_screen((int)wParam, lParam);
-            }
+            g_main_ctx.core.plugin_funcs.video_move_screen((int)wParam, lParam);
+        }
 
-            if (IsIconic(g_main_ctx.hwnd))
-            {
-                // GetWindowRect values are nonsense when minimized
-                break;
-            }
-
-            RECT rect = {0};
-            GetWindowRect(g_main_ctx.hwnd, &rect);
-            g_config.window_x = rect.left;
-            g_config.window_y = rect.top;
+        if (IsIconic(g_main_ctx.hwnd))
+        {
+            // GetWindowRect values are nonsense when minimized
             break;
         }
-    case WM_SIZE:
+
+        RECT rect = {0};
+        GetWindowRect(g_main_ctx.hwnd, &rect);
+        g_config.window_x = rect.left;
+        g_config.window_y = rect.top;
+        break;
+    }
+    case WM_SIZE: {
+        SendMessage(Statusbar::hwnd(), WM_SIZE, 0, 0);
+        RECT rect{};
+        GetClientRect(g_main_ctx.hwnd, &rect);
+        Messenger::broadcast(Messenger::Message::SizeChanged, rect);
+
+        if (g_main_ctx.core_ctx->vr_get_launched())
         {
-            SendMessage(Statusbar::hwnd(), WM_SIZE, 0, 0);
-            RECT rect{};
-            GetClientRect(g_main_ctx.hwnd, &rect);
-            Messenger::broadcast(Messenger::Message::SizeChanged, rect);
-
-            if (g_main_ctx.core_ctx->vr_get_launched())
-            {
-                // We don't need to remember the dimensions set by gfx plugin
-                break;
-            }
-
-            if (IsIconic(g_main_ctx.hwnd))
-            {
-                // GetWindowRect values are nonsense when minimized
-                break;
-            }
-
-            // Window creation expects the size with nc area, so it's easiest to just use the window rect here
-            GetWindowRect(hwnd, &rect);
-            g_config.window_width = rect.right - rect.left;
-            g_config.window_height = rect.bottom - rect.top;
-
+            // We don't need to remember the dimensions set by gfx plugin
             break;
         }
+
+        if (IsIconic(g_main_ctx.hwnd))
+        {
+            // GetWindowRect values are nonsense when minimized
+            break;
+        }
+
+        // Window creation expects the size with nc area, so it's easiest to just use the window rect here
+        GetWindowRect(hwnd, &rect);
+        g_config.window_width = rect.right - rect.left;
+        g_config.window_height = rect.bottom - rect.top;
+
+        break;
+    }
     case WM_FOCUS_MAIN_WINDOW:
         SetFocus(g_main_ctx.hwnd);
         break;
@@ -915,33 +905,30 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
 
             std::thread([] {
                 g_main_ctx.core_ctx->vr_close_rom(true);
-                g_main_ctx.dispatcher->invoke([] {
-                    DestroyWindow(g_main_ctx.hwnd);
-                });
-            })
-            .detach();
+                g_main_ctx.dispatcher->invoke([] { DestroyWindow(g_main_ctx.hwnd); });
+            }).detach();
             break;
         }
         return 0;
     case WM_WINDOWPOSCHANGING: // allow gfx plugin to set arbitrary size
         return 0;
-    case WM_GETMINMAXINFO:
-        {
-            LPMINMAXINFO lpMMI = (LPMINMAXINFO)lParam;
-            lpMMI->ptMinTrackSize.x = 100;
-            lpMMI->ptMinTrackSize.y = 100;
-            // this might break small res with gfx plugin!!!
-        }
-        break;
+    case WM_GETMINMAXINFO: {
+        LPMINMAXINFO lpMMI = (LPMINMAXINFO)lParam;
+        lpMMI->ptMinTrackSize.x = 100;
+        lpMMI->ptMinTrackSize.y = 100;
+        // this might break small res with gfx plugin!!!
+    }
+    break;
     case WM_ENTERMENULOOP:
         g_main_ctx.in_menu_loop = true;
         g_main_ctx.paused_before_menu = g_main_ctx.core_ctx->vr_get_paused();
         g_main_ctx.core_ctx->vr_pause_emu();
         break;
     case WM_EXITMENULOOP:
-        // This message is sent when we escape the blocking menu loop, including situations where the clicked menu spawns a dialog.
-        // In those situations, we would unpause the game here (since this message is sent first), and then pause it again in the menu item message handler.
-        // It's almost guaranteed that a game frame will pass between those messages, so we need to wait a bit on another thread before unpausing.
+        // This message is sent when we escape the blocking menu loop, including situations where the clicked menu
+        // spawns a dialog. In those situations, we would unpause the game here (since this message is sent first), and
+        // then pause it again in the menu item message handler. It's almost guaranteed that a game frame will pass
+        // between those messages, so we need to wait a bit on another thread before unpausing.
         std::thread([] {
             Sleep(60);
             g_main_ctx.in_menu_loop = false;
@@ -953,8 +940,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
             {
                 g_main_ctx.core_ctx->vr_resume_emu();
             }
-        })
-        .detach();
+        }).detach();
         break;
     case WM_ACTIVATE:
         UpdateWindow(hwnd);
@@ -998,7 +984,11 @@ void on_new_frame()
 
 bool load_plugins()
 {
-    if (g_video_plugin.get() && g_audio_plugin.get() && g_input_plugin.get() && g_rsp_plugin.get() && g_video_plugin->path() == g_config.selected_video_plugin && g_audio_plugin->path() == g_config.selected_audio_plugin && g_input_plugin->path() == g_config.selected_input_plugin && g_rsp_plugin->path() == g_config.selected_rsp_plugin)
+    if (g_video_plugin.get() && g_audio_plugin.get() && g_input_plugin.get() && g_rsp_plugin.get() &&
+        g_video_plugin->path() == g_config.selected_video_plugin &&
+        g_audio_plugin->path() == g_config.selected_audio_plugin &&
+        g_input_plugin->path() == g_config.selected_input_plugin &&
+        g_rsp_plugin->path() == g_config.selected_rsp_plugin)
     {
         g_core_logger->info("[Core] Plugins unchanged, reusing...");
     }
@@ -1036,7 +1026,8 @@ bool load_plugins()
             g_view_logger->error(L"Failed to load rsp plugin: {}", rsp_pl.first);
         }
 
-        if (video_pl.second == nullptr || audio_pl.second == nullptr || input_pl.second == nullptr || rsp_pl.second == nullptr)
+        if (video_pl.second == nullptr || audio_pl.second == nullptr || input_pl.second == nullptr ||
+            rsp_pl.second == nullptr)
         {
             video_pl.second.reset();
             audio_pl.second.reset();
@@ -1056,21 +1047,13 @@ bool load_plugins()
 void initiate_plugins()
 {
     // HACK: We sleep between each plugin load, as that seems to remedy various plugins failing to initialize correctly.
-    auto gfx_plugin_thread = std::thread([] {
-        g_video_plugin->initiate();
-    });
+    auto gfx_plugin_thread = std::thread([] { g_video_plugin->initiate(); });
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
-    auto audio_plugin_thread = std::thread([] {
-        g_audio_plugin->initiate();
-    });
+    auto audio_plugin_thread = std::thread([] { g_audio_plugin->initiate(); });
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
-    auto input_plugin_thread = std::thread([] {
-        g_input_plugin->initiate();
-    });
+    auto input_plugin_thread = std::thread([] { g_input_plugin->initiate(); });
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
-    auto rsp_plugin_thread = std::thread([] {
-        g_rsp_plugin->initiate();
-    });
+    auto rsp_plugin_thread = std::thread([] { g_rsp_plugin->initiate(); });
 
     gfx_plugin_thread.join();
     audio_plugin_thread.join();
@@ -1085,7 +1068,8 @@ static void CALLBACK invalidate_callback(UINT, UINT, DWORD_PTR, DWORD_PTR, DWORD
     // This has to be posted to ui thread since it requires synchronized access to the lua map
     PostMessage(g_main_ctx.hwnd, WM_INVALIDATE_LUA, 0, 0);
 
-    static std::chrono::high_resolution_clock::time_point last_statusbar_update = std::chrono::high_resolution_clock::now();
+    static std::chrono::high_resolution_clock::time_point last_statusbar_update =
+        std::chrono::high_resolution_clock::now();
     std::chrono::high_resolution_clock::time_point time = std::chrono::high_resolution_clock::now();
 
     if (g_frame_changed)
@@ -1100,7 +1084,8 @@ static void CALLBACK invalidate_callback(UINT, UINT, DWORD_PTR, DWORD_PTR, DWORD
             }
             else
             {
-                Statusbar::post(std::format(L"{}({})", get_status_text(), EncodingManager::get_video_frame()), Statusbar::Section::VCR);
+                Statusbar::post(std::format(L"{}({})", get_status_text(), EncodingManager::get_video_frame()),
+                                Statusbar::Section::VCR);
             }
         }
         else
@@ -1141,12 +1126,10 @@ static core_result init_core()
     g_main_ctx.core.callbacks.play_movie = LuaCallbacks::call_play_movie;
     g_main_ctx.core.callbacks.stop_movie = [] {
         LuaCallbacks::call_stop_movie();
-        if (g_config.stop_capture_at_movie_end && EncodingManager::is_capturing())
-            EncodingManager::stop_capture();
+        if (g_config.stop_capture_at_movie_end && EncodingManager::is_capturing()) EncodingManager::stop_capture();
     };
     g_main_ctx.core.callbacks.loop_movie = [] {
-        if (g_config.stop_capture_at_movie_end && EncodingManager::is_capturing())
-            EncodingManager::stop_capture();
+        if (g_config.stop_capture_at_movie_end && EncodingManager::is_capturing()) EncodingManager::stop_capture();
     };
     g_main_ctx.core.callbacks.save_state = LuaCallbacks::call_save_state;
     g_main_ctx.core.callbacks.load_state = LuaCallbacks::call_load_state;
@@ -1167,9 +1150,7 @@ static core_result init_core()
     g_main_ctx.core.callbacks.emu_starting_changed = [](bool value) {
         Messenger::broadcast(Messenger::Message::EmuStartingChanged, value);
     };
-    g_main_ctx.core.callbacks.emu_stopping = []() {
-        Messenger::broadcast(Messenger::Message::EmuStopping, nullptr);
-    };
+    g_main_ctx.core.callbacks.emu_stopping = []() { Messenger::broadcast(Messenger::Message::EmuStopping, nullptr); };
     g_main_ctx.core.callbacks.reset_completed = []() {
         Messenger::broadcast(Messenger::Message::ResetCompleted, nullptr);
     };
@@ -1204,7 +1185,7 @@ static core_result init_core()
     g_main_ctx.core.callbacks.debugger_resumed_changed = [](bool value) {
         Messenger::broadcast(Messenger::Message::DebuggerResumedChanged, value);
     };
-    g_main_ctx.core.callbacks.debugger_cpu_state_changed = [](core_dbg_cpu_state* value) {
+    g_main_ctx.core.callbacks.debugger_cpu_state_changed = [](core_dbg_cpu_state *value) {
         Messenger::broadcast(Messenger::Message::DebuggerCpuStateChanged, value);
     };
     g_main_ctx.core.callbacks.lag_limit_exceeded = []() {
@@ -1213,33 +1194,25 @@ static core_result init_core()
     g_main_ctx.core.callbacks.seek_status_changed = []() {
         Messenger::broadcast(Messenger::Message::SeekStatusChanged, nullptr);
     };
-    g_main_ctx.core.log_trace = [](const auto& str) {
-        g_core_logger->trace(str);
-    };
-    g_main_ctx.core.log_info = [](const auto& str) {
-        g_core_logger->info(str);
-    };
-    g_main_ctx.core.log_warn = [](const auto& str) {
-        g_core_logger->warn(str);
-    };
-    g_main_ctx.core.log_error = [](const auto& str) {
-        g_core_logger->error(str);
-    };
+    g_main_ctx.core.log_trace = [](const auto &str) { g_core_logger->trace(str); };
+    g_main_ctx.core.log_info = [](const auto &str) { g_core_logger->info(str); };
+    g_main_ctx.core.log_warn = [](const auto &str) { g_core_logger->warn(str); };
+    g_main_ctx.core.log_error = [](const auto &str) { g_core_logger->error(str); };
     g_main_ctx.core.load_plugins = load_plugins;
     g_main_ctx.core.initiate_plugins = initiate_plugins;
-    g_main_ctx.core.submit_task = [](const auto cb) {
-        ThreadPool::submit_task(cb);
-    };
+    g_main_ctx.core.submit_task = [](const auto cb) { ThreadPool::submit_task(cb); };
     g_main_ctx.core.get_saves_directory = Config::save_directory;
     g_main_ctx.core.get_backups_directory = Config::backup_directory;
     g_main_ctx.core.get_summercart_path = get_summercart_path;
-    g_main_ctx.core.show_multiple_choice_dialog = [](const std::string& id, const std::vector<std::wstring>& choices, const wchar_t* str, const wchar_t* title, core_dialog_type type) {
+    g_main_ctx.core.show_multiple_choice_dialog = [](const std::string &id, const std::vector<std::wstring> &choices,
+                                                     const wchar_t *str, const wchar_t *title, core_dialog_type type) {
         return DialogService::show_multiple_choice_dialog(id, choices, str, title, type);
     };
-    g_main_ctx.core.show_ask_dialog = [](const std::string& id, const wchar_t* str, const wchar_t* title, bool warning) {
+    g_main_ctx.core.show_ask_dialog = [](const std::string &id, const wchar_t *str, const wchar_t *title,
+                                         bool warning) {
         return DialogService::show_ask_dialog(id, str, title, warning);
     };
-    g_main_ctx.core.show_dialog = [](const wchar_t* str, const wchar_t* title, core_dialog_type type) {
+    g_main_ctx.core.show_dialog = [](const wchar_t *str, const wchar_t *title, core_dialog_type type) {
         DialogService::show_dialog(str, title, type);
     };
     g_main_ctx.core.show_statusbar = DialogService::show_statusbar;
@@ -1248,8 +1221,8 @@ static core_result init_core()
     g_main_ctx.core.find_available_rom = RomBrowser::find_available_rom;
     g_main_ctx.core.load_screen = MGECompositor::load_screen;
     g_main_ctx.core.st_pre_callback = st_callback_wrapper;
-    g_main_ctx.core.get_plugin_names = [](char* video, char* audio, char* input, char* rsp) {
-        const auto copy = [&](const std::shared_ptr<Plugin>& plugin, char* type) {
+    g_main_ctx.core.get_plugin_names = [](char *video, char *audio, char *input, char *rsp) {
+        const auto copy = [&](const std::shared_ptr<Plugin> &plugin, char *type) {
             runtime_assert(plugin.get(), L"Plugin not loaded");
             const auto result = strncpy_s(type, 64 - 1, plugin->name().c_str(), plugin->name().size());
             runtime_assert(!result, L"Plugin name copy failed");
@@ -1304,7 +1277,7 @@ void set_cwd()
 /**
  * \brief Calls IsDialogMessage for problematic modeless child dialogs with no message loops of their own.
  */
-static bool is_dialog_message(MSG* msg)
+static bool is_dialog_message(MSG *msg)
 {
     if (IsWindow(LuaDialog::hwnd()) && IsDialogMessage(LuaDialog::hwnd(), msg))
     {
@@ -1324,9 +1297,10 @@ static bool is_dialog_message(MSG* msg)
 /**
  * \brief Pumps messages while giving priority to dispatcher execution.
  */
-static bool dispatcher_prioritized_message_pump(MSG* msg)
+static bool dispatcher_prioritized_message_pump(MSG *msg)
 {
-    const DWORD result = MsgWaitForMultipleObjectsEx(1, &dispatcher_event, INFINITE, QS_ALLEVENTS | QS_ALLINPUT, MWMO_ALERTABLE | MWMO_INPUTAVAILABLE);
+    const DWORD result = MsgWaitForMultipleObjectsEx(1, &dispatcher_event, INFINITE, QS_ALLEVENTS | QS_ALLINPUT,
+                                                     MWMO_ALERTABLE | MWMO_INPUTAVAILABLE);
 
     if (result == WAIT_FAILED)
     {
@@ -1360,7 +1334,7 @@ static bool dispatcher_prioritized_message_pump(MSG* msg)
 /**
  * \brief Pumps messages in the default order.
  */
-static bool normal_message_pump(MSG* msg)
+static bool normal_message_pump(MSG *msg)
 {
     MsgWaitForMultipleObjects(0, nullptr, FALSE, INFINITE, QS_ALLEVENTS | QS_ALLINPUT);
     while (PeekMessage(msg, nullptr, 0, 0, PM_REMOVE))
@@ -1384,11 +1358,13 @@ static void enable_mitigations()
     PROCESS_MITIGATION_STRICT_HANDLE_CHECK_POLICY handles = {0};
     handles.RaiseExceptionOnInvalidHandleReference = 1;
     handles.HandleExceptionsPermanentlyEnabled = 1;
-    runtime_assert(SetProcessMitigationPolicy(ProcessStrictHandleCheckPolicy, &handles, sizeof(handles)), L"Couldn't set process mitigation policy.");
+    runtime_assert(SetProcessMitigationPolicy(ProcessStrictHandleCheckPolicy, &handles, sizeof(handles)),
+                   L"Couldn't set process mitigation policy.");
 
     PROCESS_MITIGATION_EXTENSION_POINT_DISABLE_POLICY ext = {0};
     ext.DisableExtensionPoints = 1;
-    runtime_assert(SetProcessMitigationPolicy(ProcessExtensionPointDisablePolicy, &ext, sizeof(ext)), L"Couldn't set process mitigation policy.");
+    runtime_assert(SetProcessMitigationPolicy(ProcessExtensionPointDisablePolicy, &ext, sizeof(ext)),
+                   L"Couldn't set process mitigation policy.");
 }
 
 int CALLBACK WinMain(const HINSTANCE hInstance, HINSTANCE, LPSTR, const int nShowCmd)
@@ -1450,9 +1426,11 @@ int CALLBACK WinMain(const HINSTANCE hInstance, HINSTANCE, LPSTR, const int nSho
     wc.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
     RegisterClassEx(&wc);
 
-    g_view_logger->info("[View] Restoring window @ ({}|{}) {}x{}...", g_config.window_x, g_config.window_y, g_config.window_width, g_config.window_height);
+    g_view_logger->info("[View] Restoring window @ ({}|{}) {}x{}...", g_config.window_x, g_config.window_y,
+                        g_config.window_width, g_config.window_height);
 
-    CreateWindow(WND_CLASS, get_mupen_name().c_str(), WS_OVERLAPPEDWINDOW, g_config.window_x, g_config.window_y, g_config.window_width, g_config.window_height, NULL, NULL, g_main_ctx.hinst, NULL);
+    CreateWindow(WND_CLASS, get_mupen_name().c_str(), WS_OVERLAPPEDWINDOW, g_config.window_x, g_config.window_y,
+                 g_config.window_width, g_config.window_height, NULL, NULL, g_main_ctx.hinst, NULL);
     ShowWindow(g_main_ctx.hwnd, nShowCmd);
 
     Messenger::subscribe(Messenger::Message::EmuLaunchedChanged, on_emu_launched_changed);
@@ -1468,12 +1446,9 @@ int CALLBACK WinMain(const HINSTANCE hInstance, HINSTANCE, LPSTR, const int nSho
     Messenger::subscribe(Messenger::Message::ConfigLoaded, on_config_loaded);
     Messenger::subscribe(Messenger::Message::SeekCompleted, on_seek_completed);
     Messenger::subscribe(Messenger::Message::WarpModifyStatusChanged, on_warp_modify_status_changed);
-    Messenger::subscribe(Messenger::Message::FastForwardNeedsUpdate, [](auto) {
-        AppActions::update_core_fast_forward();
-    });
-    Messenger::subscribe(Messenger::Message::SeekStatusChanged, [](auto) {
-        AppActions::update_core_fast_forward();
-    });
+    Messenger::subscribe(Messenger::Message::FastForwardNeedsUpdate,
+                         [](auto) { AppActions::update_core_fast_forward(); });
+    Messenger::subscribe(Messenger::Message::SeekStatusChanged, [](auto) { AppActions::update_core_fast_forward(); });
     Messenger::subscribe(Messenger::Message::EmuStartingChanged, on_emu_starting_changed);
 
     Statusbar::create();
@@ -1492,7 +1467,8 @@ int CALLBACK WinMain(const HINSTANCE hInstance, HINSTANCE, LPSTR, const int nSho
     g_ui_timer = timeSetEvent(16, 1, invalidate_callback, 0, TIME_PERIODIC | TIME_KILL_SYNCHRONOUS);
     if (!g_ui_timer)
     {
-        DialogService::show_dialog(L"timeSetEvent call failed. Verify that your system supports multimedia timers.", L"Error", fsvc_error);
+        DialogService::show_dialog(L"timeSetEvent call failed. Verify that your system supports multimedia timers.",
+                                   L"Error", fsvc_error);
         return -1;
     }
 

@@ -64,7 +64,8 @@ void dbg_set_rsp_enabled(bool value)
         g_original_do_rsp_cycles = g_core->plugin_funcs.rsp_do_rsp_cycles;
     }
 
-    // If RSP is disabled, we swap out the real do_rsp_cycles function for the dummy one thereby effectively disabling the rsp unit
+    // If RSP is disabled, we swap out the real do_rsp_cycles function for the dummy one thereby effectively disabling
+    // the rsp unit
     if (value)
         g_core->plugin_funcs.rsp_do_rsp_cycles = g_original_do_rsp_cycles;
     else
@@ -74,8 +75,8 @@ void dbg_set_rsp_enabled(bool value)
 void Debugger::on_late_cycle(uint32_t opcode, uint32_t address)
 {
     g_cpu_state = {
-    .opcode = opcode,
-    .address = address,
+        .opcode = opcode,
+        .address = address,
     };
 
     if (g_instruction_advancing)

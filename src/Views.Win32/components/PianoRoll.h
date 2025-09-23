@@ -11,13 +11,13 @@
  */
 namespace PianoRoll
 {
-    /**
-     * \brief Initializes the subsystem.
-     */
-    void init();
+/**
+ * \brief Initializes the subsystem.
+ */
+void init();
 
-    /**
-     * Shows the piano roll window.
-     */
-    void show();
+/**
+ * Shows the piano roll window.
+ */
+void show();
 } // namespace PianoRoll

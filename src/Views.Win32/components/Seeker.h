@@ -8,18 +8,18 @@
 
 namespace Seeker
 {
-    /**
-     * \brief Initializes the seeker subsystem
-     */
-    void init();
+/**
+ * \brief Initializes the seeker subsystem
+ */
+void init();
 
-    /**
-     * \brief Shows the seeker dialog
-     */
-    void show();
+/**
+ * \brief Shows the seeker dialog
+ */
+void show();
 
-    /**
-     * \brief Gets the HWND of the seeker window. Might be invalid.
-     */
-    HWND hwnd();
+/**
+ * \brief Gets the HWND of the seeker window. Might be invalid.
+ */
+HWND hwnd();
 } // namespace Seeker

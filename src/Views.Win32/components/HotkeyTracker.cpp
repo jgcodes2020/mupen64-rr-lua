@@ -10,7 +10,8 @@
 
 const auto HOTKEY_TRACKER_CTX = L"Mupen64_HotkeyTrackerContext";
 
-struct t_hotkey_tracker_context {
+struct t_hotkey_tracker_context
+{
     bool last_lmb{};
     bool last_rmb{};
     bool last_mmb{};
@@ -31,7 +32,7 @@ static bool on_key(bool is_up, int32_t key)
     bool hit = false;
 
     const auto hotkeys = g_config.hotkeys;
-    for (const auto& [path, hotkey] : hotkeys)
+    for (const auto &[path, hotkey] : hotkeys)
     {
         if ((int)key == hotkey.key && shift == hotkey.shift && ctrl == hotkey.ctrl && alt == hotkey.alt)
         {
@@ -48,9 +49,10 @@ static bool on_key(bool is_up, int32_t key)
     return false;
 }
 
-static LRESULT CALLBACK action_menu_wnd_subclass_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam, UINT_PTR sId, DWORD_PTR dwRefData)
+static LRESULT CALLBACK action_menu_wnd_subclass_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam, UINT_PTR sId,
+                                                      DWORD_PTR dwRefData)
 {
-    auto ctx = static_cast<t_hotkey_tracker_context*>(GetProp(hwnd, HOTKEY_TRACKER_CTX));
+    auto ctx = static_cast<t_hotkey_tracker_context *>(GetProp(hwnd, HOTKEY_TRACKER_CTX));
 
     switch (msg)
     {
@@ -60,88 +62,87 @@ static LRESULT CALLBACK action_menu_wnd_subclass_proc(HWND hwnd, UINT msg, WPARA
         delete ctx;
         ctx = nullptr;
         break;
-    case WM_SETCURSOR:
+    case WM_SETCURSOR: {
+        if (ActionManager::get_hotkeys_locked())
         {
-            if (ActionManager::get_hotkeys_locked())
-            {
-                break;
-            }
-
-            const bool mmb = GetAsyncKeyState(VK_MBUTTON) & 0x8000;
-            const bool xmb1 = GetAsyncKeyState(VK_XBUTTON1) & 0x8000;
-            const bool xmb2 = GetAsyncKeyState(VK_XBUTTON2) & 0x8000;
-            bool hit = false;
-
-            const auto hotkeys = g_config.hotkeys;
-            for (const auto& [path, hotkey] : hotkeys)
-            {
-                const auto down = (mmb && !ctx->last_mmb && hotkey.key == VK_MBUTTON) || (xmb1 && !ctx->last_xmb1 && hotkey.key == VK_XBUTTON1) || (xmb2 && !ctx->last_xmb2 && hotkey.key == VK_XBUTTON2);
-                const auto up = (!mmb && ctx->last_mmb && hotkey.key == VK_MBUTTON) || (!xmb1 && ctx->last_xmb1 && hotkey.key == VK_XBUTTON1) || (!xmb2 && ctx->last_xmb2 && hotkey.key == VK_XBUTTON2);
-
-                if (down)
-                {
-                    ActionManager::invoke(path);
-                    hit = true;
-                }
-
-                if (up)
-                {
-                    ActionManager::invoke(path, true);
-                    hit = true;
-                }
-            }
-
-            ctx->last_mmb = mmb;
-            ctx->last_xmb1 = xmb1;
-            ctx->last_xmb2 = xmb2;
-
-            if (hit)
-            {
-                return 0;
-            }
-
             break;
         }
+
+        const bool mmb = GetAsyncKeyState(VK_MBUTTON) & 0x8000;
+        const bool xmb1 = GetAsyncKeyState(VK_XBUTTON1) & 0x8000;
+        const bool xmb2 = GetAsyncKeyState(VK_XBUTTON2) & 0x8000;
+        bool hit = false;
+
+        const auto hotkeys = g_config.hotkeys;
+        for (const auto &[path, hotkey] : hotkeys)
+        {
+            const auto down = (mmb && !ctx->last_mmb && hotkey.key == VK_MBUTTON) ||
+                              (xmb1 && !ctx->last_xmb1 && hotkey.key == VK_XBUTTON1) ||
+                              (xmb2 && !ctx->last_xmb2 && hotkey.key == VK_XBUTTON2);
+            const auto up = (!mmb && ctx->last_mmb && hotkey.key == VK_MBUTTON) ||
+                            (!xmb1 && ctx->last_xmb1 && hotkey.key == VK_XBUTTON1) ||
+                            (!xmb2 && ctx->last_xmb2 && hotkey.key == VK_XBUTTON2);
+
+            if (down)
+            {
+                ActionManager::invoke(path);
+                hit = true;
+            }
+
+            if (up)
+            {
+                ActionManager::invoke(path, true);
+                hit = true;
+            }
+        }
+
+        ctx->last_mmb = mmb;
+        ctx->last_xmb1 = xmb1;
+        ctx->last_xmb2 = xmb2;
+
+        if (hit)
+        {
+            return 0;
+        }
+
+        break;
+    }
     case WM_KEYDOWN:
     case WM_KEYUP:
     case WM_SYSKEYDOWN:
-    case WM_SYSKEYUP:
+    case WM_SYSKEYUP: {
+        if (on_key(msg == WM_KEYUP || msg == WM_SYSKEYUP, (int)wParam))
         {
-            if (on_key(msg == WM_KEYUP || msg == WM_SYSKEYUP, (int)wParam))
-            {
-                return 0;
-            }
-            break;
+            return 0;
         }
-    case WM_NOTIFY:
+        break;
+    }
+    case WM_NOTIFY: {
+        auto nmhdr = reinterpret_cast<LPNMHDR>(lParam);
+        if (nmhdr && nmhdr->hwndFrom && IsWindow(nmhdr->hwndFrom) &&
+            SendMessage(nmhdr->hwndFrom, WM_GETDLGCODE, 0, 0) != 0)
         {
-            auto nmhdr = reinterpret_cast<LPNMHDR>(lParam);
-            if (nmhdr && nmhdr->hwndFrom &&
-                IsWindow(nmhdr->hwndFrom) &&
-                SendMessage(nmhdr->hwndFrom, WM_GETDLGCODE, 0, 0) != 0)
+            wchar_t class_name[32];
+            GetClassName(nmhdr->hwndFrom, class_name, std::size(class_name));
+
+            if (lstrcmpiW(class_name, WC_LISTVIEWW) == 0 && nmhdr->code == LVN_KEYDOWN)
             {
-                wchar_t class_name[32];
-                GetClassName(nmhdr->hwndFrom, class_name, std::size(class_name));
+                auto key = reinterpret_cast<LPNMLVKEYDOWN>(lParam)->wVKey;
 
-                if (lstrcmpiW(class_name, WC_LISTVIEWW) == 0 && nmhdr->code == LVN_KEYDOWN)
+                if (on_key(false, key))
                 {
-                    auto key = reinterpret_cast<LPNMLVKEYDOWN>(lParam)->wVKey;
-
-                    if (on_key(false, key))
-                    {
-                        return TRUE;
-                    }
+                    return TRUE;
                 }
             }
-            break;
         }
+        break;
+    }
     default:
         break;
     }
 
     return DefSubclassProc(hwnd, msg, wParam, lParam);
 }
-
 
 bool HotkeyTracker::attach(const HWND hwnd)
 {

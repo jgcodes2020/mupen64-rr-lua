@@ -6,7 +6,8 @@
 
 #pragma once
 
-typedef struct _tlb {
+typedef struct _tlb
+{
     int16_t mask;
     int32_t vpn2;
     char g;

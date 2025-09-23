@@ -7,7 +7,8 @@
 #include "stdafx.h"
 #include <Hotkey.h>
 
-struct t_hotkey_dialog_params {
+struct t_hotkey_dialog_params
+{
     std::wstring headline{};
     Hotkey::t_hotkey hotkey = Hotkey::t_hotkey::make_unassigned();
 };
@@ -32,12 +33,9 @@ std::wstring Hotkey::t_hotkey::to_wstring() const
         return L"(nothing)";
     }
 
-    if (this->ctrl)
-        StrCat(buf, L"Ctrl ");
-    if (this->shift)
-        StrCat(buf, L"Shift ");
-    if (this->alt)
-        StrCat(buf, L"Alt ");
+    if (this->ctrl) StrCat(buf, L"Ctrl ");
+    if (this->shift) StrCat(buf, L"Shift ");
+    if (this->alt) StrCat(buf, L"Alt ");
     if (k)
     {
         wchar_t buf2[64]{};
@@ -203,9 +201,10 @@ Hotkey::t_hotkey Hotkey::t_hotkey::make_unassigned()
     return {};
 }
 
-static LRESULT CALLBACK hotkey_button_subclass_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam, UINT_PTR id, DWORD_PTR ref_data)
+static LRESULT CALLBACK hotkey_button_subclass_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam, UINT_PTR id,
+                                                    DWORD_PTR ref_data)
 {
-    const auto params = reinterpret_cast<t_hotkey_dialog_params*>(ref_data);
+    const auto params = reinterpret_cast<t_hotkey_dialog_params *>(ref_data);
 
     switch (msg)
     {
@@ -247,21 +246,21 @@ static LRESULT CALLBACK hotkey_button_subclass_proc(HWND hwnd, UINT msg, WPARAM 
 static INT_PTR CALLBACK dlgproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
     const auto prop_key = L"IDD_HOTKEY_Params";
-    auto params = static_cast<t_hotkey_dialog_params*>(GetProp(hwnd, prop_key));
+    auto params = static_cast<t_hotkey_dialog_params *>(GetProp(hwnd, prop_key));
 
     switch (msg)
     {
-    case WM_INITDIALOG:
-        {
-            SetProp(hwnd, prop_key, reinterpret_cast<t_hotkey_dialog_params*>(lparam));
-            params = reinterpret_cast<t_hotkey_dialog_params*>(lparam);
+    case WM_INITDIALOG: {
+        SetProp(hwnd, prop_key, reinterpret_cast<t_hotkey_dialog_params *>(lparam));
+        params = reinterpret_cast<t_hotkey_dialog_params *>(lparam);
 
-            Static_SetText(GetDlgItem(hwnd, IDC_STATIC), params->headline.c_str());
-            SetFocus(GetDlgItem(hwnd, IDC_CURRENT_HOTKEY));
+        Static_SetText(GetDlgItem(hwnd, IDC_STATIC), params->headline.c_str());
+        SetFocus(GetDlgItem(hwnd, IDC_CURRENT_HOTKEY));
 
-            SetWindowSubclass(GetDlgItem(hwnd, IDC_CURRENT_HOTKEY), hotkey_button_subclass_proc, 0, reinterpret_cast<DWORD_PTR>(params));
-            return TRUE;
-        }
+        SetWindowSubclass(GetDlgItem(hwnd, IDC_CURRENT_HOTKEY), hotkey_button_subclass_proc, 0,
+                          reinterpret_cast<DWORD_PTR>(params));
+        return TRUE;
+    }
     case WM_CLOSE:
         EndDialog(hwnd, IDCANCEL);
         return TRUE;
@@ -304,14 +303,15 @@ static INT_PTR CALLBACK dlgproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
     return FALSE;
 }
 
-bool Hotkey::show_prompt(const HWND hwnd, const std::wstring& caption, t_hotkey& hotkey)
+bool Hotkey::show_prompt(const HWND hwnd, const std::wstring &caption, t_hotkey &hotkey)
 {
     const auto prev_hotkey = hotkey;
 
     hotkey = t_hotkey::make_unassigned();
     auto params = new t_hotkey_dialog_params{.headline = caption, .hotkey = hotkey};
 
-    const INT_PTR result = DialogBoxParam(g_main_ctx.hinst, MAKEINTRESOURCE(IDD_HOTKEY), hwnd, dlgproc, reinterpret_cast<LPARAM>(params));
+    const INT_PTR result =
+        DialogBoxParam(g_main_ctx.hinst, MAKEINTRESOURCE(IDD_HOTKEY), hwnd, dlgproc, reinterpret_cast<LPARAM>(params));
     const bool confirmed = result == IDOK;
 
     if (confirmed)
@@ -329,9 +329,10 @@ bool Hotkey::show_prompt(const HWND hwnd, const std::wstring& caption, t_hotkey&
     return confirmed;
 }
 
-void Hotkey::try_associate_hotkey(const HWND hwnd, const std::wstring& action, const t_hotkey& new_hotkey, const bool through_action_manager)
+void Hotkey::try_associate_hotkey(const HWND hwnd, const std::wstring &action, const t_hotkey &new_hotkey,
+                                  const bool through_action_manager)
 {
-    const auto set_hotkey = [=](const std::wstring& action, const t_hotkey& hotkey) {
+    const auto set_hotkey = [=](const std::wstring &action, const t_hotkey &hotkey) {
         if (through_action_manager)
         {
             ActionManager::associate_hotkey(action, hotkey);
@@ -355,7 +356,7 @@ void Hotkey::try_associate_hotkey(const HWND hwnd, const std::wstring& action, c
 
     std::vector<std::pair<std::wstring, t_hotkey>> conflicting_hotkeys;
 
-    for (const auto& pair : g_config.hotkeys)
+    for (const auto &pair : g_config.hotkeys)
     {
         if (pair.first != action && pair.second == new_hotkey)
         {
@@ -370,21 +371,22 @@ void Hotkey::try_associate_hotkey(const HWND hwnd, const std::wstring& action, c
     }
 
     std::wstring conflicting_hotkey_identifiers;
-    for (const auto& action : conflicting_hotkeys | std::views::keys)
+    for (const auto &action : conflicting_hotkeys | std::views::keys)
     {
         conflicting_hotkey_identifiers += std::format(L"- {}\n", action);
     }
 
     const auto str = std::format(L"The key combination {} is already used by:\n\n{}\nHow would you like to proceed?",
-                                 new_hotkey.to_wstring(),
-                                 conflicting_hotkey_identifiers);
+                                 new_hotkey.to_wstring(), conflicting_hotkey_identifiers);
 
-    const size_t choice = DialogService::show_multiple_choice_dialog(VIEW_DLG_HOTKEY_CONFLICT, {L"Keep New", L"Keep Old", L"Proceed Anyway"}, str.c_str(), L"Hotkey Conflict", fsvc_warning, hwnd);
+    const size_t choice = DialogService::show_multiple_choice_dialog(
+        VIEW_DLG_HOTKEY_CONFLICT, {L"Keep New", L"Keep Old", L"Proceed Anyway"}, str.c_str(), L"Hotkey Conflict",
+        fsvc_warning, hwnd);
 
     switch (choice)
     {
     case 0:
-        for (const auto& action : conflicting_hotkeys | std::views::keys)
+        for (const auto &action : conflicting_hotkeys | std::views::keys)
         {
             set_hotkey(action, t_hotkey::make_empty());
         }

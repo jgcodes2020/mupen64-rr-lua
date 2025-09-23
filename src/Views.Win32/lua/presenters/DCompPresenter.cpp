@@ -35,7 +35,10 @@ bool DCompPresenter::init(HWND hwnd)
     m_size = {(UINT32)rect.right - rect.left, (UINT32)rect.bottom - rect.top};
 
     // Create the whole DComp <-> DXGI <-> D3D11 <-> D2D shabang
-    if (!create_composition_surface(hwnd, m_size, &m_factory, &m_dxgiadapter, &m_d3device, &m_dxdevice, &m_bitmap, &m_comp_visual, &m_comp_device, &m_comp_target, &m_dxgi_swapchain, &m_d2d_factory, &m_d2d_device, &m_d3d_dc, &m_d2d_dc, &m_dxgi_surface, &m_dxgi_surface_resource, &m_front_buffer, &m_d3d_gdi_tex))
+    if (!create_composition_surface(hwnd, m_size, &m_factory, &m_dxgiadapter, &m_d3device, &m_dxdevice, &m_bitmap,
+                                    &m_comp_visual, &m_comp_device, &m_comp_target, &m_dxgi_swapchain, &m_d2d_factory,
+                                    &m_d2d_device, &m_d3d_dc, &m_d2d_dc, &m_dxgi_surface, &m_dxgi_surface_resource,
+                                    &m_front_buffer, &m_d3d_gdi_tex))
     {
         return false;
     }
@@ -43,7 +46,7 @@ bool DCompPresenter::init(HWND hwnd)
     return true;
 }
 
-ID2D1RenderTarget* DCompPresenter::dc() const
+ID2D1RenderTarget *DCompPresenter::dc() const
 {
     return m_d2d_dc;
 }
@@ -60,13 +63,13 @@ void DCompPresenter::end_present()
     m_d2d_dc->EndDraw();
 
     // 1. Copy Direct2D graphics to the GDI-compatible texture
-    ID3D11Resource* d2d_render_target = nullptr;
+    ID3D11Resource *d2d_render_target = nullptr;
     m_dxgi_surface->QueryInterface(&d2d_render_target);
     m_d3d_dc->CopyResource(m_d3d_gdi_tex, d2d_render_target);
     d2d_render_target->Release();
 
     // 2. Copy the GDI-compatible texture to the swapchain's back buffer
-    ID3D11Resource* back_buffer = nullptr;
+    ID3D11Resource *back_buffer = nullptr;
     m_dxgi_swapchain->GetBuffer(0, IID_PPV_ARGS(&back_buffer));
     m_d3d_dc->CopyResource(back_buffer, m_d3d_gdi_tex);
     back_buffer->Release();
@@ -79,12 +82,13 @@ void DCompPresenter::blit(HDC hdc, RECT rect)
 {
     // 1. Get our GDI-compatible D3D texture's DC
     HDC dc;
-    IDXGISurface1* dxgi_surface;
+    IDXGISurface1 *dxgi_surface;
     m_d3d_gdi_tex->QueryInterface(&dxgi_surface);
     dxgi_surface->GetDC(false, &dc);
 
     // 2. Blit our texture DC to the target DC, while preserving the alpha channel with AlphaBlend
-    AlphaBlend(hdc, 0, 0, m_size.width, m_size.height, dc, 0, 0, m_size.width, m_size.height, {.BlendOp = AC_SRC_OVER, .BlendFlags = 0, .SourceConstantAlpha = 255, .AlphaFormat = AC_SRC_ALPHA});
+    AlphaBlend(hdc, 0, 0, m_size.width, m_size.height, dc, 0, 0, m_size.width, m_size.height,
+               {.BlendOp = AC_SRC_OVER, .BlendFlags = 0, .SourceConstantAlpha = 255, .AlphaFormat = AC_SRC_ALPHA});
 
     // 3. Cleanup
     dxgi_surface->ReleaseDC(nullptr);

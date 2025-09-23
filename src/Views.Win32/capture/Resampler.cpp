@@ -10,7 +10,7 @@
 
 const auto RESAMP_BUFFER_SIZE = 44100 * 2 * 2;
 
-static SpeexResamplerState* speex_ctx{};
+static SpeexResamplerState *speex_ctx{};
 static short in_samps[RESAMP_BUFFER_SIZE]{};
 static short out_samps[RESAMP_BUFFER_SIZE]{};
 
@@ -27,8 +27,7 @@ int Resampler::get_resample_len(const int dst_freq, const int src_freq, const in
     // convert bitrate to 16 bits
     if (src_bitrate != 16)
     {
-        if (src_bitrate != 4 && src_bitrate != 8)
-            return -1; // unknown result
+        if (src_bitrate != 4 && src_bitrate != 8) return -1; // unknown result
 
         src_len = src_len * (16 / src_bitrate);
     }
@@ -39,7 +38,8 @@ int Resampler::get_resample_len(const int dst_freq, const int src_freq, const in
     return dst_len;
 }
 
-int Resampler::resample(short** dst, const int dst_freq, const short* src, const int src_freq, const int src_bitrate, const int src_len)
+int Resampler::resample(short **dst, const int dst_freq, const short *src, const int src_freq, const int src_bitrate,
+                        const int src_len)
 {
     if (src_bitrate != 16)
     {

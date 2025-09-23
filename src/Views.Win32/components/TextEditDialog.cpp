@@ -7,7 +7,8 @@
 #include "stdafx.h"
 #include <components/TextEditDialog.h>
 
-struct t_text_edit_dialog_context {
+struct t_text_edit_dialog_context
+{
     TextEditDialog::t_params params{};
 };
 
@@ -48,7 +49,7 @@ static INT_PTR CALLBACK about_dlg_proc(const HWND hwnd, const UINT message, cons
     return TRUE;
 }
 
-std::optional<std::wstring> TextEditDialog::show(const t_params& params)
+std::optional<std::wstring> TextEditDialog::show(const t_params &params)
 {
     g_ctx = {};
     g_ctx.params = params;

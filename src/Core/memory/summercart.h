@@ -6,7 +6,8 @@
 
 #pragma once
 
-struct summercart {
+struct summercart
+{
     char buffer[8192];
     uint32_t status;
     uint32_t data0;
@@ -21,8 +22,8 @@ struct summercart {
 
 extern struct summercart summercart;
 
-void save_summercart(const std::filesystem::path& path);
-void load_summercart(const std::filesystem::path& path);
+void save_summercart(const std::filesystem::path &path);
+void load_summercart(const std::filesystem::path &path);
 void init_summercart();
 uint32_t read_summercart(uint32_t address);
 void write_summercart(uint32_t address, uint32_t value);

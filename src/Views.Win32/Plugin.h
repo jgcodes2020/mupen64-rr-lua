@@ -9,22 +9,24 @@
 /**
  * \brief Plugin functions used solely in the view.
  */
-struct view_plugin_funcs {
+struct view_plugin_funcs
+{
     CHANGEWINDOW video_change_window = nullptr;
 };
 
-class Plugin {
-public:
+class Plugin
+{
+  public:
     /**
      * \brief Tries to create a plugin from the given path
      * \param path The path to a plugin
-     * \return The operation status along with a pointer to the plugin. The pointer will be invalid if the first pair element isn't an empty string.
+     * \return The operation status along with a pointer to the plugin. The pointer will be invalid if the first pair
+     * element isn't an empty string.
      */
     static std::pair<std::wstring, std::unique_ptr<Plugin>> create(std::filesystem::path path);
 
     Plugin() = default;
     ~Plugin();
-
 
     /**
      * \brief Opens the plugin configuration dialog.
@@ -52,36 +54,24 @@ public:
     /**
      * \brief Gets the plugin's path
      */
-    auto path() const
-    {
-        return m_path;
-    }
+    auto path() const { return m_path; }
 
     /**
      * \brief Gets the plugin's name
      */
-    auto name() const
-    {
-        return m_name;
-    }
+    auto name() const { return m_name; }
 
     /**
      * \brief Gets the plugin's type
      */
-    auto type() const
-    {
-        return m_type;
-    }
+    auto type() const { return m_type; }
 
     /**
      * \brief Gets the plugin's version
      */
-    auto version() const
-    {
-        return m_version;
-    }
+    auto version() const { return m_version; }
 
-private:
+  private:
     std::filesystem::path m_path;
     std::string m_name;
     core_plugin_type m_type;
@@ -118,28 +108,28 @@ void setup_dummy_info();
  */
 namespace PluginUtil
 {
-    /**
-     * \brief Discovers plugins in the given directory.
-     * \param directory The directory to search for plugins in.
-     * \return The plugin discovery result.
-     */
-    t_plugin_discovery_result discover_plugins(const std::filesystem::path& directory);
+/**
+ * \brief Discovers plugins in the given directory.
+ * \param directory The directory to search for plugins in.
+ * \return The plugin discovery result.
+ */
+t_plugin_discovery_result discover_plugins(const std::filesystem::path &directory);
 
-    /**
-     * \brief Gets the extended function set for video plugins.
-     */
-    core_plugin_extended_funcs video_extended_funcs();
-    /**
-     * \brief Gets the extended function set for audio plugins.
-     */
-    core_plugin_extended_funcs audio_extended_funcs();
-    /**
-     * \brief Gets the extended function set for input plugins.
-     */
-    core_plugin_extended_funcs input_extended_funcs();
-    /**
-     * \brief Gets the extended function set for RSP plugins.
-     */
-    core_plugin_extended_funcs rsp_extended_funcs();
+/**
+ * \brief Gets the extended function set for video plugins.
+ */
+core_plugin_extended_funcs video_extended_funcs();
+/**
+ * \brief Gets the extended function set for audio plugins.
+ */
+core_plugin_extended_funcs audio_extended_funcs();
+/**
+ * \brief Gets the extended function set for input plugins.
+ */
+core_plugin_extended_funcs input_extended_funcs();
+/**
+ * \brief Gets the extended function set for RSP plugins.
+ */
+core_plugin_extended_funcs rsp_extended_funcs();
 
 } // namespace PluginUtil

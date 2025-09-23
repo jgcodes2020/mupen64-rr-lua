@@ -11,7 +11,8 @@
 #include <memory/pif.h>
 #include <r4300/r4300.h>
 
-struct timer_state {
+struct timer_state
+{
     std::chrono::duration<double, std::milli> max_vi_s_ms;
 
     size_t frame_deltas_ptr{};
@@ -34,11 +35,11 @@ static timer_state timer{};
  * \param times A circular buffer of deltas
  * \return The average rate per second from the delta in the queue
  */
-static float get_rate_per_second_from_deltas(const std::span<core_timer_delta>& times)
+static float get_rate_per_second_from_deltas(const std::span<core_timer_delta> &times)
 {
     size_t count = 0;
     float sum = 0.0f;
-    for (const auto& time : times)
+    for (const auto &time : times)
     {
         if (time.count() > 0)
         {
@@ -59,16 +60,16 @@ void timer_on_speed_modifier_changed()
 {
     const double max_vi_s = g_ctx.vr_get_vis_per_second(ROM_HEADER.Country_code);
     timer.max_vi_s_ms = std::chrono::duration<double, std::milli>(
-    1000.0 / (max_vi_s * static_cast<double>(g_core->cfg->fps_modifier) / 100));
+        1000.0 / (max_vi_s * static_cast<double>(g_core->cfg->fps_modifier) / 100));
 
     timer.last_frame_time = std::chrono::high_resolution_clock::now();
     timer.last_vi_time = std::chrono::high_resolution_clock::now();
 
-    for (auto& delta : timer.frame_deltas)
+    for (auto &delta : timer.frame_deltas)
     {
         delta = {};
     }
-    for (auto& delta : timer.vi_deltas)
+    for (auto &delta : timer.vi_deltas)
     {
         delta = {};
     }
@@ -111,27 +112,23 @@ void timer_new_vi()
             if (sleep_time.count() > 0 && sleep_time < std::chrono::milliseconds(700))
             {
                 // we try to sleep for the overstepped time, but must account for sleeping inaccuracies
-                const auto goal_sleep = timer.max_vi_s_ms - vi_time_diff -
-                last_sleep_error;
-                const auto start_sleep =
-                std::chrono::high_resolution_clock::now();
+                const auto goal_sleep = timer.max_vi_s_ms - vi_time_diff - last_sleep_error;
+                const auto start_sleep = std::chrono::high_resolution_clock::now();
                 std::this_thread::sleep_for(goal_sleep);
-                const auto end_sleep =
-                std::chrono::high_resolution_clock::now();
+                const auto end_sleep = std::chrono::high_resolution_clock::now();
 
                 // sleeping inaccuracy is difference between actual time spent sleeping and the goal sleep
                 // this value isnt usually too large
                 last_sleep_error = end_sleep - start_sleep - goal_sleep;
 
-                // This value is used later to calculate the deltas so we need to reassign it here to cut out the sleep time from the current delta
+                // This value is used later to calculate the deltas so we need to reassign it here to cut out the sleep
+                // time from the current delta
                 current_vi_time = std::chrono::high_resolution_clock::now();
             }
             else
             {
                 // sleep time is unreasonable, log it and reset related state
-                const auto casted = std::chrono::duration_cast<
-                                    std::chrono::milliseconds>(sleep_time)
-                                    .count();
+                const auto casted = std::chrono::duration_cast<std::chrono::milliseconds>(sleep_time).count();
                 g_core->log_info(std::format(L"Invalid timer: %lld ms", casted));
                 sleep_time = sleep_time.zero();
             }
@@ -146,7 +143,7 @@ void timer_new_vi()
     timer.last_vi_time = std::chrono::high_resolution_clock::now();
 }
 
-void timer_get_timings(float& fps, float& vis)
+void timer_get_timings(float &fps, float &vis)
 {
     timer.frame_deltas_mtx.lock();
     fps = get_rate_per_second_from_deltas(timer.frame_deltas);

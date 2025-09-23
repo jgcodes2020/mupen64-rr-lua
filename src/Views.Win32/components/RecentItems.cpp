@@ -8,7 +8,8 @@
 #include <components/RecentItems.h>
 #include <ActionManager.h>
 
-void RecentMenu::add(const ActionManager::action_filter& menu_path, std::vector<std::wstring>& vec, std::wstring val, const bool frozen)
+void RecentMenu::add(const ActionManager::action_filter &menu_path, std::vector<std::wstring> &vec, std::wstring val,
+                     const bool frozen)
 {
     assert(is_on_gui_thread());
 
@@ -20,7 +21,7 @@ void RecentMenu::add(const ActionManager::action_filter& menu_path, std::vector<
     {
         vec.pop_back();
     }
-    std::erase_if(vec, [&](const auto& str) {
+    std::erase_if(vec, [&](const auto &str) {
         return MiscHelpers::iequals(str, val) || std::filesystem::path(str).compare(val) == 0;
     });
     vec.insert(vec.begin(), val);

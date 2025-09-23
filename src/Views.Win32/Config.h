@@ -9,19 +9,23 @@
 #include <core_types.h>
 #include <Hotkey.h>
 
-struct t_config {
+struct t_config
+{
 
-    enum class PresenterType {
+    enum class PresenterType
+    {
         DirectComposition,
         GDI
     };
 
-    enum class EncoderType {
+    enum class EncoderType
+    {
         VFW,
         FFmpeg
     };
 
-    enum class StatusbarLayout {
+    enum class StatusbarLayout
+    {
         Classic,
         Modern,
         ModernWithReadOnly
@@ -85,7 +89,8 @@ struct t_config {
     int32_t is_default_saves_directory_used = 1;
 
     /// <summary>
-    /// Whether the default screenshot directory will be used (otherwise, falls back to <see cref="screenshots_directory"/>)
+    /// Whether the default screenshot directory will be used (otherwise, falls back to <see
+    /// cref="screenshots_directory"/>)
     /// </summary>
     int32_t is_default_screenshots_directory_used = 1;
 
@@ -187,9 +192,9 @@ struct t_config {
     /// FFmpeg post-stream option format string which is used when capturing using the FFmpeg encoder type
     /// </summary>
     std::wstring ffmpeg_final_options =
-    L"-y -f rawvideo -pixel_format bgr24 -video_size %dx%d -framerate %d -i %s "
-    L"-f s16le -sample_rate %d -ac 2 -channel_layout stereo -i %s "
-    L"-c:v libx264 -preset veryfast -tune zerolatency -crf 23 -c:a aac -b:a 128k -vf \"vflip\" -f mp4 %s";
+        L"-y -f rawvideo -pixel_format bgr24 -video_size %dx%d -framerate %d -i %s "
+        L"-f s16le -sample_rate %d -ac 2 -channel_layout stereo -i %s "
+        L"-c:v libx264 -preset veryfast -tune zerolatency -crf 23 -c:a aac -b:a 128k -vf \"vflip\" -f mp4 %s";
 
     /// <summary>
     /// FFmpeg binary path
@@ -211,7 +216,8 @@ struct t_config {
     int32_t keep_default_working_directory;
 
     /// <summary>
-    /// Whether a low-latency dispatcher implementation is used. Greatly improves performance when Lua scripts are running. Disable if you DirectInput-based plugins aren't working as expected.
+    /// Whether a low-latency dispatcher implementation is used. Greatly improves performance when Lua scripts are
+    /// running. Disable if you DirectInput-based plugins aren't working as expected.
     /// </summary>
     int32_t fast_dispatcher = 1;
 
@@ -371,7 +377,8 @@ struct t_config {
     std::map<std::wstring, Hotkey::t_hotkey> hotkeys;
 
     /// <summary>
-    /// A map of fully-qualified action paths to the hotkey which was assigned to them the first time the action was assigned a hotkey.
+    /// A map of fully-qualified action paths to the hotkey which was assigned to them the first time the action was
+    /// assigned a hotkey.
     /// </summary>
     std::map<std::wstring, Hotkey::t_hotkey> inital_hotkeys;
 };
@@ -381,43 +388,43 @@ extern const t_config g_default_config;
 
 namespace Config
 {
-    /**
-     * \brief Initializes the subsystem.
-     */
-    void init();
+/**
+ * \brief Initializes the subsystem.
+ */
+void init();
 
-    /**
-     * \brief Saves the current config state to the config file.
-     */
-    void save();
+/**
+ * \brief Saves the current config state to the config file.
+ */
+void save();
 
-    /**
-     * \brief Applies the current config state and saves it to the config file.
-     */
-    void apply_and_save();
+/**
+ * \brief Applies the current config state and saves it to the config file.
+ */
+void apply_and_save();
 
-    /**
-     * \brief Restores the config state from the config file.
-     */
-    void load();
+/**
+ * \brief Restores the config state from the config file.
+ */
+void load();
 
-    /**
-     * \brief Gets the path to the plugin directory based on the current configuration.
-     */
-    std::filesystem::path plugin_directory();
+/**
+ * \brief Gets the path to the plugin directory based on the current configuration.
+ */
+std::filesystem::path plugin_directory();
 
-    /**
-     * \brief Gets the path to the save directory based on the current configuration.
-     */
-    std::filesystem::path save_directory();
+/**
+ * \brief Gets the path to the save directory based on the current configuration.
+ */
+std::filesystem::path save_directory();
 
-    /**
-     * \brief Gets the path to the screenshot directory based on the current configuration.
-     */
-    std::filesystem::path screenshot_directory();
+/**
+ * \brief Gets the path to the screenshot directory based on the current configuration.
+ */
+std::filesystem::path screenshot_directory();
 
-    /**
-     * \brief Gets the path to the backup directory based on the current configuration.
-     */
-    std::filesystem::path backup_directory();
+/**
+ * \brief Gets the path to the backup directory based on the current configuration.
+ */
+std::filesystem::path backup_directory();
 } // namespace Config

@@ -28,14 +28,14 @@ BOOL APIENTRY DllMain(HMODULE hmod, const DWORD reason, LPVOID)
     return TRUE;
 }
 
-EXPORT void CALL GetDllInfo(core_plugin_info* info)
+EXPORT void CALL GetDllInfo(core_plugin_info *info)
 {
     info->ver = 0x0101;
     info->type = plugin_video;
     strncpy_s(info->name, platform_service.wstring_to_string(PLUGIN_NAME).c_str(), std::size(info->name));
 }
 
-EXPORT void CALL DllAbout(void* hParent)
+EXPORT void CALL DllAbout(void *hParent)
 {
     const auto msg = PLUGIN_NAME L"\n"
                                  L"Part of the Mupen64 project family."

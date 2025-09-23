@@ -22,15 +22,9 @@ void print_pif()
 {
     int32_t i;
     for (i = 0; i < (64 / 8); i++)
-        g_core->log_info(L"{:#06x} {:#06x} {:#06x} {:#06x} | {:#06x} {:#06x} {:#06x} {:#06x}",
-                         PIF_RAMb[i * 8 + 0],
-                         PIF_RAMb[i * 8 + 1],
-                         PIF_RAMb[i * 8 + 2],
-                         PIF_RAMb[i * 8 + 3],
-                         PIF_RAMb[i * 8 + 4],
-                         PIF_RAMb[i * 8 + 5],
-                         PIF_RAMb[i * 8 + 6],
-                         PIF_RAMb[i * 8 + 7]);
+        g_core->log_info(L"{:#06x} {:#06x} {:#06x} {:#06x} | {:#06x} {:#06x} {:#06x} {:#06x}", PIF_RAMb[i * 8 + 0],
+                         PIF_RAMb[i * 8 + 1], PIF_RAMb[i * 8 + 2], PIF_RAMb[i * 8 + 3], PIF_RAMb[i * 8 + 4],
+                         PIF_RAMb[i * 8 + 5], PIF_RAMb[i * 8 + 6], PIF_RAMb[i * 8 + 7]);
     // getchar();
 }
 #endif
@@ -38,7 +32,7 @@ void print_pif()
 // 16kb eeprom flag
 #define EXTENDED_EEPROM (0)
 
-void EepromCommand(uint8_t* Command)
+void EepromCommand(uint8_t *Command)
 {
     switch (Command[2])
     {
@@ -46,12 +40,9 @@ void EepromCommand(uint8_t* Command)
         if (Command[1] != 3)
         {
             Command[1] |= 0x40;
-            if ((Command[1] & 3) > 0)
-                Command[3] = 0;
-            if ((Command[1] & 3) > 1)
-                Command[4] = EXTENDED_EEPROM == 0 ? 0x80 : 0xc0;
-            if ((Command[1] & 3) > 2)
-                Command[5] = 0;
+            if ((Command[1] & 3) > 0) Command[3] = 0;
+            if ((Command[1] & 3) > 1) Command[4] = EXTENDED_EEPROM == 0 ? 0x80 : 0xc0;
+            if ((Command[1] & 3) > 2) Command[5] = 0;
         }
         else
         {
@@ -61,22 +52,22 @@ void EepromCommand(uint8_t* Command)
         }
         break;
     case 4: // read
-        {
-            fseek(g_eeprom_file, 0, SEEK_SET);
-            fread(eeprom, 1, 0x800, g_eeprom_file);
-            memcpy(&Command[4], eeprom + Command[3] * 8, 8);
-        }
-        break;
+    {
+        fseek(g_eeprom_file, 0, SEEK_SET);
+        fread(eeprom, 1, 0x800, g_eeprom_file);
+        memcpy(&Command[4], eeprom + Command[3] * 8, 8);
+    }
+    break;
     case 5: // write
-        {
-            fseek(g_eeprom_file, 0, SEEK_SET);
-            fread(eeprom, 1, 0x800, g_eeprom_file);
-            memcpy(eeprom + Command[3] * 8, &Command[4], 8);
+    {
+        fseek(g_eeprom_file, 0, SEEK_SET);
+        fread(eeprom, 1, 0x800, g_eeprom_file);
+        memcpy(eeprom + Command[3] * 8, &Command[4], 8);
 
-            fseek(g_eeprom_file, 0, SEEK_SET);
-            fwrite(eeprom, 1, 0x800, g_eeprom_file);
-        }
-        break;
+        fseek(g_eeprom_file, 0, SEEK_SET);
+        fwrite(eeprom, 1, 0x800, g_eeprom_file);
+    }
+    break;
     default:
         g_core->log_warn(std::format(L"unknown command in EepromCommand : {:#06x}", Command[2]));
     }
@@ -84,280 +75,23 @@ void EepromCommand(uint8_t* Command)
 
 void format_mempacks()
 {
-    unsigned char init[] =
-    {
-    0x81,
-    0x01,
-    0x02,
-    0x03,
-    0x04,
-    0x05,
-    0x06,
-    0x07,
-    0x08,
-    0x09,
-    0x0a,
-    0x0b,
-    0x0c,
-    0x0d,
-    0x0e,
-    0x0f,
-    0x10,
-    0x11,
-    0x12,
-    0x13,
-    0x14,
-    0x15,
-    0x16,
-    0x17,
-    0x18,
-    0x19,
-    0x1a,
-    0x1b,
-    0x1c,
-    0x1d,
-    0x1e,
-    0x1f,
-    0xff,
-    0xff,
-    0xff,
-    0xff,
-    0x05,
-    0x1a,
-    0x5f,
-    0x13,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0xff,
-    0xff,
-    0xff,
-    0xff,
-    0xff,
-    0xff,
-    0xff,
-    0xff,
-    0xff,
-    0xff,
-    0x01,
-    0xff,
-    0x66,
-    0x25,
-    0x99,
-    0xcd,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0xff,
-    0xff,
-    0xff,
-    0xff,
-    0x05,
-    0x1a,
-    0x5f,
-    0x13,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0xff,
-    0xff,
-    0xff,
-    0xff,
-    0xff,
-    0xff,
-    0xff,
-    0xff,
-    0xff,
-    0xff,
-    0x01,
-    0xff,
-    0x66,
-    0x25,
-    0x99,
-    0xcd,
-    0xff,
-    0xff,
-    0xff,
-    0xff,
-    0x05,
-    0x1a,
-    0x5f,
-    0x13,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0xff,
-    0xff,
-    0xff,
-    0xff,
-    0xff,
-    0xff,
-    0xff,
-    0xff,
-    0xff,
-    0xff,
-    0x01,
-    0xff,
-    0x66,
-    0x25,
-    0x99,
-    0xcd,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0xff,
-    0xff,
-    0xff,
-    0xff,
-    0x05,
-    0x1a,
-    0x5f,
-    0x13,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0xff,
-    0xff,
-    0xff,
-    0xff,
-    0xff,
-    0xff,
-    0xff,
-    0xff,
-    0xff,
-    0xff,
-    0x01,
-    0xff,
-    0x66,
-    0x25,
-    0x99,
-    0xcd,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x71,
-    0x00,
-    0x03,
-    0x00,
-    0x03,
-    0x00,
-    0x03,
-    0x00,
-    0x03,
-    0x00,
-    0x03,
-    0x00,
-    0x03,
-    0x00,
-    0x03};
+    unsigned char init[] = {
+        0x81, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10,
+        0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f, 0xff, 0xff,
+        0xff, 0xff, 0x05, 0x1a, 0x5f, 0x13, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0xff,
+        0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x01, 0xff, 0x66, 0x25, 0x99, 0xcd, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0xff, 0xff, 0x05, 0x1a,
+        0x5f, 0x13, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+        0xff, 0xff, 0xff, 0x01, 0xff, 0x66, 0x25, 0x99, 0xcd, 0xff, 0xff, 0xff, 0xff, 0x05, 0x1a, 0x5f, 0x13,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+        0xff, 0x01, 0xff, 0x66, 0x25, 0x99, 0xcd, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0xff, 0xff, 0x05, 0x1a, 0x5f, 0x13, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x01, 0xff, 0x66,
+        0x25, 0x99, 0xcd, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x71, 0x00, 0x03, 0x00, 0x03, 0x00, 0x03, 0x00, 0x03, 0x00, 0x03, 0x00, 0x03, 0x00, 0x03};
     int32_t i, j;
     for (i = 0; i < 4; i++)
     {
@@ -370,7 +104,7 @@ void format_mempacks()
     }
 }
 
-unsigned char mempack_crc(unsigned char* data)
+unsigned char mempack_crc(unsigned char *data)
 {
     int32_t i;
     unsigned char CRC = 0;
@@ -381,16 +115,14 @@ unsigned char mempack_crc(unsigned char* data)
         {
             int32_t xor_tap = (CRC & 0x80) ? 0x85 : 0x00;
             CRC <<= 1;
-            if (i != 0x20 && (data[i] & mask))
-                CRC |= 1;
+            if (i != 0x20 && (data[i] & mask)) CRC |= 1;
             CRC ^= xor_tap;
         }
     }
     return CRC;
 }
 
-
-void internal_ReadController(int32_t Control, uint8_t* Command)
+void internal_ReadController(int32_t Control, uint8_t *Command)
 {
     switch (Command[2])
     {
@@ -402,7 +134,7 @@ void internal_ReadController(int32_t Control, uint8_t* Command)
             lag_count = 0;
             core_buttons input = {0};
             vcr_on_controller_poll(Control, &input);
-            *((uint32_t*)(Command + 3)) = input.value;
+            *((uint32_t *)(Command + 3)) = input.value;
         }
         break;
     case 2: // read controller pack
@@ -416,14 +148,13 @@ void internal_ReadController(int32_t Control, uint8_t* Command)
     }
 }
 
-void internal_ControllerCommand(int32_t Control, uint8_t* Command)
+void internal_ControllerCommand(int32_t Control, uint8_t *Command)
 {
     switch (Command[2])
     {
     case 0x00: // check
     case 0xFF:
-        if ((Command[1] & 0x80))
-            break;
+        if ((Command[1] & 0x80)) break;
         if (g_core->controls[Control].Present)
         {
             Command[3] = 0x05;
@@ -445,43 +176,41 @@ void internal_ControllerCommand(int32_t Control, uint8_t* Command)
             Command[1] |= 0x80;
         break;
     case 0x01:
-        if (!g_core->controls[Control].Present)
-            Command[1] |= 0x80;
+        if (!g_core->controls[Control].Present) Command[1] |= 0x80;
         break;
     case 0x02: // read controller pack
         if (g_core->controls[Control].Present)
         {
             switch (g_core->controls[Control].Plugin)
             {
-            case (int32_t)ce_mempak:
+            case (int32_t)ce_mempak: {
+                int32_t address = (Command[3] << 8) | Command[4];
+                if (address == 0x8001)
                 {
-                    int32_t address = (Command[3] << 8) | Command[4];
-                    if (address == 0x8001)
+                    memset(&Command[5], 0, 0x20);
+                    Command[0x25] = mempack_crc(&Command[5]);
+                }
+                else
+                {
+                    address &= 0xFFE0;
+                    if (address <= 0x7FE0)
                     {
-                        memset(&Command[5], 0, 0x20);
-                        Command[0x25] = mempack_crc(&Command[5]);
+                        fseek(g_mpak_file, 0, SEEK_SET);
+                        fread(mempack[0], 1, 0x8000, g_mpak_file);
+                        fread(mempack[1], 1, 0x8000, g_mpak_file);
+                        fread(mempack[2], 1, 0x8000, g_mpak_file);
+                        fread(mempack[3], 1, 0x8000, g_mpak_file);
+
+                        memcpy(&Command[5], &mempack[Control][address], 0x20);
                     }
                     else
                     {
-                        address &= 0xFFE0;
-                        if (address <= 0x7FE0)
-                        {
-                            fseek(g_mpak_file, 0, SEEK_SET);
-                            fread(mempack[0], 1, 0x8000, g_mpak_file);
-                            fread(mempack[1], 1, 0x8000, g_mpak_file);
-                            fread(mempack[2], 1, 0x8000, g_mpak_file);
-                            fread(mempack[3], 1, 0x8000, g_mpak_file);
-
-                            memcpy(&Command[5], &mempack[Control][address], 0x20);
-                        }
-                        else
-                        {
-                            memset(&Command[5], 0, 0x20);
-                        }
-                        Command[0x25] = mempack_crc(&Command[5]);
+                        memset(&Command[5], 0, 0x20);
                     }
+                    Command[0x25] = mempack_crc(&Command[5]);
                 }
-                break;
+            }
+            break;
             case (int32_t)ce_raw:
                 if (g_core->plugin_funcs.input_controller_command)
                     g_core->plugin_funcs.input_controller_command(Control, Command);
@@ -499,34 +228,33 @@ void internal_ControllerCommand(int32_t Control, uint8_t* Command)
         {
             switch (g_core->controls[Control].Plugin)
             {
-            case (int32_t)ce_mempak:
+            case (int32_t)ce_mempak: {
+                int32_t address = (Command[3] << 8) | Command[4];
+                if (address == 0x8001)
+                    Command[0x25] = mempack_crc(&Command[5]);
+                else
                 {
-                    int32_t address = (Command[3] << 8) | Command[4];
-                    if (address == 0x8001)
-                        Command[0x25] = mempack_crc(&Command[5]);
-                    else
+                    address &= 0xFFE0;
+                    if (address <= 0x7FE0)
                     {
-                        address &= 0xFFE0;
-                        if (address <= 0x7FE0)
-                        {
-                            fseek(g_mpak_file, 0, SEEK_SET);
-                            fread(mempack[0], 1, 0x8000, g_mpak_file);
-                            fread(mempack[1], 1, 0x8000, g_mpak_file);
-                            fread(mempack[2], 1, 0x8000, g_mpak_file);
-                            fread(mempack[3], 1, 0x8000, g_mpak_file);
+                        fseek(g_mpak_file, 0, SEEK_SET);
+                        fread(mempack[0], 1, 0x8000, g_mpak_file);
+                        fread(mempack[1], 1, 0x8000, g_mpak_file);
+                        fread(mempack[2], 1, 0x8000, g_mpak_file);
+                        fread(mempack[3], 1, 0x8000, g_mpak_file);
 
-                            memcpy(&mempack[Control][address], &Command[5], 0x20);
+                        memcpy(&mempack[Control][address], &Command[5], 0x20);
 
-                            fseek(g_mpak_file, 0, SEEK_SET);
-                            fwrite(mempack[0], 1, 0x8000, g_mpak_file);
-                            fwrite(mempack[1], 1, 0x8000, g_mpak_file);
-                            fwrite(mempack[2], 1, 0x8000, g_mpak_file);
-                            fwrite(mempack[3], 1, 0x8000, g_mpak_file);
-                        }
-                        Command[0x25] = mempack_crc(&Command[5]);
+                        fseek(g_mpak_file, 0, SEEK_SET);
+                        fwrite(mempack[0], 1, 0x8000, g_mpak_file);
+                        fwrite(mempack[1], 1, 0x8000, g_mpak_file);
+                        fwrite(mempack[2], 1, 0x8000, g_mpak_file);
+                        fwrite(mempack[3], 1, 0x8000, g_mpak_file);
                     }
+                    Command[0x25] = mempack_crc(&Command[5]);
                 }
-                break;
+            }
+            break;
             case (int32_t)ce_raw:
                 if (g_core->plugin_funcs.input_controller_command)
                     g_core->plugin_funcs.input_controller_command(Control, Command);
@@ -570,7 +298,10 @@ void update_pif_write()
             g_core->log_info(L"unknown pif2 code:");
             for (i = (64 - 2 * 8) / 8; i < (64 / 8); i++)
             {
-                g_core->log_info(std::format(L"{:#06x} {:#06x} {:#06x} {:#06x} | {:#06x} {:#06x} {:#06x} {:#06x}", PIF_RAMb[i * 8 + 0], PIF_RAMb[i * 8 + 1], PIF_RAMb[i * 8 + 2], PIF_RAMb[i * 8 + 3], PIF_RAMb[i * 8 + 4], PIF_RAMb[i * 8 + 5], PIF_RAMb[i * 8 + 6], PIF_RAMb[i * 8 + 7]));
+                g_core->log_info(std::format(L"{:#06x} {:#06x} {:#06x} {:#06x} | {:#06x} {:#06x} {:#06x} {:#06x}",
+                                             PIF_RAMb[i * 8 + 0], PIF_RAMb[i * 8 + 1], PIF_RAMb[i * 8 + 2],
+                                             PIF_RAMb[i * 8 + 3], PIF_RAMb[i * 8 + 4], PIF_RAMb[i * 8 + 5],
+                                             PIF_RAMb[i * 8 + 6], PIF_RAMb[i * 8 + 7]));
             }
             break;
         case 0x08:
@@ -587,8 +318,7 @@ void update_pif_write()
         {
         case 0x00:
             channel++;
-            if (channel > 6)
-                i = 0x40;
+            if (channel > 6) i = 0x40;
             break;
         case 0xFF:
             break;
@@ -597,8 +327,7 @@ void update_pif_write()
             {
                 if (channel < 4)
                 {
-                    if (g_core->controls[channel].Present &&
-                        g_core->controls[channel].RawData)
+                    if (g_core->controls[channel].Present && g_core->controls[channel].RawData)
                         g_core->plugin_funcs.input_controller_command(channel, &PIF_RAMb[i]);
                     else
                         internal_ControllerCommand(channel, &PIF_RAMb[i]);
@@ -628,13 +357,13 @@ void update_pif_write()
     #endif*/
 }
 
-
 void update_pif_read()
 {
     // g_core->log_info(L"pif entry");
     int32_t i = 0, channel = 0;
-    bool once = emu_paused || (frame_advance_outstanding > 0) || g_wait_counter; // used to pause only once during controller routine
-    bool stAllowed = true; // used to disallow .st being loaded after any controller has already been read
+    bool once = emu_paused || (frame_advance_outstanding > 0) ||
+                g_wait_counter; // used to pause only once during controller routine
+    bool stAllowed = true;      // used to disallow .st being loaded after any controller has already been read
 #ifdef DEBUG_PIF
     g_core->log_info(L"---------- before read ----------");
     print_pif();
@@ -646,8 +375,7 @@ void update_pif_read()
         {
         case 0x00:
             channel++;
-            if (channel > 6)
-                i = 0x40;
+            if (channel > 6) i = 0x40;
             break;
         case 0xFE:
             i = 0x40;
@@ -713,7 +441,8 @@ void update_pif_read()
                     }
                     if (g_st_old)
                     {
-                        // if old savestate, don't fetch controller (matches old behaviour), makes delay fix not work for that st but syncs all m64s
+                        // if old savestate, don't fetch controller (matches old behaviour), makes delay fix not work
+                        // for that st but syncs all m64s
                         g_core->log_info(L"old st detected");
                         g_st_old = false;
                         return;
@@ -723,11 +452,11 @@ void update_pif_read()
 
                     // we handle raw data-mode controllers here:
                     // this is incompatible with VCR!
-                    if (g_core->controls[channel].Present &&
-                        g_core->controls[channel].RawData && g_ctx.vcr_get_task() == task_idle)
+                    if (g_core->controls[channel].Present && g_core->controls[channel].RawData &&
+                        g_ctx.vcr_get_task() == task_idle)
                     {
                         g_core->plugin_funcs.input_read_controller(channel, &PIF_RAMb[i]);
-                        auto ptr = (core_buttons*)&PIF_RAMb[i + 3];
+                        auto ptr = (core_buttons *)&PIF_RAMb[i + 3];
                         g_core->callbacks.input(ptr, channel);
                     }
                     else

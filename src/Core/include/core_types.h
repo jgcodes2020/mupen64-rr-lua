@@ -12,7 +12,8 @@
 /**
  * An enum containing results that can be returned by the core.
  */
-typedef enum {
+typedef enum
+{
 
 #pragma region Generic
     // The operation completed successfully
@@ -105,7 +106,8 @@ typedef enum {
 
 } core_result;
 
-struct core_cfg {
+struct core_cfg
+{
     /// <summary>
     /// Statistic - Amount of state loads during recording
     /// </summary>
@@ -165,7 +167,8 @@ struct core_cfg {
     int32_t is_movie_loop_enabled;
 
     /// <summary>
-    /// The CPU's counter factor. Higher values will generate less lag frames in-game at the cost of higher native CPU usage.
+    /// The CPU's counter factor. Higher values will generate less lag frames in-game at the cost of higher native CPU
+    /// usage.
     /// </summary>
     int32_t counter_factor = 1;
 
@@ -271,10 +274,13 @@ struct core_cfg {
 
 #pragma region Emulator
 
-typedef std::common_type_t<std::chrono::duration<int64_t, std::ratio<1, 1000000000>>, std::chrono::duration<int64_t, std::ratio<1, 1000000000>>> core_timer_delta;
+typedef std::common_type_t<std::chrono::duration<int64_t, std::ratio<1, 1000000000>>,
+                           std::chrono::duration<int64_t, std::ratio<1, 1000000000>>>
+    core_timer_delta;
 constexpr uint8_t core_timer_max_deltas = 60;
 
-typedef struct {
+typedef struct
+{
     uint32_t rdram_config;
     uint32_t rdram_device_id;
     uint32_t rdram_delay;
@@ -287,7 +293,8 @@ typedef struct {
     uint32_t rdram_device_manuf;
 } core_rdram_reg;
 
-typedef struct {
+typedef struct
+{
     uint32_t sp_mem_addr_reg;
     uint32_t sp_dram_addr_reg;
     uint32_t sp_rd_len_reg;
@@ -314,12 +321,14 @@ typedef struct {
     uint32_t sp_semaphore_reg;
 } core_sp_reg;
 
-typedef struct {
+typedef struct
+{
     uint32_t rsp_pc;
     uint32_t rsp_ibist;
 } core_rsp_reg;
 
-typedef struct {
+typedef struct
+{
     uint32_t dpc_start;
     uint32_t dpc_end;
     uint32_t dpc_current;
@@ -342,14 +351,16 @@ typedef struct {
     uint32_t dpc_tmem;
 } core_dpc_reg;
 
-typedef struct {
+typedef struct
+{
     uint32_t dps_tbist;
     uint32_t dps_test_mode;
     uint32_t dps_buftest_addr;
     uint32_t dps_buftest_data;
 } core_dps_reg;
 
-typedef struct {
+typedef struct
+{
     uint32_t w_mi_init_mode_reg;
     uint32_t mi_init_mode_reg;
     char init_length;
@@ -368,7 +379,8 @@ typedef struct {
     char DP_intr_mask;
 } core_mips_reg;
 
-typedef struct {
+typedef struct
+{
     uint32_t vi_status;
     uint32_t vi_origin;
     uint32_t vi_width;
@@ -386,7 +398,8 @@ typedef struct {
     uint32_t vi_delay;
 } core_vi_reg;
 
-typedef struct {
+typedef struct
+{
     uint32_t ai_dram_addr;
     // source address (in rdram) of sound sample to be played
     uint32_t ai_len; // amount of bytes(?) to be played
@@ -402,7 +415,8 @@ typedef struct {
     uint32_t current_len;
 } core_ai_reg;
 
-typedef struct {
+typedef struct
+{
     uint32_t pi_dram_addr_reg;
     uint32_t pi_cart_addr_reg;
     uint32_t pi_rd_len_reg;
@@ -418,7 +432,8 @@ typedef struct {
     uint32_t pi_bsd_dom2_rls_reg;
 } core_pi_reg;
 
-typedef struct {
+typedef struct
+{
     uint32_t ri_mode;
     uint32_t ri_config;
     uint32_t ri_current_load;
@@ -429,7 +444,8 @@ typedef struct {
     uint32_t ri_werror;
 } core_ri_reg;
 
-typedef struct {
+typedef struct
+{
     uint32_t si_dram_addr;
     uint32_t si_pif_addr_rd64b;
     uint32_t si_pif_addr_wr64b;
@@ -439,12 +455,14 @@ typedef struct {
 /**
  * \brief Represents a system type.
  */
-typedef enum {
+typedef enum
+{
     sys_ntsc,
     sys_pal,
 } core_system_type;
 
-typedef struct {
+typedef struct
+{
     uint8_t init_PI_BSB_DOM1_LAT_REG;
     uint8_t init_PI_BSB_DOM1_PGS_REG;
     uint8_t init_PI_BSB_DOM1_PWD_REG;
@@ -467,8 +485,8 @@ typedef struct {
 
 #pragma region VCR
 
-
-enum {
+enum
+{
     MOVIE_START_FROM_SNAPSHOT = (1 << 0),
     MOVIE_START_FROM_NOTHING = (1 << 1),
     MOVIE_START_FROM_EEPROM = (1 << 2),
@@ -505,7 +523,8 @@ typedef union ExtendedMovieFlags {
 /**
  * Additional data for extended movies. Must be 32 bytes large.
  */
-typedef struct ExtendedMovieData {
+typedef struct ExtendedMovieData
+{
     /**
      * Special authorship information, such as the program which created the movie.
      */
@@ -529,7 +548,8 @@ typedef struct ExtendedMovieData {
 /**
  * \brief
  */
-typedef struct CoreVCRMovieHeader {
+typedef struct CoreVCRMovieHeader
+{
     /**
      * \brief <c>M64\0x1a</c>
      */
@@ -565,7 +585,8 @@ typedef struct CoreVCRMovieHeader {
     /**
      * \brief The amount of controllers connected during recording
      * \remarks (pretty much unused)
-     * \remarks This field makes no sense, as this value can already be figured out by checking controller flags post-load
+     * \remarks This field makes no sense, as this value can already be figured out by checking controller flags
+     * post-load
      */
     unsigned char num_controllers;
 
@@ -593,7 +614,8 @@ typedef struct CoreVCRMovieHeader {
     uint16_t reserved2;
 
     /**
-     * \brief Bitfield of flags for each controller. Sequence of present, mempak and rumble bits with per-controller values respectively (c1,c2,c3,c4,r1,...)
+     * \brief Bitfield of flags for each controller. Sequence of present, mempak and rumble bits with per-controller
+     * values respectively (c1,c2,c3,c4,r1,...)
      */
     uint32_t controller_flags;
 
@@ -663,7 +685,8 @@ typedef struct CoreVCRMovieHeader {
 } core_vcr_movie_header;
 #pragma pack(pop)
 
-typedef enum {
+typedef enum
+{
     task_idle,
     task_start_recording_from_reset,
     task_start_recording_from_snapshot,
@@ -677,7 +700,8 @@ typedef enum {
 /**
  * \brief Represents information about a seek operation.
  */
-struct core_vcr_seek_info {
+struct core_vcr_seek_info
+{
     /**
      * \brief The current sample.
      */
@@ -711,7 +735,8 @@ typedef struct
 /**
  * \brief Represents a cheat.
  */
-typedef struct CoreCheat {
+typedef struct CoreCheat
+{
     // The script's name. FIXME: This should be read from the script
     std::wstring name = L"Unnamed Cheat";
 
@@ -721,7 +746,8 @@ typedef struct CoreCheat {
     // Whether the cheat is active.
     bool active = true;
 
-    // The cheat's instructions. The pair's 1st element tells us whether instruction is a conditional, which is required for special handling of buggy kaze blj anywhere code
+    // The cheat's instructions. The pair's 1st element tells us whether instruction is a conditional, which is required
+    // for special handling of buggy kaze blj anywhere code
     std::vector<std::tuple<bool, std::function<bool()>>> instructions;
 } core_cheat;
 
@@ -729,21 +755,24 @@ typedef struct CoreCheat {
 
 #pragma region Savestates
 
-typedef enum {
+typedef enum
+{
     // A save operation
     core_st_job_save,
     // A load operation
     core_st_job_load
 } core_st_job;
 
-typedef enum {
+typedef enum
+{
     // The target medium is a file with a path.
     core_st_medium_path,
     // The target medium is in-memory.
     core_st_medium_memory,
 } core_st_medium;
 
-struct core_st_job_params {
+struct core_st_job_params
+{
     /// The path to the savestate file.
     /// Valid if the task's medium is <see cref="e_st_medium::path"/>.
     std::filesystem::path path{};
@@ -753,14 +782,15 @@ struct core_st_job_params {
     std::vector<uint8_t> buffer{};
 };
 
-struct core_st_callback_info {
+struct core_st_callback_info
+{
     core_result result{};
     core_st_job job{};
     core_st_medium medium{};
     core_st_job_params params{};
 };
 
-using core_st_callback = std::function<void(const core_st_callback_info&, const std::vector<uint8_t>&)>;
+using core_st_callback = std::function<void(const core_st_callback_info &, const std::vector<uint8_t> &)>;
 
 #pragma endregion
 
@@ -769,7 +799,8 @@ using core_st_callback = std::function<void(const core_st_callback_info&, const 
 /**
  * The tone of a dialog.
  */
-typedef enum {
+typedef enum
+{
     fsvc_error,
     fsvc_warning,
     fsvc_information

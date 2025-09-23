@@ -6,9 +6,11 @@
 
 #pragma once
 
-class Encoder {
-public:
-    struct Params {
+class Encoder
+{
+  public:
+    struct Params
+    {
         /**
          * \brief The video file's path
          */
@@ -43,7 +45,8 @@ public:
     /**
      * \brief Starts encoding.
      * \param params The parameters to encode with.
-     * \return The error message if the operation failed, or an empty optional if it succeeded. An empty error message means the user cancelled the starting.
+     * \return The error message if the operation failed, or an empty optional if it succeeded. An empty error message
+     * means the user cancelled the starting.
      */
     virtual std::optional<std::wstring> start(Params params) = 0;
 
@@ -58,7 +61,7 @@ public:
      * \param image The video buffer. Must be freed with the provided video free function.
      * \return Whether the operation succeeded
      */
-    virtual bool append_video(uint8_t* image) = 0;
+    virtual bool append_video(uint8_t *image) = 0;
 
     /**
      * \brief Adds samples of audio data
@@ -67,5 +70,5 @@ public:
      * \param bitrate The audio bitrate
      * \return Whether the operation succeeded
      */
-    virtual bool append_audio(uint8_t* audio, size_t length, uint8_t bitrate) = 0;
+    virtual bool append_audio(uint8_t *audio, size_t length, uint8_t bitrate) = 0;
 };

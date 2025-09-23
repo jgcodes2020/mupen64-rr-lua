@@ -6,7 +6,8 @@
 
 #pragma once
 
-typedef enum {
+typedef enum
+{
     INST_UNDEF,
 
     INST_LB,
@@ -230,7 +231,8 @@ typedef enum {
 } INST;
 
 // •\Ž¦—p
-typedef enum {
+typedef enum
+{
     INSTF_NONE,
     //---- i type
     INSTF_LUI,
@@ -264,7 +266,8 @@ typedef enum {
     INSTF_COUNT
 } INSTFMT;
 
-typedef enum {
+typedef enum
+{
     INSTFTYPE_NONE,
     INSTFTYPE_I,
     INSTFTYPE_J,
@@ -319,16 +322,16 @@ typedef struct
 } INSTDECODE;
 
 INST GetInstruction(uint32_t w);
-void DecodeInstruction(uint32_t w, INSTDECODE* d);
-const char* GetOpecodeString(INSTDECODE* d);
-char* GetOperandString(char* buf, INSTDECODE* d, uint32_t pc);
+void DecodeInstruction(uint32_t w, INSTDECODE *d);
+const char *GetOpecodeString(INSTDECODE *d);
+char *GetOperandString(char *buf, INSTDECODE *d, uint32_t pc);
 // buf size:27
 
 extern const INSTFMT InstFormat[INST_COUNT];
 extern const INSTFTYPE InstFormatType[INSTF_COUNT];
-extern const char* const OpecodeName[INST_COUNT];
-extern void (*InstFormatTypeFunc[INSTFTYPE_COUNT])(uint32_t, INSTOPERAND*);
-extern const char* const CPURegisterName[32];
-extern const char* const COP0RegisterName[32];
+extern const char *const OpecodeName[INST_COUNT];
+extern void (*InstFormatTypeFunc[INSTFTYPE_COUNT])(uint32_t, INSTOPERAND *);
+extern const char *const CPURegisterName[32];
+extern const char *const COP0RegisterName[32];
 
-char* dbg_disassemble(char* buf, uint32_t w, uint32_t pc);
+char *dbg_disassemble(char *buf, uint32_t w, uint32_t pc);

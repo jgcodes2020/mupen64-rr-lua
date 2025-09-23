@@ -9,117 +9,124 @@
 #include <Messenger.h>
 #include <components/Statusbar.h>
 
-struct t_segment {
+struct t_segment
+{
     std::vector<Statusbar::Section> sections;
     size_t width;
 };
 
-struct t_segment_layout {
+struct t_segment_layout
+{
     std::vector<t_segment> emu_parts;
     std::vector<t_segment> idle_parts;
 };
 
-const std::unordered_map<t_config::StatusbarLayout, t_segment_layout> LAYOUT_MAP = {
-{t_config::StatusbarLayout::Classic, t_segment_layout{
-                                     .emu_parts = {
-                                     t_segment{
-                                     .sections = {Statusbar::Section::VCR, Statusbar::Section::Notification},
-                                     .width = 260,
-                                     },
-                                     t_segment{
-                                     .sections = {Statusbar::Section::FPS},
-                                     .width = 70,
-                                     },
-                                     t_segment{
-                                     .sections = {Statusbar::Section::VIs},
-                                     .width = 70,
-                                     },
-                                     t_segment{
-                                     .sections = {Statusbar::Section::Input},
-                                     .width = 140,
-                                     },
-                                     },
-                                     .idle_parts = {},
-                                     }},
-{t_config::StatusbarLayout::Modern, t_segment_layout{
-                                    .emu_parts = {
-                                    t_segment{
-                                    .sections = {Statusbar::Section::Notification, Statusbar::Section::Readonly},
-                                    .width = 200,
-                                    },
-                                    t_segment{
-                                    .sections = {Statusbar::Section::VCR},
-                                    .width = 180,
-                                    },
-                                    t_segment{
-                                    .sections = {Statusbar::Section::Input},
-                                    .width = 80,
-                                    },
-                                    t_segment{
-                                    .sections = {Statusbar::Section::Rerecords},
-                                    .width = 70,
-                                    },
-                                    t_segment{
-                                    .sections = {Statusbar::Section::FPS},
-                                    .width = 80,
-                                    },
-                                    t_segment{
-                                    .sections = {Statusbar::Section::VIs},
-                                    .width = 80,
-                                    },
-                                    t_segment{
-                                    .sections = {Statusbar::Section::Slot},
-                                    .width = 50,
-                                    },
-                                    t_segment{
-                                    .sections = {Statusbar::Section::MultiFrameAdvanceCount},
-                                    .width = 60,
-                                    },
-                                    },
-                                    .idle_parts = {},
-                                    }},
-{t_config::StatusbarLayout::ModernWithReadOnly, t_segment_layout{
-                                                .emu_parts = {
-                                                t_segment{
-                                                .sections = {Statusbar::Section::Notification},
-                                                .width = 150,
-                                                },
-                                                t_segment{
-                                                .sections = {Statusbar::Section::VCR},
-                                                .width = 160,
-                                                },
-                                                t_segment{
-                                                .sections = {Statusbar::Section::Readonly},
-                                                .width = 80,
-                                                },
-                                                t_segment{
-                                                .sections = {Statusbar::Section::Input},
-                                                .width = 80,
-                                                },
-                                                t_segment{
-                                                .sections = {Statusbar::Section::Rerecords},
-                                                .width = 70,
-                                                },
-                                                t_segment{
-                                                .sections = {Statusbar::Section::FPS},
-                                                .width = 80,
-                                                },
-                                                t_segment{
-                                                .sections = {Statusbar::Section::VIs},
-                                                .width = 80,
-                                                },
-                                                t_segment{
-                                                .sections = {Statusbar::Section::Slot},
-                                                .width = 50,
-                                                },
-                                                t_segment{
-                                                .sections = {Statusbar::Section::MultiFrameAdvanceCount},
-                                                .width = 60,
-                                                },
-                                                },
-                                                .idle_parts = {},
-                                                }}};
-
+const std::unordered_map<t_config::StatusbarLayout, t_segment_layout>
+    LAYOUT_MAP = {{t_config::StatusbarLayout::Classic,
+                   t_segment_layout{
+                       .emu_parts =
+                           {
+                               t_segment{
+                                   .sections = {Statusbar::Section::VCR, Statusbar::Section::Notification},
+                                   .width = 260,
+                               },
+                               t_segment{
+                                   .sections = {Statusbar::Section::FPS},
+                                   .width = 70,
+                               },
+                               t_segment{
+                                   .sections = {Statusbar::Section::VIs},
+                                   .width = 70,
+                               },
+                               t_segment{
+                                   .sections = {Statusbar::Section::Input},
+                                   .width = 140,
+                               },
+                           },
+                       .idle_parts = {},
+                   }},
+                  {t_config::StatusbarLayout::Modern,
+                   t_segment_layout{
+                       .emu_parts =
+                           {
+                               t_segment{
+                                   .sections = {Statusbar::Section::Notification, Statusbar::Section::Readonly},
+                                   .width = 200,
+                               },
+                               t_segment{
+                                   .sections = {Statusbar::Section::VCR},
+                                   .width = 180,
+                               },
+                               t_segment{
+                                   .sections = {Statusbar::Section::Input},
+                                   .width = 80,
+                               },
+                               t_segment{
+                                   .sections = {Statusbar::Section::Rerecords},
+                                   .width = 70,
+                               },
+                               t_segment{
+                                   .sections = {Statusbar::Section::FPS},
+                                   .width = 80,
+                               },
+                               t_segment{
+                                   .sections = {Statusbar::Section::VIs},
+                                   .width = 80,
+                               },
+                               t_segment{
+                                   .sections = {Statusbar::Section::Slot},
+                                   .width = 50,
+                               },
+                               t_segment{
+                                   .sections = {Statusbar::Section::MultiFrameAdvanceCount},
+                                   .width = 60,
+                               },
+                           },
+                       .idle_parts = {},
+                   }},
+                  {t_config::StatusbarLayout::ModernWithReadOnly,
+                   t_segment_layout{
+                       .emu_parts =
+                           {
+                               t_segment{
+                                   .sections = {Statusbar::Section::Notification},
+                                   .width = 150,
+                               },
+                               t_segment{
+                                   .sections = {Statusbar::Section::VCR},
+                                   .width = 160,
+                               },
+                               t_segment{
+                                   .sections = {Statusbar::Section::Readonly},
+                                   .width = 80,
+                               },
+                               t_segment{
+                                   .sections = {Statusbar::Section::Input},
+                                   .width = 80,
+                               },
+                               t_segment{
+                                   .sections = {Statusbar::Section::Rerecords},
+                                   .width = 70,
+                               },
+                               t_segment{
+                                   .sections = {Statusbar::Section::FPS},
+                                   .width = 80,
+                               },
+                               t_segment{
+                                   .sections = {Statusbar::Section::VIs},
+                                   .width = 80,
+                               },
+                               t_segment{
+                                   .sections = {Statusbar::Section::Slot},
+                                   .width = 50,
+                               },
+                               t_segment{
+                                   .sections = {Statusbar::Section::MultiFrameAdvanceCount},
+                                   .width = 60,
+                               },
+                           },
+                       .idle_parts = {},
+                   }}};
 
 static HWND statusbar_hwnd;
 
@@ -133,11 +140,9 @@ static size_t section_to_segment_index(const Statusbar::Section section)
 {
     size_t i = 0;
 
-    for (const auto& part : get_current_parts())
+    for (const auto &part : get_current_parts())
     {
-        if (std::ranges::any_of(part.sections, [=](const auto s) {
-                return s == section;
-            }))
+        if (std::ranges::any_of(part.sections, [=](const auto s) { return s == section; }))
         {
             return i;
         }
@@ -153,7 +158,7 @@ static void refresh_segments()
     const auto parts = get_current_parts();
 
     std::vector<int32_t> sizes;
-    for (const auto& part : parts)
+    for (const auto &part : parts)
     {
         sizes.emplace_back(static_cast<int32_t>(part.width));
     }
@@ -182,7 +187,7 @@ static void refresh_segments()
         scale = std::min(scale, 1.0f);
     }
 
-    for (auto& size : sizes)
+    for (auto &size : sizes)
     {
         size = static_cast<int>(size * scale);
     }
@@ -223,7 +228,8 @@ static void emu_launched_changed(std::any data)
 static void create()
 {
     // undocumented behaviour of CCS_BOTTOM: it skips applying SBARS_SIZEGRIP in style pre-computation phase
-    statusbar_hwnd = CreateWindowEx(0, STATUSCLASSNAME, nullptr, WS_CHILD | WS_VISIBLE | CCS_BOTTOM, 0, 0, 0, 0, g_main_ctx.hwnd, (HMENU)IDC_MAIN_STATUS, g_main_ctx.hinst, nullptr);
+    statusbar_hwnd = CreateWindowEx(0, STATUSCLASSNAME, nullptr, WS_CHILD | WS_VISIBLE | CCS_BOTTOM, 0, 0, 0, 0,
+                                    g_main_ctx.hwnd, (HMENU)IDC_MAIN_STATUS, g_main_ctx.hinst, nullptr);
 }
 
 static void statusbar_visibility_changed(std::any data)
@@ -298,7 +304,7 @@ static void fix_segments(std::any)
 
         const auto len = SendMessage(statusbar_hwnd, SB_GETTEXTLENGTH, segment_index, 0);
 
-        auto str = (wchar_t*)calloc(len + 1, sizeof(wchar_t));
+        auto str = (wchar_t *)calloc(len + 1, sizeof(wchar_t));
 
         SendMessage(statusbar_hwnd, SB_GETTEXT, segment_index, (LPARAM)str);
 
@@ -339,7 +345,7 @@ HWND Statusbar::hwnd()
     return statusbar_hwnd;
 }
 
-void Statusbar::post(const std::wstring& text, const Section section)
+void Statusbar::post(const std::wstring &text, const Section section)
 {
     const auto segment_index = section_to_segment_index(section);
 

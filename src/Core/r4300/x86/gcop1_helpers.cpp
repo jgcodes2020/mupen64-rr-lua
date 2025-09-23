@@ -21,7 +21,7 @@ static void patch_jump(uint32_t addr, uint32_t target)
 
 static void gencall_noret(void (*fn)())
 {
-    mov_m32_imm32((uint32_t*)(&PC), (uint32_t)(dst));
+    mov_m32_imm32((uint32_t *)(&PC), (uint32_t)(dst));
     mov_reg32_imm32(EAX, (uint32_t)fn);
     call_reg32(EAX);
     ud2();
@@ -38,20 +38,19 @@ static void gencall_noret(void (*fn)())
 void gencheck_float_input_valid(int32_t stackBase)
 {
     // if abs(x) > largest denormal, goto A
-    fabs_(); // ST(0) = abs(ST(0))
+    fabs_();         // ST(0) = abs(ST(0))
     fucomi_fpreg(1); // compare ST(0) <=> ST(1)
-    fstp_fpreg(1); // pop ST(1)
+    fstp_fpreg(1);   // pop ST(1)
     ja_rj(0);
     uint32_t jump1 = code_length;
 
     // if abs(x) == 0, goto A
-    fldz(); // push zero
+    fldz();           // push zero
     fucomip_fpreg(1); // compare ST(0) <=> ST(1), pop
     je_rj(0);
     uint32_t jump2 = code_length;
 
-    for (int32_t i = 0; i < stackBase + 1; i++)
-        fstp_fpreg(0); // pop
+    for (int32_t i = 0; i < stackBase + 1; i++) fstp_fpreg(0); // pop
     gencall_noret(fail_float_input);
 
     // A:
@@ -70,10 +69,10 @@ void gencheck_float_input_valid(int32_t stackBase)
 void gencheck_float_output_valid()
 {
     // if abs(x) > largest denormal, goto DONE
-    fld_fpreg(1); // duplicate ST(1)
-    fabs_(); // ST(0) = abs(ST(0))
+    fld_fpreg(1);     // duplicate ST(1)
+    fabs_();          // ST(0) = abs(ST(0))
     fucomip_fpreg(1); // compare ST(0) <=> ST(1), pop
-    fstp_fpreg(0); // pop
+    fstp_fpreg(0);    // pop
     ja_rj(0);
     uint32_t jump1 = code_length;
 
@@ -83,7 +82,7 @@ void gencheck_float_output_valid()
     // Replace the (denormal or zero) result by zero (see CHECK_OUTPUT in
     // cop1_helpers.h for reasoning)
 
-    fldz(); // push zero
+    fldz();           // push zero
     fucomip_fpreg(1); // compare ST(0) <=> ST(1), pop
 
     je_rj(0); // if equal (x = 0 or -0), goto DONE
@@ -93,8 +92,8 @@ void gencheck_float_output_valid()
     uint32_t jump4 = code_length;
 
     // POSITIVE:
-    fstp_fpreg(0); // pop
-    fldz(); // push zero
+    fstp_fpreg(0);    // pop
+    fldz();           // push zero
     jmp_imm_short(0); // goto DONE
     uint32_t jump5 = code_length;
 
@@ -106,8 +105,8 @@ void gencheck_float_output_valid()
     // NEGATIVE:
     patch_jump(jump4, code_length);
     fstp_fpreg(0); // pop
-    fldz(); // push zero
-    fchs(); // negate it
+    fldz();        // push zero
+    fchs();        // negate it
 
     // DONE:
     patch_jump(jump1, code_length);
@@ -123,12 +122,11 @@ void gencheck_float_output_valid()
  */
 void gencheck_float_conversion_valid()
 {
-    if (!g_core->cfg->float_exception_emulation)
-        return;
+    if (!g_core->cfg->float_exception_emulation) return;
 
     fstsw_ax();
     test_al_imm8(1); // Invalid Operation bit
-    je_rj(0); // jump if not set (i.e. ZF = 1)
+    je_rj(0);        // jump if not set (i.e. ZF = 1)
     uint32_t jump1 = code_length;
 
     gencall_noret(fail_float_convert);

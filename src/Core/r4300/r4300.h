@@ -18,7 +18,7 @@
 extern std::atomic<size_t> frame_advance_outstanding;
 extern std::recursive_mutex g_emu_cs;
 
-extern precomp_instr* PC;
+extern precomp_instr *PC;
 extern uint32_t vr_op;
 
 extern precomp_block *blocks[0x100000], *actual;
@@ -35,8 +35,8 @@ extern int64_t local_rs, local_rt;
 extern uint32_t reg_cop0[32];
 extern int32_t local_rs32, local_rt32;
 extern uint32_t jump_target;
-extern double* reg_cop1_double[32];
-extern float* reg_cop1_simple[32];
+extern double *reg_cop1_double[32];
+extern float *reg_cop1_simple[32];
 extern int32_t reg_cop1_fgr_32[32];
 extern int64_t reg_cop1_fgr_64[32];
 extern int32_t FCR0, FCR31;
@@ -58,10 +58,10 @@ extern bool g_vr_fast_forward;
 extern bool g_vr_frame_skipped;
 extern core_system_type g_sys_type;
 
-extern FILE* g_eeprom_file;
-extern FILE* g_sram_file;
-extern FILE* g_fram_file;
-extern FILE* g_mpak_file;
+extern FILE *g_eeprom_file;
+extern FILE *g_sram_file;
+extern FILE *g_fram_file;
+extern FILE *g_mpak_file;
 
 extern bool g_vr_benchmark_enabled;
 
@@ -69,7 +69,7 @@ void pure_interpreter();
 extern void jump_to_func();
 void update_count();
 int32_t check_cop1_unusable();
-void critical_stop(const std::wstring& message = L"Unknown error");
+void critical_stop(const std::wstring &message = L"Unknown error");
 
 core_result vr_reset_rom_impl(bool reset_save_data, bool stop_vcr, bool skip_reset_recording_check = false);
 
@@ -92,8 +92,8 @@ void vr_set_gs_button(bool value);
 void vr_invalidate_visuals();
 bool vr_get_mge_available();
 
-#define jump_to(a)           \
-    {                        \
-        jump_to_address = a; \
-        jump_to_func();      \
+#define jump_to(a)                                                                                                     \
+    {                                                                                                                  \
+        jump_to_address = a;                                                                                           \
+        jump_to_func();                                                                                                \
     }

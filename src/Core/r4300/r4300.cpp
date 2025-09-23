@@ -49,8 +49,8 @@ int64_t local_rs, local_rt;
 uint32_t reg_cop0[32];
 int32_t local_rs32, local_rt32;
 uint32_t jump_target;
-float* reg_cop1_simple[32];
-double* reg_cop1_double[32];
+float *reg_cop1_simple[32];
+double *reg_cop1_double[32];
 int32_t reg_cop1_fgr_32[32];
 int64_t reg_cop1_fgr_64[32];
 int32_t FCR0, FCR31;
@@ -58,12 +58,13 @@ tlb tlb_e[32];
 uint32_t delay_slot, skip_jump = 0, dyna_interp = 0, last_addr;
 uint64_t debug_count = 0;
 uint32_t next_interrupt, CIC_Chip;
-precomp_instr* PC;
+precomp_instr *PC;
 char invalid_code[0x100000];
 std::atomic<bool> screen_invalidated = true;
 precomp_block *blocks[0x100000], *actual;
 int32_t rounding_mode = MUP_ROUND_NEAREST;
-int32_t trunc_mode = MUP_ROUND_TRUNC, round_mode = MUP_ROUND_NEAREST, ceil_mode = MUP_ROUND_CEIL, floor_mode = MUP_ROUND_FLOOR;
+int32_t trunc_mode = MUP_ROUND_TRUNC, round_mode = MUP_ROUND_NEAREST, ceil_mode = MUP_ROUND_CEIL,
+        floor_mode = MUP_ROUND_FLOOR;
 int16_t x87_status_word;
 void (*code)();
 uint32_t next_vi;
@@ -73,19 +74,18 @@ bool g_vr_frame_skipped;
 core_system_type g_sys_type;
 std::atomic<int32_t> g_wait_counter = 0;
 
-FILE* g_eeprom_file;
-FILE* g_sram_file;
-FILE* g_fram_file;
-FILE* g_mpak_file;
+FILE *g_eeprom_file;
+FILE *g_sram_file;
+FILE *g_fram_file;
+FILE *g_mpak_file;
 
 /*#define check_memory() \
    if (!invalid_code[address>>12]) \
        invalid_code[address>>12] = 1;*/
 
-#define check_memory()                                                              \
-    if (!invalid_code[address >> 12])                                               \
-        if (blocks[address >> 12]->block[(address & 0xFFF) / 4].ops != NOTCOMPILED) \
-            invalid_code[address >> 12] = 1;
+#define check_memory()                                                                                                 \
+    if (!invalid_code[address >> 12])                                                                                  \
+        if (blocks[address >> 12]->block[(address & 0xFFF) / 4].ops != NOTCOMPILED) invalid_code[address >> 12] = 1;
 
 void vr_invalidate_visuals()
 {
@@ -94,22 +94,30 @@ void vr_invalidate_visuals()
 
 std::filesystem::path get_sram_path()
 {
-    return std::format(L"{}{} {}.sra", g_core->get_saves_directory().wstring(), g_core->io_service->string_to_wstring((const char*)ROM_HEADER.nom), g_ctx.vr_country_code_to_country_name(ROM_HEADER.Country_code));
+    return std::format(L"{}{} {}.sra", g_core->get_saves_directory().wstring(),
+                       g_core->io_service->string_to_wstring((const char *)ROM_HEADER.nom),
+                       g_ctx.vr_country_code_to_country_name(ROM_HEADER.Country_code));
 }
 
 std::filesystem::path get_eeprom_path()
 {
-    return std::format(L"{}{} {}.eep", g_core->get_saves_directory().wstring(), g_core->io_service->string_to_wstring((const char*)ROM_HEADER.nom), g_ctx.vr_country_code_to_country_name(ROM_HEADER.Country_code));
+    return std::format(L"{}{} {}.eep", g_core->get_saves_directory().wstring(),
+                       g_core->io_service->string_to_wstring((const char *)ROM_HEADER.nom),
+                       g_ctx.vr_country_code_to_country_name(ROM_HEADER.Country_code));
 }
 
 std::filesystem::path get_flashram_path()
 {
-    return std::format(L"{}{} {}.fla", g_core->get_saves_directory().wstring(), g_core->io_service->string_to_wstring((const char*)ROM_HEADER.nom), g_ctx.vr_country_code_to_country_name(ROM_HEADER.Country_code));
+    return std::format(L"{}{} {}.fla", g_core->get_saves_directory().wstring(),
+                       g_core->io_service->string_to_wstring((const char *)ROM_HEADER.nom),
+                       g_ctx.vr_country_code_to_country_name(ROM_HEADER.Country_code));
 }
 
 std::filesystem::path get_mempak_path()
 {
-    return std::format(L"{}{} {}.mpk", g_core->get_saves_directory().wstring(), g_core->io_service->string_to_wstring((const char*)ROM_HEADER.nom), g_ctx.vr_country_code_to_country_name(ROM_HEADER.Country_code));
+    return std::format(L"{}{} {}.mpk", g_core->get_saves_directory().wstring(),
+                       g_core->io_service->string_to_wstring((const char *)ROM_HEADER.nom),
+                       g_ctx.vr_country_code_to_country_name(ROM_HEADER.Country_code));
 }
 
 void vr_resume_emu_impl(bool force)
@@ -178,13 +186,12 @@ bool vr_get_frame_advance()
     return frame_advance_outstanding;
 }
 
-void critical_stop(const std::wstring& message)
+void critical_stop(const std::wstring &message)
 {
-    const auto formatted = std::format(L"A critical emulation error has occured: {}.\n\nEmulation will now stop.", message);
+    const auto formatted =
+        std::format(L"A critical emulation error has occured: {}.\n\nEmulation will now stop.", message);
     g_core->show_dialog(formatted.c_str(), L"Critical Error", fsvc_error);
-    g_core->submit_task([] {
-        (void)g_ctx.vr_close_rom(true);
-    });
+    g_core->submit_task([] { (void)g_ctx.vr_close_rom(true); });
 }
 
 bool vr_get_core_executing()
@@ -207,9 +214,11 @@ void NI()
     g_core->log_error(std::format(L"NI() @ {:#06x}\n", (int32_t)PC->addr));
     g_core->log_error(L"opcode not implemented : ");
     if (PC->addr >= 0xa4000000 && PC->addr < 0xa4001000)
-        g_core->log_info(std::format(L"{:#06x}:{:#06x}", (int32_t)PC->addr, (int32_t)SP_DMEM[(PC->addr - 0xa4000000) / 4]));
+        g_core->log_info(
+            std::format(L"{:#06x}:{:#06x}", (int32_t)PC->addr, (int32_t)SP_DMEM[(PC->addr - 0xa4000000) / 4]));
     else
-        g_core->log_info(std::format(L"{:#06x}:{:#06x}", (int32_t)PC->addr, (int32_t)rdram[(PC->addr - 0x80000000) / 4]));
+        g_core->log_info(
+            std::format(L"{:#06x}:{:#06x}", (int32_t)PC->addr, (int32_t)rdram[(PC->addr - 0x80000000) / 4]));
     critical_stop(L"Executed NI. See logs for more info");
 }
 
@@ -217,9 +226,11 @@ void RESERVED()
 {
     g_core->log_info(L"reserved opcode : ");
     if (PC->addr >= 0xa4000000 && PC->addr < 0xa4001000)
-        g_core->log_info(std::format(L"{:#06x}:{:#06x}", (int32_t)PC->addr, (int32_t)SP_DMEM[(PC->addr - 0xa4000000) / 4]));
+        g_core->log_info(
+            std::format(L"{:#06x}:{:#06x}", (int32_t)PC->addr, (int32_t)SP_DMEM[(PC->addr - 0xa4000000) / 4]));
     else
-        g_core->log_info(std::format(L"{:#06x}:{:#06x}", (int32_t)PC->addr, (int32_t)rdram[(PC->addr - 0x80000000) / 4]));
+        g_core->log_info(
+            std::format(L"{:#06x}:{:#06x}", (int32_t)PC->addr, (int32_t)rdram[(PC->addr - 0x80000000) / 4]));
     critical_stop(L"Executed RESERVED. See logs for more info");
 }
 
@@ -229,13 +240,12 @@ void FIN_BLOCK()
     {
         jump_to((PC - 1)->addr + 4);
         PC->ops();
-        if (dynacore)
-            dyna_jump();
+        if (dynacore) dyna_jump();
     }
     else
     {
-        precomp_block* blk = actual;
-        precomp_instr* inst = PC;
+        precomp_block *blk = actual;
+        precomp_instr *inst = PC;
         jump_to((PC - 1)->addr + 4);
 
         if (!skip_jump)
@@ -247,8 +257,7 @@ void FIN_BLOCK()
         else
             PC->ops();
 
-        if (dynacore)
-            dyna_jump();
+        if (dynacore) dyna_jump();
     }
 }
 
@@ -260,11 +269,9 @@ void J()
     update_count();
     delay_slot = 0;
     if (!skip_jump)
-        PC = actual->block +
-        (((((PC - 2)->f.j.inst_index << 2) | ((PC - 1)->addr & 0xF0000000)) - actual->start) >> 2);
+        PC = actual->block + (((((PC - 2)->f.j.inst_index << 2) | ((PC - 1)->addr & 0xF0000000)) - actual->start) >> 2);
     last_addr = PC->addr;
-    if (next_interrupt <= core_Count)
-        gen_interrupt();
+    if (next_interrupt <= core_Count) gen_interrupt();
 }
 
 void J_OUT()
@@ -275,11 +282,9 @@ void J_OUT()
     PC->ops();
     update_count();
     delay_slot = 0;
-    if (!skip_jump)
-        jump_to(jump_target);
+    if (!skip_jump) jump_to(jump_target);
     last_addr = PC->addr;
-    if (next_interrupt <= core_Count)
-        gen_interrupt();
+    if (next_interrupt <= core_Count) gen_interrupt();
 }
 
 void J_IDLE()
@@ -305,12 +310,10 @@ void JAL()
         reg[31] = PC->addr;
         sign_extended(reg[31]);
 
-        PC = actual->block +
-        (((((PC - 2)->f.j.inst_index << 2) | ((PC - 1)->addr & 0xF0000000)) - actual->start) >> 2);
+        PC = actual->block + (((((PC - 2)->f.j.inst_index << 2) | ((PC - 1)->addr & 0xF0000000)) - actual->start) >> 2);
     }
     last_addr = PC->addr;
-    if (next_interrupt <= core_Count)
-        gen_interrupt();
+    if (next_interrupt <= core_Count) gen_interrupt();
 }
 
 void JAL_OUT()
@@ -329,8 +332,7 @@ void JAL_OUT()
         jump_to(jump_target);
     }
     last_addr = PC->addr;
-    if (next_interrupt <= core_Count)
-        gen_interrupt();
+    if (next_interrupt <= core_Count) gen_interrupt();
 }
 
 void JAL_IDLE()
@@ -353,11 +355,9 @@ void BEQ()
     PC->ops();
     update_count();
     delay_slot = 0;
-    if (local_rs == local_rt && !skip_jump && !g_vr_beq_ignore_jmp)
-        PC += (PC - 2)->f.i.immediate - 1;
+    if (local_rs == local_rt && !skip_jump && !g_vr_beq_ignore_jmp) PC += (PC - 2)->f.i.immediate - 1;
     last_addr = PC->addr;
-    if (next_interrupt <= core_Count)
-        gen_interrupt();
+    if (next_interrupt <= core_Count) gen_interrupt();
 }
 
 void BEQ_OUT()
@@ -370,11 +370,9 @@ void BEQ_OUT()
     PC->ops();
     update_count();
     delay_slot = 0;
-    if (!skip_jump && local_rs == local_rt)
-        jump_to(PC->addr + ((jump_target - 1) << 2));
+    if (!skip_jump && local_rs == local_rt) jump_to(PC->addr + ((jump_target - 1) << 2));
     last_addr = PC->addr;
-    if (next_interrupt <= core_Count)
-        gen_interrupt();
+    if (next_interrupt <= core_Count) gen_interrupt();
 }
 
 void BEQ_IDLE()
@@ -402,11 +400,9 @@ void BNE()
     PC->ops();
     update_count();
     delay_slot = 0;
-    if (local_rs != local_rt && !skip_jump)
-        PC += (PC - 2)->f.i.immediate - 1;
+    if (local_rs != local_rt && !skip_jump) PC += (PC - 2)->f.i.immediate - 1;
     last_addr = PC->addr;
-    if (next_interrupt <= core_Count)
-        gen_interrupt();
+    if (next_interrupt <= core_Count) gen_interrupt();
 }
 
 void BNE_OUT()
@@ -419,11 +415,9 @@ void BNE_OUT()
     PC->ops();
     update_count();
     delay_slot = 0;
-    if (!skip_jump && local_rs != local_rt)
-        jump_to(PC->addr + ((jump_target - 1) << 2));
+    if (!skip_jump && local_rs != local_rt) jump_to(PC->addr + ((jump_target - 1) << 2));
     last_addr = PC->addr;
-    if (next_interrupt <= core_Count)
-        gen_interrupt();
+    if (next_interrupt <= core_Count) gen_interrupt();
 }
 
 void BNE_IDLE()
@@ -450,11 +444,9 @@ void BLEZ()
     PC->ops();
     update_count();
     delay_slot = 0;
-    if (local_rs <= 0 && !skip_jump)
-        PC += (PC - 2)->f.i.immediate - 1;
+    if (local_rs <= 0 && !skip_jump) PC += (PC - 2)->f.i.immediate - 1;
     last_addr = PC->addr;
-    if (next_interrupt <= core_Count)
-        gen_interrupt();
+    if (next_interrupt <= core_Count) gen_interrupt();
 }
 
 void BLEZ_OUT()
@@ -466,11 +458,9 @@ void BLEZ_OUT()
     PC->ops();
     update_count();
     delay_slot = 0;
-    if (!skip_jump && local_rs <= 0)
-        jump_to(PC->addr + ((jump_target - 1) << 2));
+    if (!skip_jump && local_rs <= 0) jump_to(PC->addr + ((jump_target - 1) << 2));
     last_addr = PC->addr;
-    if (next_interrupt <= core_Count)
-        gen_interrupt();
+    if (next_interrupt <= core_Count) gen_interrupt();
 }
 
 void BLEZ_IDLE()
@@ -497,11 +487,9 @@ void BGTZ()
     PC->ops();
     update_count();
     delay_slot = 0;
-    if (local_rs > 0 && !skip_jump)
-        PC += (PC - 2)->f.i.immediate - 1;
+    if (local_rs > 0 && !skip_jump) PC += (PC - 2)->f.i.immediate - 1;
     last_addr = PC->addr;
-    if (next_interrupt <= core_Count)
-        gen_interrupt();
+    if (next_interrupt <= core_Count) gen_interrupt();
 }
 
 void BGTZ_OUT()
@@ -513,11 +501,9 @@ void BGTZ_OUT()
     PC->ops();
     update_count();
     delay_slot = 0;
-    if (!skip_jump && local_rs > 0)
-        jump_to(PC->addr + ((jump_target - 1) << 2));
+    if (!skip_jump && local_rs > 0) jump_to(PC->addr + ((jump_target - 1) << 2));
     last_addr = PC->addr;
-    if (next_interrupt <= core_Count)
-        gen_interrupt();
+    if (next_interrupt <= core_Count) gen_interrupt();
 }
 
 void BGTZ_IDLE()
@@ -602,8 +588,7 @@ void BEQL()
         PC->ops();
         update_count();
         delay_slot = 0;
-        if (!skip_jump)
-            PC += (PC - 2)->f.i.immediate - 1;
+        if (!skip_jump) PC += (PC - 2)->f.i.immediate - 1;
     }
     else
     {
@@ -611,8 +596,7 @@ void BEQL()
         update_count();
     }
     last_addr = PC->addr;
-    if (next_interrupt <= core_Count)
-        gen_interrupt();
+    if (next_interrupt <= core_Count) gen_interrupt();
 }
 
 void BEQL_OUT()
@@ -625,8 +609,7 @@ void BEQL_OUT()
         PC->ops();
         update_count();
         delay_slot = 0;
-        if (!skip_jump)
-            jump_to(PC->addr + ((jump_target - 1) << 2));
+        if (!skip_jump) jump_to(PC->addr + ((jump_target - 1) << 2));
     }
     else
     {
@@ -634,8 +617,7 @@ void BEQL_OUT()
         update_count();
     }
     last_addr = PC->addr;
-    if (next_interrupt <= core_Count)
-        gen_interrupt();
+    if (next_interrupt <= core_Count) gen_interrupt();
 }
 
 void BEQL_IDLE()
@@ -663,8 +645,7 @@ void BNEL()
         PC->ops();
         update_count();
         delay_slot = 0;
-        if (!skip_jump)
-            PC += (PC - 2)->f.i.immediate - 1;
+        if (!skip_jump) PC += (PC - 2)->f.i.immediate - 1;
     }
     else
     {
@@ -672,8 +653,7 @@ void BNEL()
         update_count();
     }
     last_addr = PC->addr;
-    if (next_interrupt <= core_Count)
-        gen_interrupt();
+    if (next_interrupt <= core_Count) gen_interrupt();
 }
 
 void BNEL_OUT()
@@ -686,8 +666,7 @@ void BNEL_OUT()
         PC->ops();
         update_count();
         delay_slot = 0;
-        if (!skip_jump)
-            jump_to(PC->addr + ((jump_target - 1) << 2));
+        if (!skip_jump) jump_to(PC->addr + ((jump_target - 1) << 2));
     }
     else
     {
@@ -695,8 +674,7 @@ void BNEL_OUT()
         update_count();
     }
     last_addr = PC->addr;
-    if (next_interrupt <= core_Count)
-        gen_interrupt();
+    if (next_interrupt <= core_Count) gen_interrupt();
 }
 
 void BNEL_IDLE()
@@ -724,8 +702,7 @@ void BLEZL()
         PC->ops();
         update_count();
         delay_slot = 0;
-        if (!skip_jump)
-            PC += (PC - 2)->f.i.immediate - 1;
+        if (!skip_jump) PC += (PC - 2)->f.i.immediate - 1;
     }
     else
     {
@@ -733,8 +710,7 @@ void BLEZL()
         update_count();
     }
     last_addr = PC->addr;
-    if (next_interrupt <= core_Count)
-        gen_interrupt();
+    if (next_interrupt <= core_Count) gen_interrupt();
 }
 
 void BLEZL_OUT()
@@ -747,8 +723,7 @@ void BLEZL_OUT()
         PC->ops();
         update_count();
         delay_slot = 0;
-        if (!skip_jump)
-            jump_to(PC->addr + ((jump_target - 1) << 2));
+        if (!skip_jump) jump_to(PC->addr + ((jump_target - 1) << 2));
     }
     else
     {
@@ -756,8 +731,7 @@ void BLEZL_OUT()
         update_count();
     }
     last_addr = PC->addr;
-    if (next_interrupt <= core_Count)
-        gen_interrupt();
+    if (next_interrupt <= core_Count) gen_interrupt();
 }
 
 void BLEZL_IDLE()
@@ -785,8 +759,7 @@ void BGTZL()
         PC->ops();
         update_count();
         delay_slot = 0;
-        if (!skip_jump)
-            PC += (PC - 2)->f.i.immediate - 1;
+        if (!skip_jump) PC += (PC - 2)->f.i.immediate - 1;
     }
     else
     {
@@ -794,8 +767,7 @@ void BGTZL()
         update_count();
     }
     last_addr = PC->addr;
-    if (next_interrupt <= core_Count)
-        gen_interrupt();
+    if (next_interrupt <= core_Count) gen_interrupt();
 }
 
 void BGTZL_OUT()
@@ -808,8 +780,7 @@ void BGTZL_OUT()
         PC->ops();
         update_count();
         delay_slot = 0;
-        if (!skip_jump)
-            jump_to(PC->addr + ((jump_target - 1) << 2));
+        if (!skip_jump) jump_to(PC->addr + ((jump_target - 1) << 2));
     }
     else
     {
@@ -817,8 +788,7 @@ void BGTZL_OUT()
         update_count();
     }
     last_addr = PC->addr;
-    if (next_interrupt <= core_Count)
-        gen_interrupt();
+    if (next_interrupt <= core_Count) gen_interrupt();
 }
 
 void BGTZL_IDLE()
@@ -857,57 +827,50 @@ void LDL()
     {
     case 0:
         address = core_lsaddr;
-        rdword = (uint64_t*)&core_lsrt;
+        rdword = (uint64_t *)&core_lsrt;
         read_dword_in_memory();
         break;
     case 1:
         address = (core_lsaddr) & 0xFFFFFFF8;
         rdword = &word;
         read_dword_in_memory();
-        if (address)
-            core_lsrt = (core_lsrt & 0xFF) | (word << 8);
+        if (address) core_lsrt = (core_lsrt & 0xFF) | (word << 8);
         break;
     case 2:
         address = (core_lsaddr) & 0xFFFFFFF8;
         rdword = &word;
         read_dword_in_memory();
-        if (address)
-            core_lsrt = (core_lsrt & 0xFFFF) | (word << 16);
+        if (address) core_lsrt = (core_lsrt & 0xFFFF) | (word << 16);
         break;
     case 3:
         address = (core_lsaddr) & 0xFFFFFFF8;
         rdword = &word;
         read_dword_in_memory();
-        if (address)
-            core_lsrt = (core_lsrt & 0xFFFFFF) | (word << 24);
+        if (address) core_lsrt = (core_lsrt & 0xFFFFFF) | (word << 24);
         break;
     case 4:
         address = (core_lsaddr) & 0xFFFFFFF8;
         rdword = &word;
         read_dword_in_memory();
-        if (address)
-            core_lsrt = (core_lsrt & 0xFFFFFFFF) | (word << 32);
+        if (address) core_lsrt = (core_lsrt & 0xFFFFFFFF) | (word << 32);
         break;
     case 5:
         address = (core_lsaddr) & 0xFFFFFFF8;
         rdword = &word;
         read_dword_in_memory();
-        if (address)
-            core_lsrt = (core_lsrt & 0xFFFFFFFFFFLL) | (word << 40);
+        if (address) core_lsrt = (core_lsrt & 0xFFFFFFFFFFLL) | (word << 40);
         break;
     case 6:
         address = (core_lsaddr) & 0xFFFFFFF8;
         rdword = &word;
         read_dword_in_memory();
-        if (address)
-            core_lsrt = (core_lsrt & 0xFFFFFFFFFFFFLL) | (word << 48);
+        if (address) core_lsrt = (core_lsrt & 0xFFFFFFFFFFFFLL) | (word << 48);
         break;
     case 7:
         address = (core_lsaddr) & 0xFFFFFFF8;
         rdword = &word;
         read_dword_in_memory();
-        if (address)
-            core_lsrt = (core_lsrt & 0xFFFFFFFFFFFFFFLL) | (word << 56);
+        if (address) core_lsrt = (core_lsrt & 0xFFFFFFFFFFFFFFLL) | (word << 56);
         break;
     }
 }
@@ -922,54 +885,47 @@ void LDR()
         address = (core_lsaddr) & 0xFFFFFFF8;
         rdword = &word;
         read_dword_in_memory();
-        if (address)
-            core_lsrt = (core_lsrt & 0xFFFFFFFFFFFFFF00LL) | (word >> 56);
+        if (address) core_lsrt = (core_lsrt & 0xFFFFFFFFFFFFFF00LL) | (word >> 56);
         break;
     case 1:
         address = (core_lsaddr) & 0xFFFFFFF8;
         rdword = &word;
         read_dword_in_memory();
-        if (address)
-            core_lsrt = (core_lsrt & 0xFFFFFFFFFFFF0000LL) | (word >> 48);
+        if (address) core_lsrt = (core_lsrt & 0xFFFFFFFFFFFF0000LL) | (word >> 48);
         break;
     case 2:
         address = (core_lsaddr) & 0xFFFFFFF8;
         rdword = &word;
         read_dword_in_memory();
-        if (address)
-            core_lsrt = (core_lsrt & 0xFFFFFFFFFF000000LL) | (word >> 40);
+        if (address) core_lsrt = (core_lsrt & 0xFFFFFFFFFF000000LL) | (word >> 40);
         break;
     case 3:
         address = (core_lsaddr) & 0xFFFFFFF8;
         rdword = &word;
         read_dword_in_memory();
-        if (address)
-            core_lsrt = (core_lsrt & 0xFFFFFFFF00000000LL) | (word >> 32);
+        if (address) core_lsrt = (core_lsrt & 0xFFFFFFFF00000000LL) | (word >> 32);
         break;
     case 4:
         address = (core_lsaddr) & 0xFFFFFFF8;
         rdword = &word;
         read_dword_in_memory();
-        if (address)
-            core_lsrt = (core_lsrt & 0xFFFFFF0000000000LL) | (word >> 24);
+        if (address) core_lsrt = (core_lsrt & 0xFFFFFF0000000000LL) | (word >> 24);
         break;
     case 5:
         address = (core_lsaddr) & 0xFFFFFFF8;
         rdword = &word;
         read_dword_in_memory();
-        if (address)
-            core_lsrt = (core_lsrt & 0xFFFF000000000000LL) | (word >> 16);
+        if (address) core_lsrt = (core_lsrt & 0xFFFF000000000000LL) | (word >> 16);
         break;
     case 6:
         address = (core_lsaddr) & 0xFFFFFFF8;
         rdword = &word;
         read_dword_in_memory();
-        if (address)
-            core_lsrt = (core_lsrt & 0xFF00000000000000LL) | (word >> 8);
+        if (address) core_lsrt = (core_lsrt & 0xFF00000000000000LL) | (word >> 8);
         break;
     case 7:
         address = (core_lsaddr) & 0xFFFFFFF8;
-        rdword = (uint64_t*)&core_lsrt;
+        rdword = (uint64_t *)&core_lsrt;
         read_dword_in_memory();
         break;
     }
@@ -979,20 +935,18 @@ void LB()
 {
     PC++;
     address = core_lsaddr;
-    rdword = (uint64_t*)&core_lsrt;
+    rdword = (uint64_t *)&core_lsrt;
     read_byte_in_memory();
-    if (address)
-        sign_extendedb(core_lsrt);
+    if (address) sign_extendedb(core_lsrt);
 }
 
 void LH()
 {
     PC++;
     address = core_lsaddr;
-    rdword = (uint64_t*)&core_lsrt;
+    rdword = (uint64_t *)&core_lsrt;
     read_hword_in_memory();
-    if (address)
-        sign_extendedh(core_lsrt);
+    if (address) sign_extendedh(core_lsrt);
 }
 
 void LWL()
@@ -1003,50 +957,45 @@ void LWL()
     {
     case 0:
         address = core_lsaddr;
-        rdword = (uint64_t*)&core_lsrt;
+        rdword = (uint64_t *)&core_lsrt;
         read_word_in_memory();
         break;
     case 1:
         address = (core_lsaddr) & 0xFFFFFFFC;
         rdword = &word;
         read_word_in_memory();
-        if (address)
-            core_lsrt = (core_lsrt & 0xFF) | (word << 8);
+        if (address) core_lsrt = (core_lsrt & 0xFF) | (word << 8);
         break;
     case 2:
         address = (core_lsaddr) & 0xFFFFFFFC;
         rdword = &word;
         read_word_in_memory();
-        if (address)
-            core_lsrt = (core_lsrt & 0xFFFF) | (word << 16);
+        if (address) core_lsrt = (core_lsrt & 0xFFFF) | (word << 16);
         break;
     case 3:
         address = (core_lsaddr) & 0xFFFFFFFC;
         rdword = &word;
         read_word_in_memory();
-        if (address)
-            core_lsrt = (core_lsrt & 0xFFFFFF) | (word << 24);
+        if (address) core_lsrt = (core_lsrt & 0xFFFFFF) | (word << 24);
         break;
     }
-    if (address)
-        sign_extended(core_lsrt);
+    if (address) sign_extended(core_lsrt);
 }
 
 void LW()
 {
     PC++;
     address = core_lsaddr;
-    rdword = (uint64_t*)&core_lsrt;
+    rdword = (uint64_t *)&core_lsrt;
     read_word_in_memory();
-    if (address)
-        sign_extended(core_lsrt);
+    if (address) sign_extended(core_lsrt);
 }
 
 void LBU()
 {
     PC++;
     address = core_lsaddr;
-    rdword = (uint64_t*)&core_lsrt;
+    rdword = (uint64_t *)&core_lsrt;
     read_byte_in_memory();
 }
 
@@ -1054,7 +1003,7 @@ void LHU()
 {
     PC++;
     address = core_lsaddr;
-    rdword = (uint64_t*)&core_lsrt;
+    rdword = (uint64_t *)&core_lsrt;
     read_hword_in_memory();
 }
 
@@ -1068,29 +1017,25 @@ void LWR()
         address = (core_lsaddr) & 0xFFFFFFFC;
         rdword = &word;
         read_word_in_memory();
-        if (address)
-            core_lsrt = (core_lsrt & 0xFFFFFFFFFFFFFF00LL) | ((word >> 24) & 0xFF);
+        if (address) core_lsrt = (core_lsrt & 0xFFFFFFFFFFFFFF00LL) | ((word >> 24) & 0xFF);
         break;
     case 1:
         address = (core_lsaddr) & 0xFFFFFFFC;
         rdword = &word;
         read_word_in_memory();
-        if (address)
-            core_lsrt = (core_lsrt & 0xFFFFFFFFFFFF0000LL) | ((word >> 16) & 0xFFFF);
+        if (address) core_lsrt = (core_lsrt & 0xFFFFFFFFFFFF0000LL) | ((word >> 16) & 0xFFFF);
         break;
     case 2:
         address = (core_lsaddr) & 0xFFFFFFFC;
         rdword = &word;
         read_word_in_memory();
-        if (address)
-            core_lsrt = (core_lsrt & 0xFFFFFFFFFF000000LL) | ((word >> 8) & 0XFFFFFF);
+        if (address) core_lsrt = (core_lsrt & 0xFFFFFFFFFF000000LL) | ((word >> 8) & 0XFFFFFF);
         break;
     case 3:
         address = (core_lsaddr) & 0xFFFFFFFC;
-        rdword = (uint64_t*)&core_lsrt;
+        rdword = (uint64_t *)&core_lsrt;
         read_word_in_memory();
-        if (address)
-            sign_extended(core_lsrt);
+        if (address) sign_extended(core_lsrt);
     }
 }
 
@@ -1098,7 +1043,7 @@ void LWU()
 {
     PC++;
     address = core_lsaddr;
-    rdword = (uint64_t*)&core_lsrt;
+    rdword = (uint64_t *)&core_lsrt;
     read_word_in_memory();
 }
 
@@ -1413,7 +1358,7 @@ void LL()
 {
     PC++;
     address = core_lsaddr;
-    rdword = (uint64_t*)&core_lsrt;
+    rdword = (uint64_t *)&core_lsrt;
     read_word_in_memory();
     if (address)
     {
@@ -1425,23 +1370,20 @@ void LL()
 void LWC1()
 {
     uint64_t temp;
-    if (check_cop1_unusable())
-        return;
+    if (check_cop1_unusable()) return;
     PC++;
     address = core_lslfaddr;
     rdword = &temp;
     read_word_in_memory();
-    if (address)
-        *((int32_t*)reg_cop1_simple[core_lslfft]) = *rdword;
+    if (address) *((int32_t *)reg_cop1_simple[core_lslfft]) = *rdword;
 }
 
 void LDC1()
 {
-    if (check_cop1_unusable())
-        return;
+    if (check_cop1_unusable()) return;
     PC++;
     address = core_lslfaddr;
-    rdword = (uint64_t*)reg_cop1_double[core_lslfft];
+    rdword = (uint64_t *)reg_cop1_double[core_lslfft];
     read_dword_in_memory();
 }
 
@@ -1449,7 +1391,7 @@ void LD()
 {
     PC++;
     address = core_lsaddr;
-    rdword = (uint64_t*)&core_lsrt;
+    rdword = (uint64_t *)&core_lsrt;
     read_dword_in_memory();
 }
 
@@ -1482,22 +1424,20 @@ void SC()
 
 void SWC1()
 {
-    if (check_cop1_unusable())
-        return;
+    if (check_cop1_unusable()) return;
     PC++;
     address = core_lslfaddr;
-    word = *((int32_t*)reg_cop1_simple[core_lslfft]);
+    word = *((int32_t *)reg_cop1_simple[core_lslfft]);
     write_word_in_memory();
     check_memory();
 }
 
 void SDC1()
 {
-    if (check_cop1_unusable())
-        return;
+    if (check_cop1_unusable()) return;
     PC++;
     address = core_lslfaddr;
-    dword = *((uint64_t*)reg_cop1_double[core_lslfft]);
+    dword = *((uint64_t *)reg_cop1_double[core_lslfft]);
     write_dword_in_memory();
     check_memory();
 }
@@ -1514,12 +1454,11 @@ void SD()
 void NOTCOMPILED()
 {
     if ((PC->addr >> 16) == 0xa400)
-        recompile_block((int32_t*)SP_DMEM, blocks[0xa4000000 >> 12], PC->addr);
+        recompile_block((int32_t *)SP_DMEM, blocks[0xa4000000 >> 12], PC->addr);
     else
     {
         uint32_t paddr = 0;
-        if (PC->addr >= 0x80000000 && PC->addr < 0xc0000000)
-            paddr = PC->addr;
+        if (PC->addr >= 0x80000000 && PC->addr < 0xc0000000) paddr = PC->addr;
         // else paddr = (tlb_LUT_r[PC->addr>>12]&0xFFFFF000)|(PC->addr&0xFFF);
         else
             paddr = virtual_to_physical_address(PC->addr, 2);
@@ -1529,22 +1468,20 @@ void NOTCOMPILED()
             {
                 // g_core->log_info(L"not compiled rom:{:#06x}", paddr);
                 recompile_block(
-                (int32_t*)rom + ((((paddr - (PC->addr - blocks[PC->addr >> 12]->start)) & 0x1FFFFFFF) - 0x10000000) >> 2),
-                blocks[PC->addr >> 12],
-                PC->addr);
+                    (int32_t *)rom +
+                        ((((paddr - (PC->addr - blocks[PC->addr >> 12]->start)) & 0x1FFFFFFF) - 0x10000000) >> 2),
+                    blocks[PC->addr >> 12], PC->addr);
             }
             else
                 recompile_block(
-                (int32_t*)(rdram + (((paddr - (PC->addr - blocks[PC->addr >> 12]->start)) & 0x1FFFFFFF) >> 2)),
-                blocks[PC->addr >> 12],
-                PC->addr);
+                    (int32_t *)(rdram + (((paddr - (PC->addr - blocks[PC->addr >> 12]->start)) & 0x1FFFFFFF) >> 2)),
+                    blocks[PC->addr >> 12], PC->addr);
         }
         else
             g_core->log_info(L"not compiled exception");
     }
     PC->ops();
-    if (dynacore)
-        dyna_jump();
+    if (dynacore) dyna_jump();
     //*return_address = (uint32_t)(blocks[PC->addr>>12]->code + PC->local_addr);
     // else
     // PC->ops();
@@ -1559,18 +1496,14 @@ static inline uint32_t update_invalid_addr(uint32_t addr)
 {
     if (addr >= 0x80000000 && addr < 0xa0000000)
     {
-        if (invalid_code[addr >> 12])
-            invalid_code[(addr + 0x20000000) >> 12] = 1;
-        if (invalid_code[(addr + 0x20000000) >> 12])
-            invalid_code[addr >> 12] = 1;
+        if (invalid_code[addr >> 12]) invalid_code[(addr + 0x20000000) >> 12] = 1;
+        if (invalid_code[(addr + 0x20000000) >> 12]) invalid_code[addr >> 12] = 1;
         return addr;
     }
     else if (addr >= 0xa0000000 && addr < 0xc0000000)
     {
-        if (invalid_code[addr >> 12])
-            invalid_code[(addr - 0x20000000) >> 12] = 1;
-        if (invalid_code[(addr - 0x20000000) >> 12])
-            invalid_code[addr >> 12] = 1;
+        if (invalid_code[addr >> 12]) invalid_code[(addr - 0x20000000) >> 12] = 1;
+        if (invalid_code[(addr - 0x20000000) >> 12]) invalid_code[addr >> 12] = 1;
         return addr;
     }
     else
@@ -1580,14 +1513,10 @@ static inline uint32_t update_invalid_addr(uint32_t addr)
         {
             uint32_t beg_paddr = paddr - (addr - (addr & ~0xFFF));
             update_invalid_addr(paddr);
-            if (invalid_code[(beg_paddr + 0x000) >> 12])
-                invalid_code[addr >> 12] = 1;
-            if (invalid_code[(beg_paddr + 0xFFC) >> 12])
-                invalid_code[addr >> 12] = 1;
-            if (invalid_code[addr >> 12])
-                invalid_code[(beg_paddr + 0x000) >> 12] = 1;
-            if (invalid_code[addr >> 12])
-                invalid_code[(beg_paddr + 0xFFC) >> 12] = 1;
+            if (invalid_code[(beg_paddr + 0x000) >> 12]) invalid_code[addr >> 12] = 1;
+            if (invalid_code[(beg_paddr + 0xFFC) >> 12]) invalid_code[addr >> 12] = 1;
+            if (invalid_code[addr >> 12]) invalid_code[(beg_paddr + 0x000) >> 12] = 1;
+            if (invalid_code[addr >> 12]) invalid_code[(beg_paddr + 0xFFC) >> 12] = 1;
         }
         return paddr;
     }
@@ -1602,17 +1531,15 @@ inline void jump_to_func()
     //	g_core->log_info(L"dyna jump: {:#08x}", addr);
     // #endif
     uint32_t paddr;
-    if (skip_jump)
-        return;
+    if (skip_jump) return;
     paddr = update_invalid_addr(addr);
-    if (!paddr)
-        return;
+    if (!paddr) return;
     actual = blocks[addr >> 12];
     if (invalid_code[addr >> 12])
     {
         if (!blocks[addr >> 12])
         {
-            blocks[addr >> 12] = (precomp_block*)malloc(sizeof(precomp_block));
+            blocks[addr >> 12] = (precomp_block *)malloc(sizeof(precomp_block));
             actual = blocks[addr >> 12];
             blocks[addr >> 12]->code = NULL;
             blocks[addr >> 12]->block = NULL;
@@ -1620,13 +1547,12 @@ inline void jump_to_func()
         }
         blocks[addr >> 12]->start = addr & ~0xFFF;
         blocks[addr >> 12]->end = (addr & ~0xFFF) + 0x1000;
-        init_block((int32_t*)(rdram + (((paddr - (addr - blocks[addr >> 12]->start)) & 0x1FFFFFFF) >> 2)),
+        init_block((int32_t *)(rdram + (((paddr - (addr - blocks[addr >> 12]->start)) & 0x1FFFFFFF) >> 2)),
                    blocks[addr >> 12]);
     }
     PC = actual->block + ((addr - actual->start) >> 2);
 
-    if (dynacore)
-        dyna_jump();
+    if (dynacore) dyna_jump();
 }
 #undef addr
 
@@ -1667,7 +1593,7 @@ void init_blocks()
         invalid_code[i] = 1;
         blocks[i] = NULL;
     }
-    blocks[0xa4000000 >> 12] = (precomp_block*)malloc(sizeof(precomp_block));
+    blocks[0xa4000000 >> 12] = (precomp_block *)malloc(sizeof(precomp_block));
     invalid_code[0xa4000000 >> 12] = 1;
     blocks[0xa4000000 >> 12]->code = NULL;
     blocks[0xa4000000 >> 12]->block = NULL;
@@ -1675,21 +1601,19 @@ void init_blocks()
     blocks[0xa4000000 >> 12]->start = 0xa4000000;
     blocks[0xa4000000 >> 12]->end = 0xa4001000;
     actual = blocks[0xa4000000 >> 12];
-    init_block((int32_t*)SP_DMEM, blocks[0xa4000000 >> 12]);
+    init_block((int32_t *)SP_DMEM, blocks[0xa4000000 >> 12]);
     PC = actual->block + (0x40 / 4);
 }
-
 
 void print_stop_debug()
 {
     g_core->log_info(std::format(L"PC={:#08x}:{:#08x}", PC->addr, rdram[(PC->addr & 0xFFFFFF) / 4]));
     for (int32_t j = 0; j < 16; j++)
-        g_core->log_info(std::format(L"reg[{}]:{:#08x}{:#08x}        reg[{}]:{:#08x}{:#08x}", j, (uint32_t)(reg[j] >> 32), (uint32_t)reg[j], j + 16, (uint32_t)(reg[j + 16] >> 32), (uint32_t)reg[j + 16]));
-    g_core->log_info(std::format(L"hi:{:#08x}{:#08x}        lo:{:#08x}{:#08x}",
-                                 (uint32_t)(hi >> 32),
-                                 (uint32_t)hi,
-                                 (uint32_t)(lo >> 32),
-                                 (uint32_t)lo));
+        g_core->log_info(std::format(L"reg[{}]:{:#08x}{:#08x}        reg[{}]:{:#08x}{:#08x}", j,
+                                     (uint32_t)(reg[j] >> 32), (uint32_t)reg[j], j + 16, (uint32_t)(reg[j + 16] >> 32),
+                                     (uint32_t)reg[j + 16]));
+    g_core->log_info(std::format(L"hi:{:#08x}{:#08x}        lo:{:#08x}{:#08x}", (uint32_t)(hi >> 32), (uint32_t)hi,
+                                 (uint32_t)(lo >> 32), (uint32_t)lo));
     g_core->log_info(std::format(L"Executed {} ({:#08x}) instructions", debug_count, debug_count));
 }
 
@@ -1701,7 +1625,7 @@ void core_start()
     j = 0;
     debug_count = 0;
     g_core->log_info(L"demarrage r4300");
-    memcpy((char*)SP_DMEM + 0x40, rom + 0x40, 0xFBC);
+    memcpy((char *)SP_DMEM + 0x40, rom + 0x40, 0xFBC);
     delay_slot = 0;
     stop = 0;
     for (i = 0; i < 32; i++)
@@ -1711,8 +1635,8 @@ void core_start()
         reg_cop1_fgr_32[i] = 0;
         reg_cop1_fgr_64[i] = 0;
 
-        reg_cop1_double[i] = (double*)&reg_cop1_fgr_64[i];
-        reg_cop1_simple[i] = (float*)&reg_cop1_fgr_64[i];
+        reg_cop1_double[i] = (double *)&reg_cop1_fgr_64[i];
+        reg_cop1_simple[i] = (float *)&reg_cop1_fgr_64[i];
 
         // --------------tlb------------------------
         tlb_e[i].mask = 0;
@@ -1776,8 +1700,7 @@ void core_start()
     core_BadVAddr = 0xFFFFFFFF;
     core_ErrorEPC = 0xFFFFFFFF;
 
-    for (i = 0x40 / 4; i < (0x1000 / 4); i++)
-        CRC += SP_DMEM[i];
+    for (i = 0x40 / 4; i < (0x1000 / 4); i++) CRC += SP_DMEM[i];
     switch (CRC)
     {
     case 0x000000D0027FDF31LL:
@@ -1985,19 +1908,18 @@ void core_start()
             blocks[i] = NULL;
         }
     }
-    if (!dynacore && interpcore)
-        free(PC);
+    if (!dynacore && interpcore) free(PC);
     core_executing = false;
     g_core->callbacks.core_executing_changed(core_executing);
 }
 
-bool open_core_file_stream(const std::filesystem::path& path, FILE** file)
+bool open_core_file_stream(const std::filesystem::path &path, FILE **file)
 {
     g_core->log_info(std::format(L"[Core] Opening core stream from {}...", path.wstring()));
 
     if (!exists(path))
     {
-        FILE* f = nullptr;
+        FILE *f = nullptr;
         if (_wfopen_s(&f, path.wstring().c_str(), L"w"))
         {
             return false;
@@ -2008,7 +1930,6 @@ bool open_core_file_stream(const std::filesystem::path& path, FILE** file)
     *file = _wfsopen(path.wstring().c_str(), L"rb+", _SH_DENYNO);
     return *file != nullptr;
 }
-
 
 void clear_save_data()
 {
@@ -2089,7 +2010,9 @@ void emu_thread()
     g_core->callbacks.emu_starting_changed(false);
     g_core->callbacks.reset();
 
-    g_core->log_info(std::format(L"[Core] Emu thread entry took {}ms", static_cast<int32_t>((std::chrono::high_resolution_clock::now() - start_time).count() / 1'000'000)));
+    g_core->log_info(std::format(
+        L"[Core] Emu thread entry took {}ms",
+        static_cast<int32_t>((std::chrono::high_resolution_clock::now() - start_time).count() / 1'000'000)));
     core_start();
 
     st_on_core_stop();
@@ -2111,7 +2034,6 @@ void emu_thread()
         g_core->callbacks.emu_launched_changed(false);
     }
 }
-
 
 core_result vr_close_rom_impl(bool stop_vcr)
 {
@@ -2180,8 +2102,9 @@ core_result vr_start_rom_impl(std::filesystem::path path)
         }
 
         const auto matching_rom = g_core->find_available_rom([&](auto header) {
-            MiscHelpers::strtrim((char*)header.nom, sizeof(header.nom));
-            return movie_header.rom_crc1 == header.CRC1 && !_strnicmp((const char*)header.nom, movie_header.rom_name, 20);
+            MiscHelpers::strtrim((char *)header.nom, sizeof(header.nom));
+            return movie_header.rom_crc1 == header.CRC1 &&
+                   !_strnicmp((const char *)header.nom, movie_header.rom_name, 20);
         });
 
         if (matching_rom.empty())
@@ -2208,7 +2131,10 @@ core_result vr_start_rom_impl(std::filesystem::path path)
     }
 
     // Open all the save file streams
-    if (!open_core_file_stream(get_eeprom_path(), &g_eeprom_file) || !open_core_file_stream(get_sram_path(), &g_sram_file) || !open_core_file_stream(get_flashram_path(), &g_fram_file) || !open_core_file_stream(get_mempak_path(), &g_mpak_file))
+    if (!open_core_file_stream(get_eeprom_path(), &g_eeprom_file) ||
+        !open_core_file_stream(get_sram_path(), &g_sram_file) ||
+        !open_core_file_stream(get_flashram_path(), &g_fram_file) ||
+        !open_core_file_stream(get_mempak_path(), &g_mpak_file))
     {
         g_core->callbacks.emu_starting_changed(false);
         return VR_FileOpenFailed;
@@ -2216,16 +2142,18 @@ core_result vr_start_rom_impl(std::filesystem::path path)
 
     g_ctx.vr_on_speed_modifier_changed();
 
-    g_core->log_info(std::format(L"[Core] vr_start_rom entry took {}ms", static_cast<int32_t>((std::chrono::high_resolution_clock::now() - start_time).count() / 1'000'000)));
+    g_core->log_info(std::format(
+        L"[Core] vr_start_rom entry took {}ms",
+        static_cast<int32_t>((std::chrono::high_resolution_clock::now() - start_time).count() / 1'000'000)));
 
     emu_paused = false;
     emu_launched = true;
     emu_thread_handle = std::thread(emu_thread);
 
     // We need to wait until the core is actually done and running before we can continue, because we release the lock
-    // If we return too early (before core is ready to also be killed), then another start or close might come in during the core initialization (catastrophe)
-    while (!core_executing)
-        ;
+    // If we return too early (before core is ready to also be killed), then another start or close might come in during
+    // the core initialization (catastrophe)
+    while (!core_executing);
 
     return Res_Ok;
 }
@@ -2244,8 +2172,7 @@ core_result vr_close_rom(bool stop_vcr)
 
 core_result vr_reset_rom_impl(bool reset_save_data, bool stop_vcr, bool skip_reset_recording_check)
 {
-    if (!emu_launched)
-        return VR_NotRunning;
+    if (!emu_launched) return VR_NotRunning;
 
     // Special case:
     // If we're recording a movie and have reset recording enabled, we don't reset immediately, but let the VCR

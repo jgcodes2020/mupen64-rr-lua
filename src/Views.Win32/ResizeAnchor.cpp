@@ -13,7 +13,8 @@
 
 using namespace ResizeAnchor;
 
-struct t_anchor_context {
+struct t_anchor_context
+{
     HWND hwnd{};
     std::vector<std::pair<HWND, AnchorFlags>> anchors{};
     std::unordered_map<HWND, RECT> initial_rects{};
@@ -27,7 +28,7 @@ static bool update_anchors(const HWND hwnd)
         return false;
     }
 
-    auto ctx = static_cast<t_anchor_context*>(GetProp(hwnd, CTX_PROP));
+    auto ctx = static_cast<t_anchor_context *>(GetProp(hwnd, CTX_PROP));
 
     if (!ctx)
     {
@@ -37,7 +38,7 @@ static bool update_anchors(const HWND hwnd)
     RECT wnd_rc{};
     GetClientRect(hwnd, &wnd_rc);
 
-    for (const auto& anchor : ctx->anchors)
+    for (const auto &anchor : ctx->anchors)
     {
         const auto anchor_hwnd = anchor.first;
         const auto anchor_type = anchor.second;
@@ -52,7 +53,8 @@ static bool update_anchors(const HWND hwnd)
         {
             update_ctl_rc();
             const auto dist = ctx->initial_rects[hwnd].bottom - ctx->initial_rects[anchor_hwnd].bottom;
-            SetWindowPos(anchor_hwnd, nullptr, 0, 0, ctl_rc.right - ctl_rc.left, (wnd_rc.bottom - dist) - ctl_rc.top, SWP_NOMOVE | SWP_NOZORDER);
+            SetWindowPos(anchor_hwnd, nullptr, 0, 0, ctl_rc.right - ctl_rc.left, (wnd_rc.bottom - dist) - ctl_rc.top,
+                         SWP_NOMOVE | SWP_NOZORDER);
         }
 
         if (!static_cast<bool>(anchor_type & AnchorFlags::Top) && static_cast<bool>(anchor_type & AnchorFlags::Bottom))
@@ -66,7 +68,8 @@ static bool update_anchors(const HWND hwnd)
         {
             update_ctl_rc();
             const auto dist = ctx->initial_rects[hwnd].right - ctx->initial_rects[anchor_hwnd].right;
-            SetWindowPos(anchor_hwnd, nullptr, 0, 0, (wnd_rc.right - dist) - ctl_rc.left, ctl_rc.bottom - ctl_rc.top, SWP_NOMOVE | SWP_NOZORDER);
+            SetWindowPos(anchor_hwnd, nullptr, 0, 0, (wnd_rc.right - dist) - ctl_rc.left, ctl_rc.bottom - ctl_rc.top,
+                         SWP_NOMOVE | SWP_NOZORDER);
         }
 
         if (!static_cast<bool>(anchor_type & AnchorFlags::Left) && static_cast<bool>(anchor_type & AnchorFlags::Right))
@@ -96,9 +99,10 @@ static bool update_anchors(const HWND hwnd)
     return true;
 }
 
-static LRESULT CALLBACK wnd_subclass_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam, UINT_PTR sId, DWORD_PTR dwRefData)
+static LRESULT CALLBACK wnd_subclass_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam, UINT_PTR sId,
+                                          DWORD_PTR dwRefData)
 {
-    auto ctx = static_cast<t_anchor_context*>(GetProp(hwnd, CTX_PROP));
+    auto ctx = static_cast<t_anchor_context *>(GetProp(hwnd, CTX_PROP));
 
     switch (msg)
     {
@@ -118,15 +122,16 @@ static LRESULT CALLBACK wnd_subclass_proc(HWND hwnd, UINT msg, WPARAM wParam, LP
     return DefSubclassProc(hwnd, msg, wParam, lParam);
 }
 
-static void add_anchors(t_anchor_context& ctx, const std::vector<std::pair<HWND, AnchorFlags>>& anchors, bool replace_child_anchors)
+static void add_anchors(t_anchor_context &ctx, const std::vector<std::pair<HWND, AnchorFlags>> &anchors,
+                        bool replace_child_anchors)
 {
-    std::erase_if(ctx.anchors, [&](const std::pair<HWND, AnchorFlags>& pair) {
-        return std::ranges::find_if(anchors, [&](const std::pair<HWND, AnchorFlags>& new_pair) {
+    std::erase_if(ctx.anchors, [&](const std::pair<HWND, AnchorFlags> &pair) {
+        return std::ranges::find_if(anchors, [&](const std::pair<HWND, AnchorFlags> &new_pair) {
                    return new_pair.first == pair.first;
                }) != anchors.end();
     });
 
-    for (const auto& anchor_hwnd : anchors | std::views::keys)
+    for (const auto &anchor_hwnd : anchors | std::views::keys)
     {
         if (!replace_child_anchors && ctx.initial_rects.contains(anchor_hwnd))
         {
@@ -143,7 +148,8 @@ static void add_anchors(t_anchor_context& ctx, const std::vector<std::pair<HWND,
     ctx.anchors.insert(ctx.anchors.end(), anchors.begin(), anchors.end());
 }
 
-bool ResizeAnchor::add_anchors(HWND hwnd, const std::vector<std::pair<HWND, AnchorFlags>>& anchors, bool replace_child_anchors)
+bool ResizeAnchor::add_anchors(HWND hwnd, const std::vector<std::pair<HWND, AnchorFlags>> &anchors,
+                               bool replace_child_anchors)
 {
     // Not implemented yet
     assert(replace_child_anchors);
@@ -151,7 +157,7 @@ bool ResizeAnchor::add_anchors(HWND hwnd, const std::vector<std::pair<HWND, Anch
     // We don't want to do all of this "initial state" business if we're already set up
     if (GetProp(hwnd, CTX_PROP) != nullptr)
     {
-        auto ctx = static_cast<t_anchor_context*>(GetProp(hwnd, CTX_PROP));
+        auto ctx = static_cast<t_anchor_context *>(GetProp(hwnd, CTX_PROP));
         add_anchors(*ctx, anchors, replace_child_anchors);
         update_anchors(hwnd);
         return true;
@@ -179,15 +185,13 @@ bool ResizeAnchor::add_anchors(HWND hwnd, const std::vector<std::pair<HWND, Anch
 
 bool ResizeAnchor::remove_anchor(HWND hwnd, HWND child_hwnd)
 {
-    auto ctx = static_cast<t_anchor_context*>(GetProp(hwnd, CTX_PROP));
+    auto ctx = static_cast<t_anchor_context *>(GetProp(hwnd, CTX_PROP));
     if (!ctx)
     {
         return false;
     }
 
-    std::erase_if(ctx->anchors, [&](const std::pair<HWND, AnchorFlags>& pair) {
-        return pair.first == child_hwnd;
-    });
+    std::erase_if(ctx->anchors, [&](const std::pair<HWND, AnchorFlags> &pair) { return pair.first == child_hwnd; });
 
     update_anchors(hwnd);
 

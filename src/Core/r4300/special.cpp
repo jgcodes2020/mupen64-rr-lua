@@ -69,13 +69,12 @@ void JR()
     delay_slot = 0;
     jump_to(local_rs32);
     last_addr = PC->addr;
-    if (next_interrupt <= core_Count)
-        gen_interrupt();
+    if (next_interrupt <= core_Count) gen_interrupt();
 }
 
 void JALR()
 {
-    uint64_t* dest = (uint64_t*)PC->f.r.rd;
+    uint64_t *dest = (uint64_t *)PC->f.r.rd;
     local_rs32 = rrs32;
     PC++;
     delay_slot = 1;
@@ -90,8 +89,7 @@ void JALR()
         jump_to(local_rs32);
     }
     last_addr = PC->addr;
-    if (next_interrupt <= core_Count)
-        gen_interrupt();
+    if (next_interrupt <= core_Count) gen_interrupt();
 }
 
 void SYSCALL()

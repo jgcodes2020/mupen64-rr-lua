@@ -14,7 +14,8 @@
 #include <core_api.h>
 
 #pragma warning(push, 0)
-extern "C" {
+extern "C"
+{
 #include <lua.h>
 #include <lauxlib.h>
 #include <lualib.h>

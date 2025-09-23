@@ -9,13 +9,14 @@
 
 // #define DISPATCHER_OVERHEAD_LOGGING
 
-void Dispatcher::invoke(const std::function<void()>& func)
+void Dispatcher::invoke(const std::function<void()> &func)
 {
 #ifdef DISPATCHER_OVERHEAD_LOGGING
     m_call_start = std::chrono::high_resolution_clock::now();
 #endif
 
-    // If the thread id matches the dispatcher's thread id, we don't need to do anything special and can just execute on this thread.
+    // If the thread id matches the dispatcher's thread id, we don't need to do anything special and can just execute on
+    // this thread.
     if (GetCurrentThreadId() == m_thread_id)
     {
         func();
@@ -69,6 +70,7 @@ void Dispatcher::execute()
     }
     double avg_overhead_time = overhead_sum / (double)std::size(m_overhead_times);
 
-    g_view_logger->trace("[Dispatcher] id {} overhead avg {:.0f}ns ({:.2f}%)", m_thread_id, avg_overhead_time, avg_overhead_percentage);
+    g_view_logger->trace("[Dispatcher] id {} overhead avg {:.0f}ns ({:.2f}%)", m_thread_id, avg_overhead_time,
+                         avg_overhead_percentage);
 #endif
 }

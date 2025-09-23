@@ -27,7 +27,8 @@ bool g_st_old;
 bool g_st_skip_dma{};
 
 /// Represents a task to be performed by the savestate system.
-struct t_savestate_task {
+struct t_savestate_task
+{
     /// The job to perform.
     core_st_job job;
 
@@ -64,20 +65,19 @@ uint8_t g_first_block[0xA02BB4 - 32]{};
 
 // The undo savestate buffer.
 std::vector<uint8_t> g_undo_savestate;
-void get_paths_for_task(const t_savestate_task& task, std::filesystem::path& st_path, std::filesystem::path& sd_path)
+void get_paths_for_task(const t_savestate_task &task, std::filesystem::path &st_path, std::filesystem::path &sd_path)
 {
-    sd_path = g_core->get_saves_directory() / (const char*)ROM_HEADER.nom;
+    sd_path = g_core->get_saves_directory() / (const char *)ROM_HEADER.nom;
     sd_path.replace_extension(".vhd");
 }
 
-
-void load_memory_from_buffer(uint8_t* p)
+void load_memory_from_buffer(uint8_t *p)
 {
     MiscHelpers::memread(&p, &rdram_register, sizeof(core_rdram_reg));
     if (rdram_register.rdram_device_manuf & RDRAM_DEVICE_MANUF_NEW_FIX_BIT)
     {
         rdram_register.rdram_device_manuf &= ~RDRAM_DEVICE_MANUF_NEW_FIX_BIT; // remove the trick
-        g_st_skip_dma = true; // tell dma.c to skip it
+        g_st_skip_dma = true;                                                 // tell dma.c to skip it
     }
     MiscHelpers::memread(&p, &MI_register, sizeof(core_mips_reg));
     MiscHelpers::memread(&p, &pi_register, sizeof(core_pi_reg));
@@ -120,8 +120,7 @@ void load_memory_from_buffer(uint8_t* p)
     {
         uint32_t target_addr;
         MiscHelpers::memread(&p, &target_addr, 4);
-        for (char& i : invalid_code)
-            i = 1;
+        for (char &i : invalid_code) i = 1;
         jump_to(target_addr)
     }
 
@@ -141,20 +140,21 @@ std::vector<uint8_t> generate_savestate()
 
     vcr_freeze_info freeze{};
     uint32_t movie_active = vcr_freeze(freeze);
-    
-    // NOTE: Some savestates don't have an SI interrupt in the queue, which means that a dma_si_read call which should have happened prior to the save didn't happen.
-    // In that case, we "finish up" the dma by performing its final part manually.
+
+    // NOTE: Some savestates don't have an SI interrupt in the queue, which means that a dma_si_read call which should
+    // have happened prior to the save didn't happen. In that case, we "finish up" the dma by performing its final part
+    // manually.
     if (get_event(SI_INT) == 0)
     {
         g_core->log_warn(L"[ST] Finishing up DMA...");
-        for (size_t i = 0; i < 64 / 4; i++)
-            rdram[si_register.si_dram_addr / 4 + i] = std::byteswap(PIF_RAM[i]);
+        for (size_t i = 0; i < 64 / 4; i++) rdram[si_register.si_dram_addr / 4 + i] = std::byteswap(PIF_RAM[i]);
         update_count();
         add_interrupt_event(SI_INT, 0x900);
         g_st_skip_dma = true;
     }
-    
-    // NOTE: This saving needs to be done **after** the fixing block, as it is now. See previous regression in f9d58f639c798cbc26bbb808b1c3dbd834ffe2d9.
+
+    // NOTE: This saving needs to be done **after** the fixing block, as it is now. See previous regression in
+    // f9d58f639c798cbc26bbb808b1c3dbd834ffe2d9.
     save_flashram_infos(g_flashram_buf);
     const int32_t event_queue_len = save_eventqueue_infos(g_event_queue_buf);
 
@@ -213,7 +213,7 @@ std::vector<uint8_t> generate_savestate()
         g_core->plugin_funcs.video_get_video_size(&width, &height);
         g_core->log_trace(std::format(L"Writing screen buffer to savestate, width: {}, height: {}", width, height));
 
-        void* video = malloc(width * height * 3);
+        void *video = malloc(width * height * 3);
         g_core->copy_video(video);
 
         MiscHelpers::vecwrite(b, screen_section, sizeof(screen_section));
@@ -227,7 +227,7 @@ std::vector<uint8_t> generate_savestate()
     return b;
 }
 
-void savestates_save_immediate_impl(const t_savestate_task& task)
+void savestates_save_immediate_impl(const t_savestate_task &task)
 {
     // TODO: Reimplement timing
 
@@ -239,45 +239,40 @@ void savestates_save_immediate_impl(const t_savestate_task& task)
         std::filesystem::path new_st_path = task.params.path;
         std::filesystem::path new_sd_path = "";
         get_paths_for_task(task, new_st_path, new_sd_path);
-        if (g_core->cfg->use_summercart)
-            save_summercart(new_sd_path);
+        if (g_core->cfg->use_summercart) save_summercart(new_sd_path);
 
         // Generate compressed buffer
         std::vector<uint8_t> compressed_buffer;
         compressed_buffer.resize(st.size());
 
         const auto compressor = libdeflate_alloc_compressor(6);
-        const size_t final_size = libdeflate_gzip_compress(compressor, st.data(), st.size(), compressed_buffer.data(), compressed_buffer.size());
+        const size_t final_size = libdeflate_gzip_compress(compressor, st.data(), st.size(), compressed_buffer.data(),
+                                                           compressed_buffer.size());
         libdeflate_free_compressor(compressor);
         compressed_buffer.resize(final_size);
 
         // write compressed st to disk
         if (!g_core->io_service->write_file_buffer(new_st_path, compressed_buffer))
         {
-            task.callback(core_st_callback_info{
-                          .result = ST_FileWriteError,
-                          .job = task.job,
-                          .medium = task.medium,
-                          .params = task.params},
-                          st);
+            task.callback(
+                core_st_callback_info{
+                    .result = ST_FileWriteError, .job = task.job, .medium = task.medium, .params = task.params},
+                st);
             return;
         }
     }
 
-    task.callback(core_st_callback_info{
-                  .result = Res_Ok,
-                  .job = task.job,
-                  .medium = task.medium,
-                  .params = task.params},
-                  st);
+    task.callback(
+        core_st_callback_info{.result = Res_Ok, .job = task.job, .medium = task.medium, .params = task.params}, st);
     g_core->callbacks.save_state();
 }
 
-void savestates_load_immediate_impl(const t_savestate_task& task)
+void savestates_load_immediate_impl(const t_savestate_task &task)
 {
-    // This might have been set previously by a save operation. Keeping it breaks loading because we might skip DMA when it's not needed.
+    // This might have been set previously by a save operation. Keeping it breaks loading because we might skip DMA when
+    // it's not needed.
     g_st_skip_dma = false;
-    
+
     // TODO: Reimplement timing
 
     memset(g_event_queue_buf, 0, sizeof(g_event_queue_buf));
@@ -286,8 +281,7 @@ void savestates_load_immediate_impl(const t_savestate_task& task)
     std::filesystem::path new_sd_path = "";
     get_paths_for_task(task, new_st_path, new_sd_path);
 
-    if (g_core->cfg->use_summercart)
-        load_summercart(new_sd_path);
+    if (g_core->cfg->use_summercart) load_summercart(new_sd_path);
 
     std::vector<uint8_t> st_buf;
 
@@ -305,24 +299,19 @@ void savestates_load_immediate_impl(const t_savestate_task& task)
 
     if (st_buf.empty())
     {
-        task.callback(core_st_callback_info{
-                      .result = ST_NotFound,
-                      .job = task.job,
-                      .medium = task.medium,
-                      .params = task.params},
-                      {});
+        task.callback(
+            core_st_callback_info{.result = ST_NotFound, .job = task.job, .medium = task.medium, .params = task.params},
+            {});
         return;
     }
 
     std::vector<uint8_t> decompressed_buf = MiscHelpers::auto_decompress(st_buf, 0xB624F0);
     if (decompressed_buf.empty())
     {
-        task.callback(core_st_callback_info{
-                      .result = ST_DecompressionError,
-                      .job = task.job,
-                      .medium = task.medium,
-                      .params = task.params},
-                      {});
+        task.callback(
+            core_st_callback_info{
+                .result = ST_DecompressionError, .job = task.job, .medium = task.medium, .params = task.params},
+            {});
         return;
     }
 
@@ -336,16 +325,20 @@ void savestates_load_immediate_impl(const t_savestate_task& task)
 
     if (!task.ignore_warnings && memcmp(md5, rom_md5, 32))
     {
-        auto result = g_core->show_ask_dialog(CORE_DLG_ST_HASH_MISMATCH, std::format(L"The savestate was created on a rom with hash {}, but is being loaded on another rom.\r\nThe emulator may crash. Are you sure you want to continue?", g_core->io_service->string_to_wstring(md5)).c_str(), L"Savestate", true);
+        auto result = g_core->show_ask_dialog(
+            CORE_DLG_ST_HASH_MISMATCH,
+            std::format(L"The savestate was created on a rom with hash {}, but is being loaded on another rom.\r\nThe "
+                        L"emulator may crash. Are you sure you want to continue?",
+                        g_core->io_service->string_to_wstring(md5))
+                .c_str(),
+            L"Savestate", true);
 
         if (!result)
         {
-            task.callback(core_st_callback_info{
-                          .result = Res_Cancelled,
-                          .job = task.job,
-                          .medium = task.medium,
-                          .params = task.params},
-                          {});
+            task.callback(
+                core_st_callback_info{
+                    .result = Res_Cancelled, .job = task.job, .medium = task.medium, .params = task.params},
+                {});
             return;
         }
     }
@@ -353,15 +346,13 @@ void savestates_load_immediate_impl(const t_savestate_task& task)
     // new version does one bigass gzread for first part of .st (static size)
     MiscHelpers::memread(&ptr, g_first_block, sizeof(g_first_block));
 
-    const auto si_reg = (core_si_reg*)&g_first_block[0xDC - 0x20];
+    const auto si_reg = (core_si_reg *)&g_first_block[0xDC - 0x20];
     if (!check_register_validity(si_reg) || !check_flashram_infos(&g_first_block[0x8021F0 - 0x20]))
     {
-        task.callback(core_st_callback_info{
-                      .result = ST_InvalidRegisters,
-                      .job = task.job,
-                      .medium = task.medium,
-                      .params = task.params},
-                      {});
+        task.callback(
+            core_st_callback_info{
+                .result = ST_InvalidRegisters, .job = task.job, .medium = task.medium, .params = task.params},
+            {});
         return;
     }
 
@@ -370,19 +361,16 @@ void savestates_load_immediate_impl(const t_savestate_task& task)
     for (len = 0; len < sizeof(g_event_queue_buf); len += 8)
     {
         MiscHelpers::memread(&ptr, g_event_queue_buf + len, 4);
-        if (*reinterpret_cast<uint32_t*>(&g_event_queue_buf[len]) == 0xFFFFFFFF)
-            break;
+        if (*reinterpret_cast<uint32_t *>(&g_event_queue_buf[len]) == 0xFFFFFFFF) break;
         MiscHelpers::memread(&ptr, g_event_queue_buf + len + 4, 4);
     }
     if (len == sizeof(g_event_queue_buf))
     {
         // Exhausted the buffer and still no terminator. Prevents the buffer overflow "Queuecrush".
-        task.callback(core_st_callback_info{
-                      .result = ST_EventQueueTooLong,
-                      .job = task.job,
-                      .medium = task.medium,
-                      .params = task.params},
-                      {});
+        task.callback(
+            core_st_callback_info{
+                .result = ST_EventQueueTooLong, .job = task.job, .medium = task.medium, .params = task.params},
+            {});
         return;
     }
 
@@ -426,15 +414,14 @@ void savestates_load_immediate_impl(const t_savestate_task& task)
             }
             err_str += L" Loading the savestate might desynchronize the movie.\r\nAre you sure you want to continue?";
 
-            const auto result = g_core->show_ask_dialog(CORE_DLG_ST_UNFREEZE_WARNING, err_str.c_str(), L"Savestate", true);
+            const auto result =
+                g_core->show_ask_dialog(CORE_DLG_ST_UNFREEZE_WARNING, err_str.c_str(), L"Savestate", true);
             if (!result)
             {
-                task.callback(core_st_callback_info{
-                              .result = Res_Cancelled,
-                              .job = task.job,
-                              .medium = task.medium,
-                              .params = task.params},
-                              {});
+                task.callback(
+                    core_st_callback_info{
+                        .result = Res_Cancelled, .job = task.job, .medium = task.medium, .params = task.params},
+                    {});
                 goto failedLoad;
             }
         }
@@ -443,18 +430,17 @@ void savestates_load_immediate_impl(const t_savestate_task& task)
     {
         if (!task.ignore_warnings && (vcr_get_task() == task_recording || vcr_get_task() == task_playback))
         {
-            const auto result = g_core->show_ask_dialog(CORE_DLG_ST_NOT_FROM_MOVIE,
-                                                        L"The savestate is not from a movie. Loading it might desynchronize the movie.\r\nAre you sure you want to continue?",
-                                                        L"Savestate",
-                                                        true);
+            const auto result =
+                g_core->show_ask_dialog(CORE_DLG_ST_NOT_FROM_MOVIE,
+                                        L"The savestate is not from a movie. Loading it might desynchronize the "
+                                        L"movie.\r\nAre you sure you want to continue?",
+                                        L"Savestate", true);
             if (!result)
             {
-                task.callback(core_st_callback_info{
-                              .result = Res_Cancelled,
-                              .job = task.job,
-                              .medium = task.medium,
-                              .params = task.params},
-                              {});
+                task.callback(
+                    core_st_callback_info{
+                        .result = Res_Cancelled, .job = task.job, .medium = task.medium, .params = task.params},
+                    {});
                 return;
             }
         }
@@ -463,10 +449,11 @@ void savestates_load_immediate_impl(const t_savestate_task& task)
     }
 
     {
-        g_core->log_trace(std::format(L"[Savestates] {} bytes remaining", decompressed_buf.size() - (ptr - decompressed_buf.data())));
+        g_core->log_trace(
+            std::format(L"[Savestates] {} bytes remaining", decompressed_buf.size() - (ptr - decompressed_buf.data())));
         int32_t video_width = 0;
         int32_t video_height = 0;
-        void* video_buffer = nullptr;
+        void *video_buffer = nullptr;
         if (decompressed_buf.size() - (ptr - decompressed_buf.data()) > 0)
         {
             char scr_section[sizeof(screen_section)] = {0};
@@ -487,7 +474,8 @@ void savestates_load_immediate_impl(const t_savestate_task& task)
         load_eventqueue_infos(g_event_queue_buf);
         load_memory_from_buffer(g_first_block);
 
-        // NOTE: We don't want to restore screen buffer while seeking, since it creates a int16_t ugly flicker when the movie restarts by loading state
+        // NOTE: We don't want to restore screen buffer while seeking, since it creates a int16_t ugly flicker when the
+        // movie restarts by loading state
         if (vr_get_mge_available() && video_buffer && !vcr_is_seeking())
         {
             int32_t current_width, current_height;
@@ -501,12 +489,9 @@ void savestates_load_immediate_impl(const t_savestate_task& task)
     }
 
     g_core->callbacks.load_state();
-    task.callback(core_st_callback_info{
-                  .result = Res_Ok,
-                  .job = task.job,
-                  .medium = task.medium,
-                  .params = task.params},
-                  decompressed_buf);
+    task.callback(
+        core_st_callback_info{.result = Res_Ok, .job = task.job, .medium = task.medium, .params = task.params},
+        decompressed_buf);
 
 failedLoad:
     // legacy .st fix, makes BEQ instruction ignore jump, because .st writes new address explictly.
@@ -514,8 +499,7 @@ failedLoad:
     // For safety, load .sts in dynarec because it completely avoids this issue by being differently coded
     g_st_old = (interp_addr == 0x80000180 || PC->addr == 0x80000180);
     // doubled because can't just reuse this variable
-    if (interp_addr == 0x80000180 || (PC->addr == 0x80000180 && !dynacore))
-        g_vr_beq_ignore_jmp = true;
+    if (interp_addr == 0x80000180 || (PC->addr == 0x80000180 && !dynacore)) g_vr_beq_ignore_jmp = true;
     if (!dynacore && interpcore)
     {
         // g_core->log_info(L".st jump: {:#06x}, stopped here:{:#06x}", interp_addr, last_addr);
@@ -538,20 +522,18 @@ void savestates_simplify_tasks()
 
     std::vector<size_t> duplicate_indicies{};
 
-
     // De-dup slot-based save tasks
     // 1. Loop through all tasks
     for (size_t i = 0; i < g_tasks.size(); i++)
     {
-        const auto& task = g_tasks[i];
+        const auto &task = g_tasks[i];
 
-        if (task.medium != core_st_medium_path)
-            continue;
+        if (task.medium != core_st_medium_path) continue;
 
         // 2. If a path task is detected, loop through all other tasks up to the next load task to find duplicates
         for (size_t j = i + 1; j < g_tasks.size(); j++)
         {
-            const auto& other_task = g_tasks[j];
+            const auto &other_task = g_tasks[j];
 
             if (other_task.job == core_st_job_load)
             {
@@ -577,11 +559,12 @@ void savestates_warn_if_load_after_save()
     std::scoped_lock lock(g_task_mutex);
 
     bool encountered_load = false;
-    for (const auto& task : g_tasks)
+    for (const auto &task : g_tasks)
     {
         if (task.job == core_st_job_save && encountered_load)
         {
-            g_core->log_warn(std::format(L"[ST] A savestate save task is scheduled after a load task. This may cause unexpected behavior for the caller."));
+            g_core->log_warn(std::format(L"[ST] A savestate save task is scheduled after a load task. This may cause "
+                                         L"unexpected behavior for the caller."));
             break;
         }
 
@@ -600,7 +583,7 @@ void savestates_log_tasks()
     std::scoped_lock lock(g_task_mutex);
     g_core->log_info(L"[ST] Begin task dump");
     savestates_warn_if_load_after_save();
-    for (const auto& task : g_tasks)
+    for (const auto &task : g_tasks)
     {
         std::wstring job_str = (task.job == core_st_job_save) ? L"Save" : L"Load";
         std::wstring medium_str;
@@ -622,7 +605,8 @@ void savestates_log_tasks()
 }
 
 /**
- * Inserts a save operation at the start of the queue (whose callback assigns the undo savestate buffer) if the task queue contains one or more load operations.
+ * Inserts a save operation at the start of the queue (whose callback assigns the undo savestate buffer) if the task
+ * queue contains one or more load operations.
  */
 void savestates_create_undo_point()
 {
@@ -631,9 +615,8 @@ void savestates_create_undo_point()
         return;
     }
 
-    bool queue_contains_load = std::ranges::any_of(g_tasks, [](const t_savestate_task& task) {
-        return task.job == core_st_job_load;
-    });
+    bool queue_contains_load =
+        std::ranges::any_of(g_tasks, [](const t_savestate_task &task) { return task.job == core_st_job_load; });
 
     if (!queue_contains_load)
     {
@@ -644,21 +627,23 @@ void savestates_create_undo_point()
     g_core->log_trace(L"[ST] Inserting undo point creation into task queue...");
 
     const t_savestate_task task = {
-    .job = core_st_job_save,
-    .medium = core_st_medium_memory,
-    .callback = [](const core_st_callback_info& info, const std::vector<uint8_t>& buffer) {
-        if (info.result != Res_Ok)
-        {
-            return;
-        }
+        .job = core_st_job_save,
+        .medium = core_st_medium_memory,
+        .callback =
+            [](const core_st_callback_info &info, const std::vector<uint8_t> &buffer) {
+                if (info.result != Res_Ok)
+                {
+                    return;
+                }
 
-        std::scoped_lock lock(g_task_mutex);
-        g_undo_savestate = buffer;
-    },
-    .params = {
-    .buffer = {},
-    },
-    .ignore_warnings = true,
+                std::scoped_lock lock(g_task_mutex);
+                g_undo_savestate = buffer;
+            },
+        .params =
+            {
+                .buffer = {},
+            },
+        .ignore_warnings = true,
     };
 
     g_tasks.insert(g_tasks.begin(), task);
@@ -678,7 +663,7 @@ void st_do_work()
     savestates_simplify_tasks();
     savestates_log_tasks();
 
-    for (const auto& task : g_tasks)
+    for (const auto &task : g_tasks)
     {
         g_core->log_info(std::format(L"---------- Savestate {}:", (task.job == core_st_job_save) ? L"save" : L"load"));
 
@@ -713,7 +698,8 @@ bool can_push_work()
     return core_executing;
 }
 
-bool st_do_file(const std::filesystem::path& path, const core_st_job job, const core_st_callback& callback, bool ignore_warnings)
+bool st_do_file(const std::filesystem::path &path, const core_st_job job, const core_st_callback &callback,
+                bool ignore_warnings)
 {
     std::scoped_lock lock(g_task_mutex);
 
@@ -722,17 +708,15 @@ bool st_do_file(const std::filesystem::path& path, const core_st_job job, const 
         g_core->log_trace(L"[ST] do_file: Can't enqueue work.");
         if (callback)
         {
-            callback(core_st_callback_info{
-                     .result = ST_CoreNotLaunched,
-                     .job = job,
-                     .medium = core_st_medium_path,
-                     .params = {.path = path}},
-                     {});
+            callback(
+                core_st_callback_info{
+                    .result = ST_CoreNotLaunched, .job = job, .medium = core_st_medium_path, .params = {.path = path}},
+                {});
         }
         return false;
     }
 
-    auto internal_callback_wrapper = [=](const core_st_callback_info& info, const std::vector<uint8_t>& buffer) {
+    auto internal_callback_wrapper = [=](const core_st_callback_info &info, const std::vector<uint8_t> &buffer) {
         g_core->st_pre_callback(info, buffer);
         if (callback)
         {
@@ -741,19 +725,19 @@ bool st_do_file(const std::filesystem::path& path, const core_st_job job, const 
     };
 
     const t_savestate_task task = {
-    .job = job,
-    .medium = core_st_medium_path,
-    .callback = internal_callback_wrapper,
-    .params = {
-    .path = path},
-    .ignore_warnings = ignore_warnings,
+        .job = job,
+        .medium = core_st_medium_path,
+        .callback = internal_callback_wrapper,
+        .params = {.path = path},
+        .ignore_warnings = ignore_warnings,
     };
 
     g_tasks.insert(g_tasks.begin(), task);
     return true;
 }
 
-bool st_do_memory(const std::vector<uint8_t>& buffer, const core_st_job job, const core_st_callback& callback, bool ignore_warnings)
+bool st_do_memory(const std::vector<uint8_t> &buffer, const core_st_job job, const core_st_callback &callback,
+                  bool ignore_warnings)
 {
     std::scoped_lock lock(g_task_mutex);
 
@@ -771,7 +755,7 @@ bool st_do_memory(const std::vector<uint8_t>& buffer, const core_st_job job, con
         return false;
     }
 
-    auto internal_callback_wrapper = [=](const core_st_callback_info& info, const std::vector<uint8_t>& buffer) {
+    auto internal_callback_wrapper = [=](const core_st_callback_info &info, const std::vector<uint8_t> &buffer) {
         g_core->st_pre_callback(info, buffer);
         if (callback)
         {
@@ -780,19 +764,18 @@ bool st_do_memory(const std::vector<uint8_t>& buffer, const core_st_job job, con
     };
 
     const t_savestate_task task = {
-    .job = job,
-    .medium = core_st_medium_memory,
-    .callback = internal_callback_wrapper,
-    .params = {
-    .buffer = buffer},
-    .ignore_warnings = ignore_warnings,
+        .job = job,
+        .medium = core_st_medium_memory,
+        .callback = internal_callback_wrapper,
+        .params = {.buffer = buffer},
+        .ignore_warnings = ignore_warnings,
     };
 
     g_tasks.insert(g_tasks.begin(), task);
     return true;
 }
 
-void st_get_undo_savestate(std::vector<uint8_t>& buffer)
+void st_get_undo_savestate(std::vector<uint8_t> &buffer)
 {
     std::scoped_lock lock(g_task_mutex);
     buffer.clear();

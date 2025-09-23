@@ -21,49 +21,49 @@ static LRESULT CALLBACK d2d_overlay_wndproc(HWND hwnd, UINT msg, WPARAM wparam, 
 
     switch (msg)
     {
-    case WM_PAINT:
+    case WM_PAINT: {
+        // NOTE: Sometimes, this control receives a WM_PAINT message while execution is already in WM_PAINT, causing us
+        // to call begin_present twice in a row... Usually this shouldn't happen, but the shell file dialog API causes
+        // this by messing with the parent window's message loop.
+        if (d2d_drawing)
         {
-            // NOTE: Sometimes, this control receives a WM_PAINT message while execution is already in WM_PAINT, causing us to call begin_present twice in a row...
-            // Usually this shouldn't happen, but the shell file dialog API causes this by messing with the parent window's message loop.
-            if (d2d_drawing)
-            {
-                g_view_logger->warn("Tried to clobber a D2D drawing section!");
-                break;
-            }
-
-            d2d_drawing = true;
-
-            auto lua = (t_lua_environment*)GetProp(hwnd, CTX_PROP);
-
-            if (!lua)
-            {
-                d2d_drawing = false;
-                break;
-            }
-
-            bool success;
-            if (!lua->rctx.presenter)
-            {
-                // NOTE: We have to invoke the callback because we're waiting for the script to issue a d2d call
-                success = LuaCallbacks::invoke_callbacks_with_key(lua, LuaCallbacks::REG_ATDRAWD2D);
-            }
-            else
-            {
-                lua->rctx.presenter->begin_present();
-                success = LuaCallbacks::invoke_callbacks_with_key(lua, LuaCallbacks::REG_ATDRAWD2D);
-                lua->rctx.presenter->end_present();
-            }
-
-            ValidateRect(hwnd, nullptr);
-            d2d_drawing = false;
-
-            if (!success)
-            {
-                LuaManager::destroy_environment(lua);
-            }
-
-            return 0;
+            g_view_logger->warn("Tried to clobber a D2D drawing section!");
+            break;
         }
+
+        d2d_drawing = true;
+
+        auto lua = (t_lua_environment *)GetProp(hwnd, CTX_PROP);
+
+        if (!lua)
+        {
+            d2d_drawing = false;
+            break;
+        }
+
+        bool success;
+        if (!lua->rctx.presenter)
+        {
+            // NOTE: We have to invoke the callback because we're waiting for the script to issue a d2d call
+            success = LuaCallbacks::invoke_callbacks_with_key(lua, LuaCallbacks::REG_ATDRAWD2D);
+        }
+        else
+        {
+            lua->rctx.presenter->begin_present();
+            success = LuaCallbacks::invoke_callbacks_with_key(lua, LuaCallbacks::REG_ATDRAWD2D);
+            lua->rctx.presenter->end_present();
+        }
+
+        ValidateRect(hwnd, nullptr);
+        d2d_drawing = false;
+
+        if (!success)
+        {
+            LuaManager::destroy_environment(lua);
+        }
+
+        return 0;
+    }
     case WM_NCDESTROY:
         RemoveProp(hwnd, CTX_PROP);
         break;
@@ -77,31 +77,31 @@ static LRESULT CALLBACK gdi_overlay_wndproc(HWND hwnd, UINT msg, WPARAM wparam, 
 {
     switch (msg)
     {
-    case WM_PAINT:
+    case WM_PAINT: {
+        auto lua = (t_lua_environment *)GetProp(hwnd, CTX_PROP);
+
+        if (!lua)
         {
-            auto lua = (t_lua_environment*)GetProp(hwnd, CTX_PROP);
-
-            if (!lua)
-            {
-                break;
-            }
-
-            const bool success = LuaCallbacks::invoke_callbacks_with_key(lua, LuaCallbacks::REG_ATUPDATESCREEN);
-
-            if (lua->rctx.has_gdi_content)
-            {
-                BitBlt(lua->rctx.gdi_front_dc, 0, 0, lua->rctx.dc_size.width, lua->rctx.dc_size.height, lua->rctx.gdi_back_dc, 0, 0, SRCCOPY);
-            }
-
-            ValidateRect(hwnd, nullptr);
-
-            if (!success)
-            {
-                LuaManager::destroy_environment(lua);
-            }
-
-            return 0;
+            break;
         }
+
+        const bool success = LuaCallbacks::invoke_callbacks_with_key(lua, LuaCallbacks::REG_ATUPDATESCREEN);
+
+        if (lua->rctx.has_gdi_content)
+        {
+            BitBlt(lua->rctx.gdi_front_dc, 0, 0, lua->rctx.dc_size.width, lua->rctx.dc_size.height,
+                   lua->rctx.gdi_back_dc, 0, 0, SRCCOPY);
+        }
+
+        ValidateRect(hwnd, nullptr);
+
+        if (!success)
+        {
+            LuaManager::destroy_environment(lua);
+        }
+
+        return 0;
+    }
     case WM_NCDESTROY:
         RemoveProp(hwnd, CTX_PROP);
         break;
@@ -128,7 +128,7 @@ void LuaRenderer::init()
     g_alpha_mask_brush = CreateSolidBrush(LUA_GDI_COLOR_MASK);
 }
 
-static void create_loadscreen(t_lua_rendering_context* ctx)
+static void create_loadscreen(t_lua_rendering_context *ctx)
 {
     if (ctx->loadscreen_dc)
     {
@@ -141,7 +141,7 @@ static void create_loadscreen(t_lua_rendering_context* ctx)
     ReleaseDC(g_main_ctx.hwnd, gdi_dc);
 }
 
-static void destroy_loadscreen(t_lua_rendering_context* ctx)
+static void destroy_loadscreen(t_lua_rendering_context *ctx)
 {
     if (!ctx->loadscreen_dc)
     {
@@ -168,7 +168,7 @@ void LuaRenderer::invalidate_visuals()
 {
     assert(is_on_gui_thread());
 
-    for (const auto& lua : g_lua_environments)
+    for (const auto &lua : g_lua_environments)
     {
         RedrawWindow(lua->rctx.d2d_overlay_hwnd, nullptr, nullptr, RDW_INVALIDATE);
         RedrawWindow(lua->rctx.gdi_overlay_hwnd, nullptr, nullptr, RDW_INVALIDATE);
@@ -179,14 +179,14 @@ void LuaRenderer::repaint_visuals()
 {
     assert(is_on_gui_thread());
 
-    for (const auto& lua : g_lua_environments)
+    for (const auto &lua : g_lua_environments)
     {
         RedrawWindow(lua->rctx.d2d_overlay_hwnd, nullptr, nullptr, RDW_INVALIDATE | RDW_UPDATENOW);
         RedrawWindow(lua->rctx.gdi_overlay_hwnd, nullptr, nullptr, RDW_INVALIDATE | RDW_UPDATENOW);
     }
 }
 
-void LuaRenderer::create_renderer(t_lua_rendering_context* ctx, t_lua_environment* env)
+void LuaRenderer::create_renderer(t_lua_rendering_context *ctx, t_lua_environment *env)
 {
     if (ctx->gdi_back_dc != nullptr || ctx->ignore_create_renderer)
     {
@@ -218,7 +218,9 @@ void LuaRenderer::create_renderer(t_lua_rendering_context* ctx, t_lua_environmen
     SelectObject(ctx->gdi_back_dc, ctx->gdi_bmp);
     ReleaseDC(g_main_ctx.hwnd, gdi_dc);
 
-    ctx->gdi_overlay_hwnd = CreateWindowEx(WS_EX_LAYERED, GDI_OVERLAY_CLASS, L"", WS_CHILD | WS_VISIBLE, 0, 0, ctx->dc_size.width, ctx->dc_size.height, g_main_ctx.hwnd, nullptr, g_main_ctx.hinst, nullptr);
+    ctx->gdi_overlay_hwnd =
+        CreateWindowEx(WS_EX_LAYERED, GDI_OVERLAY_CLASS, L"", WS_CHILD | WS_VISIBLE, 0, 0, ctx->dc_size.width,
+                       ctx->dc_size.height, g_main_ctx.hwnd, nullptr, g_main_ctx.hinst, nullptr);
     SetLayeredWindowAttributes(ctx->gdi_overlay_hwnd, LUA_GDI_COLOR_MASK, 0, LWA_COLORKEY);
 
     ctx->gdi_front_dc = GetDC(ctx->gdi_overlay_hwnd);
@@ -226,7 +228,9 @@ void LuaRenderer::create_renderer(t_lua_rendering_context* ctx, t_lua_environmen
     // If we don't fill up the DC with the key first, it never becomes "transparent"
     FillRect(ctx->gdi_back_dc, &window_rect, g_alpha_mask_brush);
 
-    ctx->d2d_overlay_hwnd = CreateWindowEx(WS_EX_LAYERED, D2D_OVERLAY_CLASS, L"", WS_CHILD | WS_VISIBLE, 0, 0, ctx->dc_size.width, ctx->dc_size.height, g_main_ctx.hwnd, nullptr, g_main_ctx.hinst, nullptr);
+    ctx->d2d_overlay_hwnd =
+        CreateWindowEx(WS_EX_LAYERED, D2D_OVERLAY_CLASS, L"", WS_CHILD | WS_VISIBLE, 0, 0, ctx->dc_size.width,
+                       ctx->dc_size.height, g_main_ctx.hwnd, nullptr, g_main_ctx.hinst, nullptr);
 
     SetProp(ctx->d2d_overlay_hwnd, CTX_PROP, env);
     SetProp(ctx->gdi_overlay_hwnd, CTX_PROP, env);
@@ -240,7 +244,7 @@ void LuaRenderer::create_renderer(t_lua_rendering_context* ctx, t_lua_environmen
     create_loadscreen(ctx);
 }
 
-void LuaRenderer::pre_destroy_renderer(t_lua_rendering_context* ctx)
+void LuaRenderer::pre_destroy_renderer(t_lua_rendering_context *ctx)
 {
     g_view_logger->info("Pre-destroying Lua renderer...");
     ctx->ignore_create_renderer = true;
@@ -248,7 +252,7 @@ void LuaRenderer::pre_destroy_renderer(t_lua_rendering_context* ctx)
     SetProp(ctx->d2d_overlay_hwnd, CTX_PROP, nullptr);
 }
 
-void LuaRenderer::destroy_renderer(t_lua_rendering_context* ctx)
+void LuaRenderer::destroy_renderer(t_lua_rendering_context *ctx)
 {
     g_view_logger->info("Destroying Lua renderer...");
 
@@ -294,7 +298,7 @@ void LuaRenderer::destroy_renderer(t_lua_rendering_context* ctx)
     }
 }
 
-void LuaRenderer::ensure_d2d_renderer_created(t_lua_rendering_context* ctx)
+void LuaRenderer::ensure_d2d_renderer_created(t_lua_rendering_context *ctx)
 {
     if (ctx->presenter || ctx->ignore_create_renderer)
     {
@@ -306,11 +310,13 @@ void LuaRenderer::ensure_d2d_renderer_created(t_lua_rendering_context* ctx)
     auto hr = CoInitialize(nullptr);
     if (hr != S_OK && hr != S_FALSE && hr != RPC_E_CHANGED_MODE)
     {
-        DialogService::show_dialog(L"Failed to initialize COM.\r\nVerify that your system is up-to-date.", L"Lua", fsvc_error);
+        DialogService::show_dialog(L"Failed to initialize COM.\r\nVerify that your system is up-to-date.", L"Lua",
+                                   fsvc_error);
         return;
     }
 
-    DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(ctx->dw_factory), reinterpret_cast<IUnknown**>(&ctx->dw_factory));
+    DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(ctx->dw_factory),
+                        reinterpret_cast<IUnknown **>(&ctx->dw_factory));
 
     if (g_config.presenter_type != (int32_t)t_config::PresenterType::GDI)
     {
@@ -323,24 +329,23 @@ void LuaRenderer::ensure_d2d_renderer_created(t_lua_rendering_context* ctx)
 
     if (!ctx->presenter->init(ctx->d2d_overlay_hwnd))
     {
-        DialogService::show_dialog(L"Failed to initialize presenter.\r\nVerify that your system supports the selected presenter.", L"Lua", fsvc_error);
+        DialogService::show_dialog(
+            L"Failed to initialize presenter.\r\nVerify that your system supports the selected presenter.", L"Lua",
+            fsvc_error);
         return;
     }
 
     ctx->d2d_render_target_stack.push(ctx->presenter->dc());
-    ctx->dw_text_layouts = MicroLRU::Cache<uint64_t, IDWriteTextLayout*>(512, [&](auto value) {
-        value->Release();
-    });
-    ctx->dw_text_sizes = MicroLRU::Cache<uint64_t, DWRITE_TEXT_METRICS>(512, [&](auto value) {
-    });
+    ctx->dw_text_layouts = MicroLRU::Cache<uint64_t, IDWriteTextLayout *>(512, [&](auto value) { value->Release(); });
+    ctx->dw_text_sizes = MicroLRU::Cache<uint64_t, DWRITE_TEXT_METRICS>(512, [&](auto value) {});
 }
 
-void LuaRenderer::mark_gdi_content_present(t_lua_rendering_context* ctx)
+void LuaRenderer::mark_gdi_content_present(t_lua_rendering_context *ctx)
 {
     ctx->has_gdi_content = true;
 }
 
-void LuaRenderer::loadscreen_reset(t_lua_rendering_context* ctx)
+void LuaRenderer::loadscreen_reset(t_lua_rendering_context *ctx)
 {
     destroy_loadscreen(ctx);
     create_loadscreen(ctx);

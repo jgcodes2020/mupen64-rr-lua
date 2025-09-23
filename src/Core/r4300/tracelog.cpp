@@ -12,9 +12,9 @@
 bool enabled = false;
 bool use_binary = false;
 
-FILE* log_file;
+FILE *log_file;
 char traceLoggingBuf[0x10000];
-char* traceLoggingPointer = traceLoggingBuf;
+char *traceLoggingPointer = traceLoggingBuf;
 
 bool tl_active()
 {
@@ -29,45 +29,41 @@ void flush_buf()
 
 void write_buf()
 {
-    const char* const buflength = traceLoggingBuf + sizeof(traceLoggingBuf) -
-    512;
+    const char *const buflength = traceLoggingBuf + sizeof(traceLoggingBuf) - 512;
     if (traceLoggingPointer >= buflength)
     {
         flush_buf();
     }
 }
 
-
 void log_bin(uint32_t pc, uint32_t w)
 {
-    char*& p = traceLoggingPointer;
+    char *&p = traceLoggingPointer;
     INSTDECODE decode;
     // little endian
-#define HEX8(n)        \
-    *(uint32_t*)p = n; \
+#define HEX8(n)                                                                                                        \
+    *(uint32_t *)p = n;                                                                                                \
     p += 4
 
     DecodeInstruction(w, &decode);
     HEX8(pc);
     HEX8(w);
-    INSTOPERAND& o = decode.operand;
+    INSTOPERAND &o = decode.operand;
     // n�͌ォ��f�R�[�h����΂킩��
-#define REGCPU(n) \
-    HEX8(reg[n])
-#define REGCPU2(n, m) \
-    REGCPU(n);        \
+#define REGCPU(n) HEX8(reg[n])
+#define REGCPU2(n, m)                                                                                                  \
+    REGCPU(n);                                                                                                         \
     REGCPU(m);
     // 10�i��
-#define REGFPU(n) \
-    HEX8(*(uint32_t*)reg_cop1_simple[n])
-#define REGFPU2(n, m) \
-    REGFPU(n);        \
+#define REGFPU(n) HEX8(*(uint32_t *)reg_cop1_simple[n])
+#define REGFPU2(n, m)                                                                                                  \
+    REGFPU(n);                                                                                                         \
     REGFPU(m)
-#define NONE           \
-    *(uint32_t*)p = 0; \
+#define NONE                                                                                                           \
+    *(uint32_t *)p = 0;                                                                                                \
     p += 4
-#define NONE2 \
-    NONE;     \
+#define NONE2                                                                                                          \
+    NONE;                                                                                                              \
     NONE
 
     switch (decode.format)
@@ -150,18 +146,18 @@ void log_bin(uint32_t pc, uint32_t w)
 
 void log(uint32_t pc, uint32_t w)
 {
-    char*& p = traceLoggingPointer;
+    char *&p = traceLoggingPointer;
     INSTDECODE decode;
-    const char* const x = "0123456789abcdef";
-#define HEX8(n)                          \
-    p[0] = x[(uint32_t)(n) >> 28 & 0xF]; \
-    p[1] = x[(uint32_t)(n) >> 24 & 0xF]; \
-    p[2] = x[(uint32_t)(n) >> 20 & 0xF]; \
-    p[3] = x[(uint32_t)(n) >> 16 & 0xF]; \
-    p[4] = x[(uint32_t)(n) >> 12 & 0xF]; \
-    p[5] = x[(uint32_t)(n) >> 8 & 0xF];  \
-    p[6] = x[(uint32_t)(n) >> 4 & 0xF];  \
-    p[7] = x[(uint32_t)(n) & 0xF];       \
+    const char *const x = "0123456789abcdef";
+#define HEX8(n)                                                                                                        \
+    p[0] = x[(uint32_t)(n) >> 28 & 0xF];                                                                               \
+    p[1] = x[(uint32_t)(n) >> 24 & 0xF];                                                                               \
+    p[2] = x[(uint32_t)(n) >> 20 & 0xF];                                                                               \
+    p[3] = x[(uint32_t)(n) >> 16 & 0xF];                                                                               \
+    p[4] = x[(uint32_t)(n) >> 12 & 0xF];                                                                               \
+    p[5] = x[(uint32_t)(n) >> 8 & 0xF];                                                                                \
+    p[6] = x[(uint32_t)(n) >> 4 & 0xF];                                                                                \
+    p[7] = x[(uint32_t)(n) & 0xF];                                                                                     \
     p += 8;
 
     DecodeInstruction(w, &decode);
@@ -170,7 +166,7 @@ void log(uint32_t pc, uint32_t w)
     *(p++) = ' ';
     HEX8(w);
     *(p++) = ' ';
-    const char* ps = p;
+    const char *ps = p;
     if (w == 0x00000000)
     {
         *(p++) = 'n';
@@ -179,7 +175,7 @@ void log(uint32_t pc, uint32_t w)
     }
     else
     {
-        for (const char* q = GetOpecodeString(&decode); *q; q++)
+        for (const char *q = GetOpecodeString(&decode); *q; q++)
         {
             *(p++) = *q;
         }
@@ -191,37 +187,37 @@ void log(uint32_t pc, uint32_t w)
         *(p++) = '\t';
     }
     *(p++) = ';';
-    INSTOPERAND& o = decode.operand;
-#define REGCPU(n)                                         \
-    if ((n) != 0)                                         \
-    {                                                     \
-        for (const char* l = CPURegisterName[n]; *l; l++) \
-        {                                                 \
-            *(p++) = *l;                                  \
-        }                                                 \
-        *(p++) = '=';                                     \
-        HEX8(reg[n]);                                     \
+    INSTOPERAND &o = decode.operand;
+#define REGCPU(n)                                                                                                      \
+    if ((n) != 0)                                                                                                      \
+    {                                                                                                                  \
+        for (const char *l = CPURegisterName[n]; *l; l++)                                                              \
+        {                                                                                                              \
+            *(p++) = *l;                                                                                               \
+        }                                                                                                              \
+        *(p++) = '=';                                                                                                  \
+        HEX8(reg[n]);                                                                                                  \
     }
-#define REGCPU2(n, m)           \
-    REGCPU(n);                  \
-    if ((n) != (m) && (m) != 0) \
-    {                           \
-        C;                      \
-        REGCPU(m);              \
+#define REGCPU2(n, m)                                                                                                  \
+    REGCPU(n);                                                                                                         \
+    if ((n) != (m) && (m) != 0)                                                                                        \
+    {                                                                                                                  \
+        C;                                                                                                             \
+        REGCPU(m);                                                                                                     \
     }
     // 10�i��
-#define REGFPU(n)         \
-    *(p++) = 'f';         \
-    *(p++) = x[(n) / 10]; \
-    *(p++) = x[(n) % 10]; \
-    *(p++) = '=';         \
+#define REGFPU(n)                                                                                                      \
+    *(p++) = 'f';                                                                                                      \
+    *(p++) = x[(n) / 10];                                                                                              \
+    *(p++) = x[(n) % 10];                                                                                              \
+    *(p++) = '=';                                                                                                      \
     p += sprintf_s(p, sizeof(traceLoggingBuf) - (p - traceLoggingBuf), "%f", *reg_cop1_simple[n])
-#define REGFPU2(n, m) \
-    REGFPU(n);        \
-    if ((n) != (m))   \
-    {                 \
-        C;            \
-        REGFPU(m);    \
+#define REGFPU2(n, m)                                                                                                  \
+    REGFPU(n);                                                                                                         \
+    if ((n) != (m))                                                                                                    \
+    {                                                                                                                  \
+        C;                                                                                                             \
+        REGFPU(m);                                                                                                     \
     }
 #define C *(p++) = ','
 

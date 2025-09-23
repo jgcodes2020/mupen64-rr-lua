@@ -11,13 +11,13 @@
 #define WM_DEBUGGER_CPU_STATE_UPDATED (WM_USER + 20)
 #define WM_DEBUGGER_RESUMED_UPDATED (WM_USER + 21)
 
-struct t_core_dbg_context {
+struct t_core_dbg_context
+{
     HWND hwnd{};
     HWND list_hwnd{};
     core_dbg_cpu_state cpu{};
 };
 static t_core_dbg_context g_ctx{};
-
 
 INT_PTR CALLBACK dlgproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
@@ -54,22 +54,23 @@ INT_PTR CALLBACK dlgproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
             break;
         }
         break;
-    case WM_DEBUGGER_CPU_STATE_UPDATED:
+    case WM_DEBUGGER_CPU_STATE_UPDATED: {
+        char disasm[32] = {};
+        g_main_ctx.core_ctx->dbg_disassemble(disasm, g_ctx.cpu.opcode, g_ctx.cpu.address);
+
+        const auto str = std::format(L"{} ({:#08x}, {:#08x})", g_main_ctx.io_service.string_to_wstring(disasm),
+                                     g_ctx.cpu.opcode, g_ctx.cpu.address);
+        ListBox_InsertString(g_ctx.list_hwnd, 0, str.c_str());
+
+        if (ListBox_GetCount(g_ctx.list_hwnd) > 1024)
         {
-            char disasm[32] = {};
-            g_main_ctx.core_ctx->dbg_disassemble(disasm, g_ctx.cpu.opcode, g_ctx.cpu.address);
-
-            const auto str = std::format(L"{} ({:#08x}, {:#08x})", g_main_ctx.io_service.string_to_wstring(disasm), g_ctx.cpu.opcode, g_ctx.cpu.address);
-            ListBox_InsertString(g_ctx.list_hwnd, 0, str.c_str());
-
-            if (ListBox_GetCount(g_ctx.list_hwnd) > 1024)
-            {
-                ListBox_DeleteString(g_ctx.list_hwnd, ListBox_GetCount(g_ctx.list_hwnd) - 1);
-            }
-            break;
+            ListBox_DeleteString(g_ctx.list_hwnd, ListBox_GetCount(g_ctx.list_hwnd) - 1);
         }
+        break;
+    }
     case WM_DEBUGGER_RESUMED_UPDATED:
-        Button_SetText(GetDlgItem(g_ctx.hwnd, IDC_COREDBG_TOGGLEPAUSE), g_main_ctx.core_ctx->dbg_get_resumed() ? L"Pause" : L"Resume");
+        Button_SetText(GetDlgItem(g_ctx.hwnd, IDC_COREDBG_TOGGLEPAUSE),
+                       g_main_ctx.core_ctx->dbg_get_resumed() ? L"Pause" : L"Resume");
         break;
     default:
         return FALSE;
@@ -85,8 +86,8 @@ void CoreDbg::show()
 
 void CoreDbg::init()
 {
-    Messenger::subscribe(Messenger::Message::DebuggerCpuStateChanged, [](const std::any& data) {
-        g_ctx.cpu = *std::any_cast<core_dbg_cpu_state*>(data);
+    Messenger::subscribe(Messenger::Message::DebuggerCpuStateChanged, [](const std::any &data) {
+        g_ctx.cpu = *std::any_cast<core_dbg_cpu_state *>(data);
 
         if (g_ctx.hwnd)
         {

@@ -14,7 +14,7 @@ static std::recursive_mutex cheats_mutex;
 static std::vector<core_cheat> host_cheats;
 static std::stack<std::vector<core_cheat>> cheat_stack;
 
-bool core_cht_compile(const std::wstring& code, core_cheat& cheat)
+bool core_cht_compile(const std::wstring &code, core_cheat &cheat)
 {
     core_cheat compiled_cheat{};
 
@@ -25,7 +25,7 @@ bool core_cht_compile(const std::wstring& code, core_cheat& cheat)
     size_t serial_offset = 0;
     size_t serial_diff = 0;
 
-    for (const auto& line : lines)
+    for (const auto &line : lines)
     {
         if (line[0] == '$' || line[0] == '-' || line.size() < 13)
         {
@@ -104,30 +104,26 @@ bool core_cht_compile(const std::wstring& code, core_cheat& cheat)
         else if (opcode == L"D0")
         {
             // Byte equality comparison
-            compiled_cheat.instructions.emplace_back(std::make_tuple(true, [=] {
-                return core_rdram_load<uint8_t>(rdramb, address) == (val & 0xFF);
-            }));
+            compiled_cheat.instructions.emplace_back(
+                std::make_tuple(true, [=] { return core_rdram_load<uint8_t>(rdramb, address) == (val & 0xFF); }));
         }
         else if (opcode == L"D1")
         {
             // Word equality comparison
-            compiled_cheat.instructions.emplace_back(std::make_tuple(true, [=] {
-                return core_rdram_load<uint16_t>(rdramb, address) == val;
-            }));
+            compiled_cheat.instructions.emplace_back(
+                std::make_tuple(true, [=] { return core_rdram_load<uint16_t>(rdramb, address) == val; }));
         }
         else if (opcode == L"D2")
         {
             // Byte inequality comparison
-            compiled_cheat.instructions.emplace_back(std::make_tuple(true, [=] {
-                return core_rdram_load<uint8_t>(rdramb, address) != (val & 0xFF);
-            }));
+            compiled_cheat.instructions.emplace_back(
+                std::make_tuple(true, [=] { return core_rdram_load<uint8_t>(rdramb, address) != (val & 0xFF); }));
         }
         else if (opcode == L"D3")
         {
             // Word inequality comparison
-            compiled_cheat.instructions.emplace_back(std::make_tuple(true, [=] {
-                return core_rdram_load<uint16_t>(rdramb, address) != val;
-            }));
+            compiled_cheat.instructions.emplace_back(
+                std::make_tuple(true, [=] { return core_rdram_load<uint16_t>(rdramb, address) != val; }));
         }
         else if (opcode == L"50")
         {
@@ -150,9 +146,9 @@ bool core_cht_compile(const std::wstring& code, core_cheat& cheat)
     return true;
 }
 
-bool cht_read_from_file(const std::filesystem::path& path, std::vector<core_cheat>& cheats)
+bool cht_read_from_file(const std::filesystem::path &path, std::vector<core_cheat> &cheats)
 {
-    FILE* f = nullptr;
+    FILE *f = nullptr;
 
     if (_wfopen_s(&f, path.wstring().c_str(), L"r"))
     {
@@ -177,7 +173,7 @@ bool cht_read_from_file(const std::filesystem::path& path, std::vector<core_chea
     bool reading_cheat_code = false;
     cheats.clear();
 
-    for (const auto& line : lines)
+    for (const auto &line : lines)
     {
         if (line.empty())
         {
@@ -186,7 +182,7 @@ bool cht_read_from_file(const std::filesystem::path& path, std::vector<core_chea
 
         if (reading_cheat_code && !cheats.empty())
         {
-            auto& cheat = cheats.back();
+            auto &cheat = cheats.back();
             cheat.code += line + L"\n";
         }
 
@@ -199,7 +195,7 @@ bool cht_read_from_file(const std::filesystem::path& path, std::vector<core_chea
         }
     }
 
-    for (auto& cheat : cheats)
+    for (auto &cheat : cheats)
     {
         // We need to patch up the names since the cheats are reconstructed when compiling
         const auto name = cheat.name;
@@ -220,7 +216,7 @@ std::wstring cht_serialize()
     }
 
     std::wstring str;
-    for (const auto& cheat : host_cheats)
+    for (const auto &cheat : host_cheats)
     {
         str += std::format(L"--{}\n", cheat.name);
         str += cheat.code + L"\n";
@@ -229,21 +225,21 @@ std::wstring cht_serialize()
     return str;
 }
 
-void core_cht_get_override_stack(std::stack<std::vector<core_cheat>>& stack)
+void core_cht_get_override_stack(std::stack<std::vector<core_cheat>> &stack)
 {
     std::scoped_lock lock(cheats_mutex);
 
     stack = cheat_stack;
 }
 
-void cht_get_list(std::vector<core_cheat>& list)
+void cht_get_list(std::vector<core_cheat> &list)
 {
     std::scoped_lock lock(cheats_mutex);
 
     list = cheat_stack.empty() ? host_cheats : cheat_stack.top();
 }
 
-void core_cht_set_list(const std::vector<core_cheat>& list)
+void core_cht_set_list(const std::vector<core_cheat> &list)
 {
     std::scoped_lock lock(cheats_mutex);
 
@@ -256,7 +252,7 @@ void core_cht_set_list(const std::vector<core_cheat>& list)
     host_cheats = list;
 }
 
-void cht_layer_push(const std::vector<core_cheat>& cheats)
+void cht_layer_push(const std::vector<core_cheat> &cheats)
 {
     std::scoped_lock lock(cheats_mutex);
 
@@ -279,9 +275,9 @@ void cht_execute()
 {
     std::scoped_lock lock(cheats_mutex);
 
-    const auto& cheats = cheat_stack.empty() ? host_cheats : cheat_stack.top();
+    const auto &cheats = cheat_stack.empty() ? host_cheats : cheat_stack.top();
 
-    for (const auto& cheat : cheats)
+    for (const auto &cheat : cheats)
     {
         if (!cheat.active)
         {

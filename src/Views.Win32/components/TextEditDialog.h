@@ -11,30 +11,31 @@
  */
 namespace TextEditDialog
 {
+/**
+ * \brief Parameters for the text edit dialog.
+ */
+struct t_params
+{
     /**
-     * \brief Parameters for the text edit dialog.
+     * \brief The initial text to display in the editbox.
      */
-    struct t_params {
-        /**
-         * \brief The initial text to display in the editbox.
-         */
-        std::wstring text{};
-
-        /**
-         * \brief The caption of the dialog.
-         */
-        std::wstring caption = L"Edit Text";
-
-        /**
-         * \brief If true, the editbox will be read-only.
-         */
-        bool readonly{};
-    };
+    std::wstring text{};
 
     /**
-     * \brief Shows the about dialog with the specified text.
-     * \param params The parameters for the text edit dialog.
-     * \return The text if the user clicked OK, or std::nullopt if the user clicked Cancel.
+     * \brief The caption of the dialog.
      */
-    std::optional<std::wstring> show(const t_params& params);
+    std::wstring caption = L"Edit Text";
+
+    /**
+     * \brief If true, the editbox will be read-only.
+     */
+    bool readonly{};
+};
+
+/**
+ * \brief Shows the about dialog with the specified text.
+ * \param params The parameters for the text edit dialog.
+ * \return The text if the user clicked OK, or std::nullopt if the user clicked Cancel.
+ */
+std::optional<std::wstring> show(const t_params &params);
 } // namespace TextEditDialog

@@ -15,8 +15,8 @@ extern std::shared_ptr<spdlog::logger> g_rsp_logger;
 
 namespace Loggers
 {
-    /**
-     * Initializes the loggers
-     */
-    void init();
+/**
+ * Initializes the loggers
+ */
+void init();
 } // namespace Loggers

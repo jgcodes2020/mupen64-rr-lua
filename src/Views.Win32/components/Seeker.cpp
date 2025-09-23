@@ -11,7 +11,8 @@
 
 #define WM_SEEK_COMPLETED (WM_USER + 11)
 
-struct seeker_state {
+struct seeker_state
+{
     HWND hwnd{};
     UINT_PTR refresh_timer{};
 };
@@ -45,60 +46,55 @@ static INT_PTR CALLBACK dlgproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
         SetDlgItemText(hwnd, IDC_SEEKER_SUBTEXT, L"");
         KillTimer(hwnd, seeker.refresh_timer);
         break;
-    case WM_TIMER:
+    case WM_TIMER: {
+        if (!g_main_ctx.core_ctx->vcr_is_seeking())
         {
-            if (!g_main_ctx.core_ctx->vcr_is_seeking())
-            {
-                break;
-            }
-            const core_vcr_seek_info info = g_main_ctx.core_ctx->vcr_get_seek_info();
-
-            const float effective_progress = remap(
-            static_cast<float>(info.current_sample),
-            static_cast<float>(info.seek_start_sample),
-            static_cast<float>(info.seek_target_sample),
-            0.0f,
-            1.0f);
-            const auto str = std::format(L"Seeked {:.2f}%", effective_progress * 100.0);
-            SetDlgItemText(hwnd, IDC_SEEKER_STATUS, str.c_str());
             break;
         }
+        const core_vcr_seek_info info = g_main_ctx.core_ctx->vcr_get_seek_info();
+
+        const float effective_progress =
+            remap(static_cast<float>(info.current_sample), static_cast<float>(info.seek_start_sample),
+                  static_cast<float>(info.seek_target_sample), 0.0f, 1.0f);
+        const auto str = std::format(L"Seeked {:.2f}%", effective_progress * 100.0);
+        SetDlgItemText(hwnd, IDC_SEEKER_STATUS, str.c_str());
+        break;
+    }
     case WM_COMMAND:
         switch (LOWORD(wparam))
         {
-        case IDC_SEEKER_FRAME:
+        case IDC_SEEKER_FRAME: {
+            wchar_t str[260] = {0};
+            GetDlgItemText(hwnd, IDC_SEEKER_FRAME, str, std::size(str));
+            g_config.seeker_value = str;
+        }
+        break;
+        case IDC_SEEKER_START: {
+            if (g_main_ctx.core_ctx->vcr_is_seeking())
             {
-                wchar_t str[260] = {0};
-                GetDlgItemText(hwnd, IDC_SEEKER_FRAME, str, std::size(str));
-                g_config.seeker_value = str;
-            }
-            break;
-        case IDC_SEEKER_START:
-            {
-                if (g_main_ctx.core_ctx->vcr_is_seeking())
-                {
-                    g_main_ctx.core_ctx->vcr_stop_seek();
-                    break;
-                }
-
-                SetDlgItemText(hwnd, IDC_SEEKER_START, L"Stop");
-                if (g_config.core.seek_savestate_interval == 0)
-                {
-                    SetDlgItemText(hwnd, IDC_SEEKER_SUBTEXT, L"Seek savestates disabled. Seeking backwards will be slower.");
-                }
-
-                if (g_main_ctx.core_ctx->vcr_begin_seek(g_config.seeker_value, true) != Res_Ok)
-                {
-                    SetDlgItemText(hwnd, IDC_SEEKER_START, L"Start");
-                    SetDlgItemText(hwnd, IDC_SEEKER_STATUS, L"Couldn't seek");
-                    SetDlgItemText(hwnd, IDC_SEEKER_SUBTEXT, L"");
-                    break;
-                }
-
-                seeker.refresh_timer = SetTimer(hwnd, NULL, 1000 / 10, nullptr);
-
+                g_main_ctx.core_ctx->vcr_stop_seek();
                 break;
             }
+
+            SetDlgItemText(hwnd, IDC_SEEKER_START, L"Stop");
+            if (g_config.core.seek_savestate_interval == 0)
+            {
+                SetDlgItemText(hwnd, IDC_SEEKER_SUBTEXT,
+                               L"Seek savestates disabled. Seeking backwards will be slower.");
+            }
+
+            if (g_main_ctx.core_ctx->vcr_begin_seek(g_config.seeker_value, true) != Res_Ok)
+            {
+                SetDlgItemText(hwnd, IDC_SEEKER_START, L"Start");
+                SetDlgItemText(hwnd, IDC_SEEKER_STATUS, L"Couldn't seek");
+                SetDlgItemText(hwnd, IDC_SEEKER_SUBTEXT, L"");
+                break;
+            }
+
+            seeker.refresh_timer = SetTimer(hwnd, NULL, 1000 / 10, nullptr);
+
+            break;
+        }
         case IDCANCEL:
             EndDialog(hwnd, IDCANCEL);
             break;
@@ -115,8 +111,7 @@ static INT_PTR CALLBACK dlgproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
 void Seeker::init()
 {
     Messenger::subscribe(Messenger::Message::SeekCompleted, [](std::any) {
-        if (!seeker.hwnd)
-            return;
+        if (!seeker.hwnd) return;
         SendMessage(seeker.hwnd, WM_SEEK_COMPLETED, 0, 0);
     });
 }

@@ -17,22 +17,23 @@
 #include <r4300/tracelog.h>
 #include <r4300/vcr.h>
 
-core_params* g_core{};
+core_params *g_core{};
 core_ctx g_ctx{};
 
 #define CORE_EXPORT __declspec(dllexport)
 
-extern "C" {
-// ReSharper disable CppInconsistentNaming
-CORE_EXPORT void* CORE_RDRAM = nullptr;
-// ReSharper restore CppInconsistentNaming
+extern "C"
+{
+    // ReSharper disable CppInconsistentNaming
+    CORE_EXPORT void *CORE_RDRAM = nullptr;
+    // ReSharper restore CppInconsistentNaming
 }
 
-static void log_dummy(const std::wstring&)
+static void log_dummy(const std::wstring &)
 {
 }
 
-EXPORT core_result CALL core_create(core_params* params, core_ctx** ctx)
+EXPORT core_result CALL core_create(core_params *params, core_ctx **ctx)
 {
     g_core = params;
 
@@ -77,9 +78,7 @@ EXPORT core_result CALL core_create(core_params* params, core_ctx** ctx)
 
     g_ctx.vr_byteswap = rom_byteswap;
     g_ctx.vr_get_rom_path = vr_get_rom_path;
-    g_ctx.vr_get_lag_count = [] {
-        return lag_count;
-    };
+    g_ctx.vr_get_lag_count = [] { return lag_count; };
     g_ctx.vr_get_core_executing = vr_get_core_executing;
     g_ctx.vr_get_launched = vr_get_launched;
     g_ctx.vr_get_frame_advance = vr_get_frame_advance;

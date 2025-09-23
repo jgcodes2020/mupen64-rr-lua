@@ -10,13 +10,13 @@
 
 // OPTIMIZATION: If no lua scripts are running, skip the deeper lua path
 // This is an unsynchronized access to the map from the emu thread!
-#define RET_IF_EMPTY                    \
-    {                                   \
-        if (g_lua_environments.empty()) \
-            return;                     \
+#define RET_IF_EMPTY                                                                                                   \
+    {                                                                                                                  \
+        if (g_lua_environments.empty()) return;                                                                        \
     }
 
-struct t_atwindowmessage_context {
+struct t_atwindowmessage_context
+{
     HWND wnd;
     UINT msg;
     WPARAM w_param;
@@ -26,30 +26,33 @@ struct t_atwindowmessage_context {
 static t_atwindowmessage_context atwindowmessage_ctx{};
 static int current_input_n = 0;
 
-static int pcall_no_params(lua_State* L)
+static int pcall_no_params(lua_State *L)
 {
     return lua_pcall(L, 0, 0, 0);
 }
 
-const std::unordered_map<LuaCallbacks::callback_key, std::function<int(lua_State*)>> CALLBACK_FUNC_MAP = {
-{LuaCallbacks::REG_ATINPUT, [](auto l) -> int {
-     lua_pushinteger(l, current_input_n);
-     return lua_pcall(l, 1, 0, 0);
- }},
-{LuaCallbacks::REG_WINDOWMESSAGE, [](auto l) -> int {
-     lua_pushinteger(l, (unsigned)atwindowmessage_ctx.wnd);
-     lua_pushinteger(l, atwindowmessage_ctx.msg);
-     lua_pushinteger(l, atwindowmessage_ctx.w_param);
-     lua_pushinteger(l, atwindowmessage_ctx.l_param);
-     return lua_pcall(l, 4, 0, 0);
- }},
-{LuaCallbacks::REG_ATWARPMODIFYSTATUSCHANGED, [](auto l) -> int {
-     lua_pushinteger(l, g_main_ctx.core_ctx->vcr_get_warp_modify_status());
-     return lua_pcall(l, 1, 0, 0);
- }},
+const std::unordered_map<LuaCallbacks::callback_key, std::function<int(lua_State *)>> CALLBACK_FUNC_MAP = {
+    {LuaCallbacks::REG_ATINPUT,
+     [](auto l) -> int {
+         lua_pushinteger(l, current_input_n);
+         return lua_pcall(l, 1, 0, 0);
+     }},
+    {LuaCallbacks::REG_WINDOWMESSAGE,
+     [](auto l) -> int {
+         lua_pushinteger(l, (unsigned)atwindowmessage_ctx.wnd);
+         lua_pushinteger(l, atwindowmessage_ctx.msg);
+         lua_pushinteger(l, atwindowmessage_ctx.w_param);
+         lua_pushinteger(l, atwindowmessage_ctx.l_param);
+         return lua_pcall(l, 4, 0, 0);
+     }},
+    {LuaCallbacks::REG_ATWARPMODIFYSTATUSCHANGED,
+     [](auto l) -> int {
+         lua_pushinteger(l, g_main_ctx.core_ctx->vcr_get_warp_modify_status());
+         return lua_pcall(l, 1, 0, 0);
+     }},
 };
 
-static std::function<int(lua_State*)> get_function_for_callback(const LuaCallbacks::callback_key key)
+static std::function<int(lua_State *)> get_function_for_callback(const LuaCallbacks::callback_key key)
 {
     if (CALLBACK_FUNC_MAP.contains(key))
     {
@@ -63,30 +66,22 @@ core_buttons LuaCallbacks::get_last_controller_data(int index)
     return g_last_controller_data[index];
 }
 
-void LuaCallbacks::call_window_message(void* wnd, unsigned int msg, unsigned int w, long l)
+void LuaCallbacks::call_window_message(void *wnd, unsigned int msg, unsigned int w, long l)
 {
     RET_IF_EMPTY;
 
-    atwindowmessage_ctx = {
-    .wnd = (HWND)wnd,
-    .msg = msg,
-    .w_param = w,
-    .l_param = l};
+    atwindowmessage_ctx = {.wnd = (HWND)wnd, .msg = msg, .w_param = w, .l_param = l};
 
-    g_main_ctx.dispatcher->invoke([] {
-        invoke_callbacks_with_key_on_all_instances(REG_WINDOWMESSAGE);
-    });
+    g_main_ctx.dispatcher->invoke([] { invoke_callbacks_with_key_on_all_instances(REG_WINDOWMESSAGE); });
 }
 
 void LuaCallbacks::call_vi()
 {
     RET_IF_EMPTY;
-    g_main_ctx.dispatcher->invoke([] {
-        invoke_callbacks_with_key_on_all_instances(REG_ATVI);
-    });
+    g_main_ctx.dispatcher->invoke([] { invoke_callbacks_with_key_on_all_instances(REG_ATVI); });
 }
 
-void LuaCallbacks::call_input(core_buttons* input, int index)
+void LuaCallbacks::call_input(core_buttons *input, int index)
 {
     // NOTE: Special callback, we store the input data for all scripts to access via joypad.get(n)
     // If they request a change via joypad.set(n, input), we change the input
@@ -111,72 +106,57 @@ void LuaCallbacks::call_input(core_buttons* input, int index)
 void LuaCallbacks::call_interval()
 {
     RET_IF_EMPTY;
-    g_main_ctx.dispatcher->invoke([] {
-        invoke_callbacks_with_key_on_all_instances(REG_ATINTERVAL);
-    });
+    g_main_ctx.dispatcher->invoke([] { invoke_callbacks_with_key_on_all_instances(REG_ATINTERVAL); });
 }
 
 void LuaCallbacks::call_play_movie()
 {
     RET_IF_EMPTY;
-    g_main_ctx.dispatcher->invoke([] {
-        invoke_callbacks_with_key_on_all_instances(REG_ATPLAYMOVIE);
-    });
+    g_main_ctx.dispatcher->invoke([] { invoke_callbacks_with_key_on_all_instances(REG_ATPLAYMOVIE); });
 }
 
 void LuaCallbacks::call_stop_movie()
 {
     RET_IF_EMPTY;
-    g_main_ctx.dispatcher->invoke([] {
-        invoke_callbacks_with_key_on_all_instances(REG_ATSTOPMOVIE);
-    });
+    g_main_ctx.dispatcher->invoke([] { invoke_callbacks_with_key_on_all_instances(REG_ATSTOPMOVIE); });
 }
 
 void LuaCallbacks::call_load_state()
 {
     RET_IF_EMPTY;
-    g_main_ctx.dispatcher->invoke([] {
-        invoke_callbacks_with_key_on_all_instances(REG_ATLOADSTATE);
-    });
+    g_main_ctx.dispatcher->invoke([] { invoke_callbacks_with_key_on_all_instances(REG_ATLOADSTATE); });
 }
 
 void LuaCallbacks::call_save_state()
 {
     RET_IF_EMPTY;
-    g_main_ctx.dispatcher->invoke([] {
-        invoke_callbacks_with_key_on_all_instances(REG_ATSAVESTATE);
-    });
+    g_main_ctx.dispatcher->invoke([] { invoke_callbacks_with_key_on_all_instances(REG_ATSAVESTATE); });
 }
 
 void LuaCallbacks::call_reset()
 {
     RET_IF_EMPTY;
-    g_main_ctx.dispatcher->invoke([] {
-        invoke_callbacks_with_key_on_all_instances(REG_ATRESET);
-    });
+    g_main_ctx.dispatcher->invoke([] { invoke_callbacks_with_key_on_all_instances(REG_ATRESET); });
 }
 
 void LuaCallbacks::call_seek_completed()
 {
     RET_IF_EMPTY;
-    g_main_ctx.dispatcher->invoke([] {
-        invoke_callbacks_with_key_on_all_instances(REG_ATSEEKCOMPLETED);
-    });
+    g_main_ctx.dispatcher->invoke([] { invoke_callbacks_with_key_on_all_instances(REG_ATSEEKCOMPLETED); });
 }
 
 void LuaCallbacks::call_warp_modify_status_changed(const int32_t status)
 {
     RET_IF_EMPTY;
-    g_main_ctx.dispatcher->invoke([=] {
-        invoke_callbacks_with_key_on_all_instances(REG_ATWARPMODIFYSTATUSCHANGED);
-    });
+    g_main_ctx.dispatcher->invoke([=] { invoke_callbacks_with_key_on_all_instances(REG_ATWARPMODIFYSTATUSCHANGED); });
 }
 
-bool invoke_callbacks_with_key_impl(const t_lua_environment* lua, const std::function<int(lua_State*)>& function, LuaCallbacks::callback_key key)
+bool invoke_callbacks_with_key_impl(const t_lua_environment *lua, const std::function<int(lua_State *)> &function,
+                                    LuaCallbacks::callback_key key)
 {
     runtime_assert(is_on_gui_thread(), L"not on GUI thread");
 
-    lua_State* L = lua->L;
+    lua_State *L = lua->L;
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, key);
     if (lua_isnil(L, -1))
@@ -193,7 +173,7 @@ bool invoke_callbacks_with_key_impl(const t_lua_environment* lua, const std::fun
         lua_gettable(L, -2);
         if (function(L))
         {
-            const char* str = lua_tostring(L, -1);
+            const char *str = lua_tostring(L, -1);
             lua->print(lua, g_main_ctx.io_service.string_to_wstring(str) + L"\r\n");
             g_view_logger->info("Lua error: {}", str);
             return false;
@@ -203,7 +183,7 @@ bool invoke_callbacks_with_key_impl(const t_lua_environment* lua, const std::fun
     return true;
 }
 
-bool LuaCallbacks::invoke_callbacks_with_key(const t_lua_environment* lua, const callback_key key)
+bool LuaCallbacks::invoke_callbacks_with_key(const t_lua_environment *lua, const callback_key key)
 {
     const auto func = get_function_for_callback(key);
     return invoke_callbacks_with_key_impl(lua, func, key);
@@ -211,15 +191,15 @@ bool LuaCallbacks::invoke_callbacks_with_key(const t_lua_environment* lua, const
 
 void LuaCallbacks::invoke_callbacks_with_key_on_all_instances(callback_key key)
 {
-    // OPTIMIZATION: Store destruction-queued scripts in queue and destroy them after iteration to avoid having to clone the queue
-    // OPTIMIZATION: Make the destruction queue static to avoid allocating it every entry
-    static std::queue<t_lua_environment*> destruction_queue;
+    // OPTIMIZATION: Store destruction-queued scripts in queue and destroy them after iteration to avoid having to clone
+    // the queue OPTIMIZATION: Make the destruction queue static to avoid allocating it every entry
+    static std::queue<t_lua_environment *> destruction_queue;
 
     assert(destruction_queue.empty());
 
     const auto function = get_function_for_callback(key);
 
-    for (const auto& lua : g_lua_environments)
+    for (const auto &lua : g_lua_environments)
     {
         if (!invoke_callbacks_with_key_impl(lua, function, key))
         {
@@ -234,7 +214,7 @@ void LuaCallbacks::invoke_callbacks_with_key_on_all_instances(callback_key key)
     }
 }
 
-static int register_function(lua_State* L, LuaCallbacks::callback_key key)
+static int register_function(lua_State *L, LuaCallbacks::callback_key key)
 {
     lua_rawgeti(L, LUA_REGISTRYINDEX, key);
     if (lua_isnil(L, -1))
@@ -252,7 +232,7 @@ static int register_function(lua_State* L, LuaCallbacks::callback_key key)
     return i;
 }
 
-static void unregister_function(lua_State* L, LuaCallbacks::callback_key key)
+static void unregister_function(lua_State *L, LuaCallbacks::callback_key key)
 {
     lua_rawgeti(L, LUA_REGISTRYINDEX, key);
     if (lua_isnil(L, -1))
@@ -283,7 +263,7 @@ static void unregister_function(lua_State* L, LuaCallbacks::callback_key key)
     lua_error(L);
 }
 
-void LuaCallbacks::register_or_unregister_function(lua_State* l, const callback_key key)
+void LuaCallbacks::register_or_unregister_function(lua_State *l, const callback_key key)
 {
     if (lua_toboolean(l, 2))
     {
@@ -292,8 +272,7 @@ void LuaCallbacks::register_or_unregister_function(lua_State* l, const callback_
     }
     else
     {
-        if (lua_gettop(l) == 2)
-            lua_pop(l, 1);
+        if (lua_gettop(l) == 2) lua_pop(l, 1);
         register_function(l, key);
     }
 }

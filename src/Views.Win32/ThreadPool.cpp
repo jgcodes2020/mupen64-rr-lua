@@ -12,14 +12,14 @@ static BS::thread_pool pool(4);
 static std::unordered_set<size_t> pending_keys{};
 static std::mutex mtx{};
 
-void ThreadPool::submit_task(const std::function<void()>& func, const size_t key)
+void ThreadPool::submit_task(const std::function<void()> &func, const size_t key)
 {
     const auto thunk = [=] {
         try
         {
             func();
         }
-        catch (const std::exception& e)
+        catch (const std::exception &e)
         {
             g_view_logger->critical("[ThreadPool] Unknown exception in task: {}", e.what());
             RaiseException(0xDEADBEEF, EXCEPTION_NONCONTINUABLE, 0, nullptr);

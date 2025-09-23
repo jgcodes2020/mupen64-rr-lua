@@ -6,7 +6,6 @@
 
 #pragma once
 
-
 /**
  * A presenter is responsible for the following:
  *
@@ -18,8 +17,9 @@
  *
  *	This class is not thread-safe.
  */
-class Presenter {
-public:
+class Presenter
+{
+  public:
     /**
      * Destroys the presenter and cleans up its resources
      */
@@ -27,15 +27,15 @@ public:
 
     /**
      * \brief Initializes the presenter
-     * \param hwnd The window associated with the presenter. The window must be a child window and have the WS_EX_LAYERED style.
-     * \return Whether the operation succeeded
+     * \param hwnd The window associated with the presenter. The window must be a child window and have the
+     * WS_EX_LAYERED style. \return Whether the operation succeeded
      */
     virtual bool init(HWND hwnd) = 0;
 
     /**
      * Gets the presenter's DC
      */
-    virtual ID2D1RenderTarget* dc() const = 0;
+    virtual ID2D1RenderTarget *dc() const = 0;
 
     /**
      * Gets the backing texture size
@@ -47,10 +47,7 @@ public:
      * \param color The color to adjust
      * \return The nearest clear color which fits the presenter
      */
-    virtual D2D1::ColorF adjust_clear_color(const D2D1::ColorF color) const
-    {
-        return color;
-    }
+    virtual D2D1::ColorF adjust_clear_color(const D2D1::ColorF color) const { return color; }
 
     /**
      * Begins graphics presentation. Called before any painting happens.

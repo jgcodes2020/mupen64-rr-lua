@@ -8,34 +8,31 @@
 #include <Config.h>
 #include <components/FilePicker.h>
 
-#define FAILSAFE(operation) \
-    if (FAILED(operation))  \
-    goto cleanUp
+#define FAILSAFE(operation)                                                                                            \
+    if (FAILED(operation)) goto cleanUp
 
-static std::wstring fix_filter(const std::wstring& filter)
+static std::wstring fix_filter(const std::wstring &filter)
 {
     const std::wstring description = L"Allowed Files (" + filter + L")";
     std::wstring result = description + L'\0' + filter + L'\0';
     return result;
 }
 
-static std::wstring get_default_extension(const std::wstring& filter)
+static std::wstring get_default_extension(const std::wstring &filter)
 {
     const auto wildcards = MiscHelpers::split_wstring(filter, L";");
 
-    if (wildcards.empty())
-        return L"";
+    if (wildcards.empty()) return L"";
 
-    const auto& first_wildcard = wildcards[0];
+    const auto &first_wildcard = wildcards[0];
 
     return first_wildcard.substr(2);
 }
 
-std::filesystem::path FilePicker::show_open_dialog(const std::wstring& id, HWND hwnd, const std::wstring& filter)
+std::filesystem::path FilePicker::show_open_dialog(const std::wstring &id, HWND hwnd, const std::wstring &filter)
 {
-    std::filesystem::path restored_path = g_config.persistent_folder_paths.contains(id)
-    ? g_config.persistent_folder_paths[id]
-    : get_desktop_path();
+    std::filesystem::path restored_path =
+        g_config.persistent_folder_paths.contains(id) ? g_config.persistent_folder_paths[id] : get_desktop_path();
 
     g_view_logger->info(L"file dialog {}: {}\n", id, restored_path.wstring());
 
@@ -61,11 +58,10 @@ std::filesystem::path FilePicker::show_open_dialog(const std::wstring& id, HWND 
     return {};
 }
 
-std::filesystem::path FilePicker::show_save_dialog(const std::wstring& id, HWND hwnd, const std::wstring& filter)
+std::filesystem::path FilePicker::show_save_dialog(const std::wstring &id, HWND hwnd, const std::wstring &filter)
 {
-    std::filesystem::path restored_path = g_config.persistent_folder_paths.contains(id)
-    ? g_config.persistent_folder_paths[id]
-    : get_desktop_path();
+    std::filesystem::path restored_path =
+        g_config.persistent_folder_paths.contains(id) ? g_config.persistent_folder_paths[id] : get_desktop_path();
 
     g_view_logger->info(L"file dialog {}: {}\n", id, restored_path.wstring());
 
@@ -93,13 +89,14 @@ std::filesystem::path FilePicker::show_save_dialog(const std::wstring& id, HWND 
     return {};
 }
 
-std::filesystem::path FilePicker::show_folder_dialog(const std::wstring& id, HWND hwnd)
+std::filesystem::path FilePicker::show_folder_dialog(const std::wstring &id, HWND hwnd)
 {
-    std::filesystem::path restored_path = g_config.persistent_folder_paths.contains(id) ? g_config.persistent_folder_paths[id] : get_desktop_path();
+    std::filesystem::path restored_path =
+        g_config.persistent_folder_paths.contains(id) ? g_config.persistent_folder_paths[id] : get_desktop_path();
 
     COMInitializer com_initializer;
     std::wstring final_path;
-    IFileDialog* pfd;
+    IFileDialog *pfd;
 
     g_view_logger->info(L"folder dialog {}: {}\n", id, restored_path.wstring());
 
@@ -110,7 +107,7 @@ std::filesystem::path FilePicker::show_folder_dialog(const std::wstring& id, HWN
         HRESULT hresult = SHParseDisplayName(restored_path.c_str(), nullptr, &pidl, SFGAO_FOLDER, nullptr);
         if (SUCCEEDED(hresult))
         {
-            IShellItem* psi;
+            IShellItem *psi;
             hresult = SHCreateShellItem(nullptr, nullptr, pidl, &psi);
             if (SUCCEEDED(hresult))
             {
@@ -127,12 +124,11 @@ std::filesystem::path FilePicker::show_folder_dialog(const std::wstring& id, HWN
 
         if (SUCCEEDED(pfd->Show(hwnd)))
         {
-            IShellItem* psi;
+            IShellItem *psi;
             if (SUCCEEDED(pfd->GetResult(&psi)))
             {
-                WCHAR* tmp;
-                if (SUCCEEDED(
-                    psi->GetDisplayName(SIGDN_DESKTOPABSOLUTEPARSING, &tmp)))
+                WCHAR *tmp;
+                if (SUCCEEDED(psi->GetDisplayName(SIGDN_DESKTOPABSOLUTEPARSING, &tmp)))
                 {
                     final_path = tmp;
                 }

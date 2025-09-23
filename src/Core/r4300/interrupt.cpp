@@ -17,13 +17,14 @@
 #include <r4300/timers.h>
 #include <memory/pif.h>
 
-typedef struct _interrupt_queue {
+typedef struct _interrupt_queue
+{
     int32_t type;
     uint32_t count;
-    struct _interrupt_queue* next;
+    struct _interrupt_queue *next;
 } interrupt_queue;
 
-static interrupt_queue* q = NULL;
+static interrupt_queue *q = NULL;
 
 interrupt_queue g_pool[128]{};
 uint8_t g_pool_used[sizeof(g_pool)]{};
@@ -32,7 +33,7 @@ size_t g_known_unused_index = SIZE_MAX;
 /**
  * Allocates an item in the interrupt pool.
  */
-interrupt_queue* pool_alloc()
+interrupt_queue *pool_alloc()
 {
     size_t unused_index = SIZE_MAX;
 
@@ -63,9 +64,9 @@ interrupt_queue* pool_alloc()
 /**
  * Frees an interrupt from the pool, allowing it to be reused.
  */
-void pool_free(const interrupt_queue* ptr)
+void pool_free(const interrupt_queue *ptr)
 {
-    const auto index_in_pool = ptr - (interrupt_queue*)&g_pool;
+    const auto index_in_pool = ptr - (interrupt_queue *)&g_pool;
 
 #ifdef _DEBUG
     size_t index = SIZE_MAX;
@@ -99,7 +100,7 @@ void clear_queue()
 {
     while (q != NULL)
     {
-        interrupt_queue* aux = q->next;
+        interrupt_queue *aux = q->next;
         q = aux;
     }
     pool_clear();
@@ -107,7 +108,7 @@ void clear_queue()
 
 void print_queue()
 {
-    interrupt_queue* aux;
+    interrupt_queue *aux;
     g_core->log_info(std::format(L"------------------ {:#06x}", core_Count));
     aux = q;
     while (aux != NULL)
@@ -206,17 +207,15 @@ void add_interrupt_event(int32_t type, uint32_t delay)
     uint32_t count = core_Count + delay /**2*/;
     int32_t special = 0;
 
-    if (type == SPECIAL_INT /*|| type == COMPARE_INT*/)
-        special = 1;
-    if (core_Count > 0x80000000)
-        SPECIAL_done = 0;
+    if (type == SPECIAL_INT /*|| type == COMPARE_INT*/) special = 1;
+    if (core_Count > 0x80000000) SPECIAL_done = 0;
 
     if (get_event(type))
     {
         g_core->log_info(std::format(L"two events of type {:#06x} in queue", type));
         print_queue();
     }
-    interrupt_queue* aux = q;
+    interrupt_queue *aux = q;
 
     // if (type == PI_INT)
     //{
@@ -247,8 +246,7 @@ void add_interrupt_event(int32_t type, uint32_t delay)
         return;
     }
 
-    while (aux->next != NULL && (!before_event(count, aux->next->count, aux->next->type) || special))
-        aux = aux->next;
+    while (aux->next != NULL && (!before_event(count, aux->next->count, aux->next->type) || special)) aux = aux->next;
 
     if (aux->next == NULL)
     {
@@ -260,10 +258,9 @@ void add_interrupt_event(int32_t type, uint32_t delay)
     }
     else
     {
-        interrupt_queue* aux2;
+        interrupt_queue *aux2;
         if (type != SPECIAL_INT)
-            while (aux->next != NULL && aux->next->count == count)
-                aux = aux->next;
+            while (aux->next != NULL && aux->next->count == count) aux = aux->next;
         aux2 = aux->next;
         aux->next = pool_alloc();
         aux = aux->next;
@@ -291,9 +288,8 @@ void add_interrupt_event_count(int32_t type, uint32_t count)
 
 void remove_interrupt_event()
 {
-    interrupt_queue* aux = q->next;
-    if (q->type == SPECIAL_INT)
-        SPECIAL_done = 1;
+    interrupt_queue *aux = q->next;
+    if (q->type == SPECIAL_INT) SPECIAL_done = 1;
     pool_free(q);
     q = aux;
     if (q != NULL && (q->count > core_Count || (core_Count - q->count) < 0x80000000))
@@ -309,15 +305,11 @@ void remove_interrupt_event()
 /// <returns></returns>
 uint32_t get_event(int32_t type)
 {
-    interrupt_queue* aux = q;
-    if (q == NULL)
-        return 0;
-    if (q->type == type)
-        return q->count;
-    while (aux->next != NULL && aux->next->type != type)
-        aux = aux->next;
-    if (aux->next != NULL)
-        return aux->next->count;
+    interrupt_queue *aux = q;
+    if (q == NULL) return 0;
+    if (q->type == type) return q->count;
+    while (aux->next != NULL && aux->next->type != type) aux = aux->next;
+    if (aux->next != NULL) return aux->next->count;
     return 0;
 }
 
@@ -327,9 +319,8 @@ uint32_t get_event(int32_t type)
 /// <param name="type">interrupt type to find</param>
 void remove_event(int32_t type)
 {
-    interrupt_queue* aux = q;
-    if (q == NULL)
-        return;
+    interrupt_queue *aux = q;
+    if (q == NULL) return;
     if (q->type == type)
     {
         aux = aux->next;
@@ -337,11 +328,10 @@ void remove_event(int32_t type)
         q = aux;
         return;
     }
-    while (aux->next != NULL && aux->next->type != type)
-        aux = aux->next;
+    while (aux->next != NULL && aux->next->type != type) aux = aux->next;
     if (aux->next != NULL) // it's a type int32_t
     {
-        interrupt_queue* aux2 = aux->next->next;
+        interrupt_queue *aux2 = aux->next->next;
         pool_free(aux->next);
         aux->next = aux2;
     }
@@ -349,7 +339,7 @@ void remove_event(int32_t type)
 
 void translate_event_queue(uint32_t base)
 {
-    interrupt_queue* aux;
+    interrupt_queue *aux;
     remove_event(COMPARE_INT);
     remove_event(SPECIAL_INT);
     aux = q;
@@ -362,7 +352,7 @@ void translate_event_queue(uint32_t base)
     add_interrupt_event_count(SPECIAL_INT, 0);
 }
 
-int32_t save_eventqueue_infos(char* buf)
+int32_t save_eventqueue_infos(char *buf)
 {
 #ifdef _DEBUG
     if (get_event(SI_INT))
@@ -371,10 +361,10 @@ int32_t save_eventqueue_infos(char* buf)
         g_core->log_info(L"SI_INT not found");
 #endif
     int32_t len = 0;
-    interrupt_queue* aux = q;
+    interrupt_queue *aux = q;
     if (q == NULL)
     {
-        *((uint32_t*)&buf[0]) = 0xFFFFFFFF;
+        *((uint32_t *)&buf[0]) = 0xFFFFFFFF;
         return 4;
     }
     while (aux != NULL)
@@ -384,18 +374,18 @@ int32_t save_eventqueue_infos(char* buf)
         len += 8;
         aux = aux->next;
     }
-    *((uint32_t*)&buf[len]) = 0xFFFFFFFF;
+    *((uint32_t *)&buf[len]) = 0xFFFFFFFF;
     return len + 4;
 }
 
-void load_eventqueue_infos(char* buf)
+void load_eventqueue_infos(char *buf)
 {
     int32_t len = 0;
     clear_queue();
-    while (*((uint32_t*)&buf[len]) != 0xFFFFFFFF)
+    while (*((uint32_t *)&buf[len]) != 0xFFFFFFFF)
     {
-        int32_t type = *((uint32_t*)&buf[len]);
-        uint32_t count = *((uint32_t*)&buf[len + 4]);
+        int32_t type = *((uint32_t *)&buf[len]);
+        uint32_t count = *((uint32_t *)&buf[len + 4]);
         add_interrupt_event_count(type, count);
         len += 8;
     }
@@ -422,8 +412,7 @@ void check_interrupt()
         core_Cause = (core_Cause | 0x400) & 0xFFFFFF83; // 0x400 is CAUSE_IP3 (rcp interrupt pending)
     else
         core_Cause &= ~0x400;
-    if ((core_Status & 7) != 1)
-        return;
+    if ((core_Status & 7) != 1) return;
     // if any of the interrupts is pending, add a check interrupt
     // (which does nothing itself but makes cpu jump to general exception vector)
     if (core_Status & core_Cause & 0xFF00)
@@ -437,7 +426,7 @@ void check_interrupt()
         }
         else
         {
-            interrupt_queue* aux = pool_alloc();
+            interrupt_queue *aux = pool_alloc();
             aux->next = q;
             aux->count = core_Count;
             aux->type = CHECK_INT;
@@ -446,7 +435,6 @@ void check_interrupt()
         next_interrupt = core_Count;
     }
 }
-
 
 void gen_interrupt()
 {
@@ -480,51 +468,50 @@ void gen_interrupt()
     switch (q->type)
     {
     case SPECIAL_INT:
-        if (core_Count > 0x10000000)
-            return;
+        if (core_Count > 0x10000000) return;
         remove_interrupt_event();
         add_interrupt_event_count(SPECIAL_INT, 0);
         return;
-    case VI_INT:
+    case VI_INT: {
+        lag_count++;
+
+        // NOTE: It's ok to not update screen when lagging, doesn't cause any obvious issues
+        auto skip = (g_core->cfg->skip_rendering_lag && lag_count > 1) || g_vr_frame_skipped;
+        auto update = g_core->cfg->render_throttling ? (screen_invalidated ? !skip : false) : true;
+
+        // NOTE: When frame advancing, screen_invalidated has a higher change of being false despite the fact it should
+        // be true The update-limiting logic doesn't apply in frameadvance because there are no high-frequency updates
+        if (update || frame_advance_outstanding)
         {
-            lag_count++;
-
-            // NOTE: It's ok to not update screen when lagging, doesn't cause any obvious issues
-            auto skip = (g_core->cfg->skip_rendering_lag && lag_count > 1) || g_vr_frame_skipped;
-            auto update = g_core->cfg->render_throttling ? (screen_invalidated ? !skip : false) : true;
-
-            // NOTE: When frame advancing, screen_invalidated has a higher change of being false despite the fact it should be true
-            // The update-limiting logic doesn't apply in frameadvance because there are no high-frequency updates
-            if (update || frame_advance_outstanding)
-            {
-                g_core->update_screen();
-                screen_invalidated = false;
-            }
-
-            g_core->callbacks.vi();
-
-            vcr_on_vi();
-
-            timer_new_vi();
-
-            if (vi_register.vi_v_sync == 0)
-                vi_register.vi_delay = 500000;
-            else
-                vi_register.vi_delay = ((vi_register.vi_v_sync + 1) * (1500 * g_core->cfg->counter_factor));
-            // this is the place
-            next_vi += vi_register.vi_delay;
-            if (vi_register.vi_status & 0x40)
-                vi_field = 1 - vi_field;
-            else
-                vi_field = 0;
-
-            remove_interrupt_event();
-            add_interrupt_event_count(VI_INT, next_vi);
-            //++frame_count;
-            // total_vi += std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - starttime).count();
-            MI_register.mi_intr_reg |= 0x08;
-            break;
+            g_core->update_screen();
+            screen_invalidated = false;
         }
+
+        g_core->callbacks.vi();
+
+        vcr_on_vi();
+
+        timer_new_vi();
+
+        if (vi_register.vi_v_sync == 0)
+            vi_register.vi_delay = 500000;
+        else
+            vi_register.vi_delay = ((vi_register.vi_v_sync + 1) * (1500 * g_core->cfg->counter_factor));
+        // this is the place
+        next_vi += vi_register.vi_delay;
+        if (vi_register.vi_status & 0x40)
+            vi_field = 1 - vi_field;
+        else
+            vi_field = 0;
+
+        remove_interrupt_event();
+        add_interrupt_event_count(VI_INT, next_vi);
+        //++frame_count;
+        // total_vi += std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() -
+        // starttime).count();
+        MI_register.mi_intr_reg |= 0x08;
+        break;
+    }
     case COMPARE_INT: // game can set Compare register to some value, and make a timer like that
         // g_core->log_info(L"COMPARE, count: {:#06x}", q->count);
         remove_interrupt_event();
@@ -591,8 +578,7 @@ void gen_interrupt()
         sp_register.broke = 1;
         sp_register.halt = 1;
 
-        if (!sp_register.intr_break)
-            return;
+        if (!sp_register.intr_break) return;
         MI_register.mi_intr_reg |= 0x01;
         break;
 
@@ -610,20 +596,17 @@ void gen_interrupt()
         break;
     }
 
-    if (type == COMPARE_INT)
-        core_Cause = (core_Cause | 0x8000) & 0xFFFFFF83; // COMPARE interrupt to be pending
+    if (type == COMPARE_INT) core_Cause = (core_Cause | 0x8000) & 0xFFFFFF83; // COMPARE interrupt to be pending
     if (type != CHECK_INT)
     {
         if (MI_register.mi_intr_reg & MI_register.mi_intr_mask_reg)
             core_Cause = (core_Cause | 0x400) & 0xFFFFFF83; // RCP interrupt is pending
         else
             return;
-        if ((core_Status & 7) != 1)
-            return; // if interrupts shouldn't be handled, return
+        if ((core_Status & 7) != 1) return; // if interrupts shouldn't be handled, return
         if (!(core_Status & core_Cause & 0xFF00))
             return; // check if there is any pending interrupt that isn't masked away
     }
-
 
     exception_general();
 }

@@ -12,7 +12,6 @@
 #include <capture/Resampler.h>
 #include <capture/encoders/VFWEncoder.h>
 
-
 std::optional<std::wstring> VFWEncoder::start(Params params)
 {
     if (!m_splitting)
@@ -85,7 +84,8 @@ std::optional<std::wstring> VFWEncoder::start(Params params)
         return L"Failed to make video compressed stream.";
     }
 
-    if (AVIStreamSetFormat(m_compressed_video_stream, 0, &m_info_hdr, m_info_hdr.biSize + m_info_hdr.biClrUsed * sizeof(RGBQUAD)) != AVIERR_OK)
+    if (AVIStreamSetFormat(m_compressed_video_stream, 0, &m_info_hdr,
+                           m_info_hdr.biSize + m_info_hdr.biClrUsed * sizeof(RGBQUAD)) != AVIERR_OK)
     {
         stop_impl();
         return L"Failed to set video stream format.";
@@ -164,9 +164,10 @@ bool VFWEncoder::stop()
     return this->stop_impl(false);
 }
 
-bool VFWEncoder::append_video(uint8_t* image)
+bool VFWEncoder::append_video(uint8_t *image)
 {
-    if (g_config.synchronization_mode != static_cast<int>(EncodingManager::Sync::Audio) && g_config.synchronization_mode != static_cast<int>(EncodingManager::Sync::None))
+    if (g_config.synchronization_mode != static_cast<int>(EncodingManager::Sync::Audio) &&
+        g_config.synchronization_mode != static_cast<int>(EncodingManager::Sync::None))
     {
         return true;
     }
@@ -174,10 +175,11 @@ bool VFWEncoder::append_video(uint8_t* image)
     bool result = true;
 
     // AUDIO SYNC
-    // This type of syncing assumes the audio is authoratative, and drops or duplicates frames to keep the video as close to
-    // it as possible. Some games stop updating the screen entirely at certain points, such as loading zones, which will cause
-    // audio to drift away by default. This method of syncing prevents this, at the cost of the video feed possibly freezing or jumping
-    // (though in practice this rarely happens - usually a loading scene just appears shorter or something).
+    // This type of syncing assumes the audio is authoratative, and drops or duplicates frames to keep the video as
+    // close to it as possible. Some games stop updating the screen entirely at certain points, such as loading zones,
+    // which will cause audio to drift away by default. This method of syncing prevents this, at the cost of the video
+    // feed possibly freezing or jumping (though in practice this rarely happens - usually a loading scene just appears
+    // shorter or something).
 
     int audio_frames = (int)(m_audio_frame - m_video_frame + 0.1);
     // i've seen a few games only do ~0.98 frames of audio for a frame, let's account for that here
@@ -219,17 +221,18 @@ bool VFWEncoder::append_video(uint8_t* image)
     return result;
 }
 
-bool VFWEncoder::append_audio(uint8_t* audio, size_t length, uint8_t bitrate)
+bool VFWEncoder::append_audio(uint8_t *audio, size_t length, uint8_t bitrate)
 {
     const int write_size = m_params.arate * 2;
 
-    if (g_config.synchronization_mode == static_cast<int>(EncodingManager::Sync::Video) || g_config.synchronization_mode == static_cast<int>(EncodingManager::Sync::None))
+    if (g_config.synchronization_mode == static_cast<int>(EncodingManager::Sync::Video) ||
+        g_config.synchronization_mode == static_cast<int>(EncodingManager::Sync::None))
     {
         // VIDEO SYNC
         // This is the original syncing code, which adds silence to the audio track to get it to line up with video.
-        // The N64 appears to have the ability to arbitrarily disable its sound processing facilities and no audio samples
-        // are generated. When this happens, the video track will drift away from the audio. This can happen at load boundaries
-        // in some games, for example.
+        // The N64 appears to have the ability to arbitrarily disable its sound processing facilities and no audio
+        // samples are generated. When this happens, the video track will drift away from the audio. This can happen at
+        // load boundaries in some games, for example.
         //
         // The only new difference here is that the desync flag is checked for being greater than 1.0 instead of 0.
         // This is because the audio and video in mupen tend to always be diverged just a little bit, but stay in sync
@@ -243,17 +246,14 @@ bool VFWEncoder::append_audio(uint8_t* audio, size_t length, uint8_t bitrate)
 
         if (desync > 1.0)
         {
-            g_view_logger->info(
-            "[EncodingManager]: Correcting for A/V desynchronization of %+Lf frames\n",
-            desync);
-            int len3 = (int)(m_params.arate / (long double)g_main_ctx.core_ctx->vr_get_vis_per_second(g_main_ctx.core_ctx->vr_get_rom_header()->Country_code)) * (int)desync;
+            g_view_logger->info("[EncodingManager]: Correcting for A/V desynchronization of %+Lf frames\n", desync);
+            int len3 = (int)(m_params.arate / (long double)g_main_ctx.core_ctx->vr_get_vis_per_second(
+                                                  g_main_ctx.core_ctx->vr_get_rom_header()->Country_code)) *
+                       (int)desync;
             len3 <<= 2;
-            const int empty_size =
-            len3 > write_size ? write_size : len3;
+            const int empty_size = len3 > write_size ? write_size : len3;
 
-            for (int i = 0; i < empty_size; i += 4)
-                *reinterpret_cast<long*>(m_sound_buf_empty + i) =
-                last_sound;
+            for (int i = 0; i < empty_size; i += 4) *reinterpret_cast<long *>(m_sound_buf_empty + i) = last_sound;
 
             while (len3 > write_size)
             {
@@ -264,49 +264,48 @@ bool VFWEncoder::append_audio(uint8_t* audio, size_t length, uint8_t bitrate)
         }
         else if (desync <= -10.0)
         {
-            g_view_logger->info(
-            "[EncodingManager]: Waiting from A/V desynchronization of %+Lf frames\n",
-            desync);
+            g_view_logger->info("[EncodingManager]: Waiting from A/V desynchronization of %+Lf frames\n", desync);
         }
     }
 
     write_sound(audio, length, m_params.arate, write_size, FALSE, bitrate);
-    last_sound = *(reinterpret_cast<long*>(audio + length) - 1);
+    last_sound = *(reinterpret_cast<long *>(audio + length) - 1);
 
     return true;
 }
 
-bool VFWEncoder::write_sound(uint8_t* buf, int len, const int min_write_size, const int max_write_size, const BOOL force, uint8_t bitrate)
+bool VFWEncoder::write_sound(uint8_t *buf, int len, const int min_write_size, const int max_write_size,
+                             const BOOL force, uint8_t bitrate)
 {
-    if ((len <= 0 && !force) || len > max_write_size)
-        return false;
+    if ((len <= 0 && !force) || len > max_write_size) return false;
 
     if (sound_buf_pos + len > min_write_size || force)
     {
         int len2 = Resampler::get_resample_len(RESAMPLED_FREQ, m_params.arate, bitrate, sound_buf_pos);
         if ((len2 % 8) == 0 || len > max_write_size)
         {
-            static short* buf2 = nullptr;
-            len2 = Resampler::resample(&buf2, RESAMPLED_FREQ, reinterpret_cast<short*>(m_sound_buf), m_params.arate, bitrate, sound_buf_pos);
+            static short *buf2 = nullptr;
+            len2 = Resampler::resample(&buf2, RESAMPLED_FREQ, reinterpret_cast<short *>(m_sound_buf), m_params.arate,
+                                       bitrate, sound_buf_pos);
 
             if (len2 > 0)
             {
                 if ((len2 % 4) != 0)
                 {
-                    g_view_logger->info(
-                    "[EncodingManager]: Warning: Possible stereo sound error detected.\n");
-                    fprintf(
-                    stderr,
-                    "[EncodingManager]: Warning: Possible stereo sound error detected.\n");
+                    g_view_logger->info("[EncodingManager]: Warning: Possible stereo sound error detected.\n");
+                    fprintf(stderr, "[EncodingManager]: Warning: Possible stereo sound error detected.\n");
                 }
 
-                const BOOL ok = (0 == AVIStreamWrite(m_sound_stream, m_sample, len2 / m_sound_format.nBlockAlign, buf2, len2, 0, NULL, NULL));
+                const BOOL ok = (0 == AVIStreamWrite(m_sound_stream, m_sample, len2 / m_sound_format.nBlockAlign, buf2,
+                                                     len2, 0, NULL, NULL));
                 m_sample += len2 / m_sound_format.nBlockAlign;
                 m_avi_file_size += len2;
 
                 if (!ok)
                 {
-                    DialogService::show_dialog(L"Audio output failure!\nA call to addAudioData() (AVIStreamWrite) failed.\nPerhaps you ran out of memory?", L"AVI Encoder", fsvc_error);
+                    DialogService::show_dialog(L"Audio output failure!\nA call to addAudioData() (AVIStreamWrite) "
+                                               L"failed.\nPerhaps you ran out of memory?",
+                                               L"AVI Encoder", fsvc_error);
                     return false;
                 }
             }
@@ -327,29 +326,29 @@ bool VFWEncoder::write_sound(uint8_t* buf, int len, const int min_write_size, co
 
 #ifdef _DEBUG
     long double pro = (long double)(sound_buf_pos + len) * 100 / (SOUND_BUF_SIZE * sizeof(char));
-    if (pro > 75)
-        g_view_logger->warn("Audio buffer almost full ({:.0f}%)!", pro);
+    if (pro > 75) g_view_logger->warn("Audio buffer almost full ({:.0f}%)!", pro);
 #endif
 
-    memcpy(m_sound_buf + sound_buf_pos, (char*)buf, len);
+    memcpy(m_sound_buf + sound_buf_pos, (char *)buf, len);
     sound_buf_pos += len;
     m_audio_frame += ((len / 4) / (long double)m_params.arate) *
-    g_main_ctx.core_ctx->vr_get_vis_per_second(g_main_ctx.core_ctx->vr_get_rom_header()->Country_code);
+                     g_main_ctx.core_ctx->vr_get_vis_per_second(g_main_ctx.core_ctx->vr_get_rom_header()->Country_code);
 
     return true;
 }
 
-bool VFWEncoder::append_video_impl(uint8_t* image)
+bool VFWEncoder::append_video_impl(uint8_t *image)
 {
     LONG written_len;
-    BOOL ret = AVIStreamWrite(m_compressed_video_stream, m_frame++, 1, image, m_info_hdr.biSizeImage, AVIIF_KEYFRAME, NULL, &written_len);
+    BOOL ret = AVIStreamWrite(m_compressed_video_stream, m_frame++, 1, image, m_info_hdr.biSizeImage, AVIIF_KEYFRAME,
+                              NULL, &written_len);
     m_avi_file_size += written_len;
     return !ret;
 }
 
 bool VFWEncoder::save_options() const
 {
-    FILE* f = nullptr;
+    FILE *f = nullptr;
     if (fopen_s(&f, "avi.cfg", "wb"))
     {
         g_view_logger->error("[AVIEncoder] {} fopen() failed", __func__);
@@ -380,7 +379,7 @@ bool VFWEncoder::save_options() const
 
 bool VFWEncoder::load_options()
 {
-    FILE* f = nullptr;
+    FILE *f = nullptr;
     if (fopen_s(&f, "avi.cfg", "rb"))
     {
         return false;
@@ -388,15 +387,14 @@ bool VFWEncoder::load_options()
     fseek(f, 0, SEEK_END);
 
     // Too small...
-    if (ftell(f) < sizeof(AVICOMPRESSOPTIONS))
-        goto error;
+    if (ftell(f) < sizeof(AVICOMPRESSOPTIONS)) goto error;
 
     fseek(f, 0, SEEK_SET);
 
     fread(&m_avi_options, sizeof(AVICOMPRESSOPTIONS), 1, f);
 
     {
-        void* params = malloc(m_avi_options.cbParms);
+        void *params = malloc(m_avi_options.cbParms);
         const bool has_params = fread(params, m_avi_options.cbParms, 1, f) == 1;
         if (has_params)
         {

@@ -44,7 +44,7 @@ static void CALL dummy_void()
 {
 }
 
-static void CALL dummy_receive_extended_funcs(core_plugin_extended_funcs*)
+static void CALL dummy_receive_extended_funcs(core_plugin_extended_funcs *)
 {
 }
 
@@ -75,11 +75,11 @@ static void CALL dummy_ai_update(int32_t)
 {
 }
 
-static void CALL dummy_controller_command(int32_t, uint8_t*)
+static void CALL dummy_controller_command(int32_t, uint8_t *)
 {
 }
 
-static void CALL dummy_get_keys(int32_t, core_buttons*)
+static void CALL dummy_get_keys(int32_t, core_buttons *)
 {
 }
 
@@ -87,7 +87,7 @@ static void CALL dummy_set_keys(int32_t, core_buttons)
 {
 }
 
-static void CALL dummy_read_controller(int32_t, uint8_t*)
+static void CALL dummy_read_controller(int32_t, uint8_t *)
 {
 }
 
@@ -99,7 +99,7 @@ static void CALL dummy_key_up(uint32_t, int32_t)
 {
 }
 
-static void CALL dummy_initiate_rsp(core_rsp_info, uint32_t*)
+static void CALL dummy_initiate_rsp(core_rsp_info, uint32_t *)
 {
 }
 
@@ -111,7 +111,7 @@ static void CALL dummy_fb_write(uint32_t, uint32_t)
 {
 }
 
-static void CALL dummy_fb_get_framebuffer_info(void*)
+static void CALL dummy_fb_get_framebuffer_info(void *)
 {
 }
 
@@ -121,23 +121,21 @@ static void CALL dummy_move_screen(int32_t, int32_t)
 
 #pragma endregion
 
-#define FUNC(target, type, fallback, name)                \
-    target = (type)GetProcAddress((HMODULE)handle, name); \
-    if (!target)                                          \
-    target = fallback
+#define FUNC(target, type, fallback, name)                                                                             \
+    target = (type)GetProcAddress((HMODULE)handle, name);                                                              \
+    if (!target) target = fallback
 
 /**
  * \brief Tries to find the free function exported by the CRT in the specified module.
  */
-static void (*get_free_function_in_module(HMODULE module))(void*)
+static void (*get_free_function_in_module(HMODULE module))(void *)
 {
     auto dll_crt_free = (DLLCRTFREE)GetProcAddress(module, "DllCrtFree");
-    if (dll_crt_free)
-        return dll_crt_free;
+    if (dll_crt_free) return dll_crt_free;
 
     ULONG size;
-    auto import_descriptor = (PIMAGE_IMPORT_DESCRIPTOR)
-    ImageDirectoryEntryToDataEx(module, true, IMAGE_DIRECTORY_ENTRY_IMPORT, &size, nullptr);
+    auto import_descriptor = (PIMAGE_IMPORT_DESCRIPTOR)ImageDirectoryEntryToDataEx(
+        module, true, IMAGE_DIRECTORY_ENTRY_IMPORT, &size, nullptr);
     if (import_descriptor != nullptr)
     {
         while (import_descriptor->Characteristics && import_descriptor->Name)
@@ -147,8 +145,7 @@ static void (*get_free_function_in_module(HMODULE module))(void*)
             if (importDllHandle != nullptr)
             {
                 dll_crt_free = (DLLCRTFREE)GetProcAddress(importDllHandle, "free");
-                if (dll_crt_free != nullptr)
-                    return dll_crt_free;
+                if (dll_crt_free != nullptr) return dll_crt_free;
             }
 
             import_descriptor++;
@@ -178,21 +175,23 @@ void load_gfx(HMODULE handle)
     FUNC(g_main_ctx.core.plugin_funcs.video_vi_width_changed, VIWIDTHCHANGED, dummy_void, "ViWidthChanged");
     FUNC(g_main_ctx.core.plugin_funcs.video_move_screen, MOVESCREEN, dummy_move_screen, "MoveScreen");
     FUNC(g_main_ctx.core.plugin_funcs.video_capture_screen, CAPTURESCREEN, nullptr, "CaptureScreen");
-    FUNC(g_main_ctx.core.plugin_funcs.video_read_screen, READSCREEN, (READSCREEN)GetProcAddress(handle, "ReadScreen2"), "ReadScreen");
+    FUNC(g_main_ctx.core.plugin_funcs.video_read_screen, READSCREEN, (READSCREEN)GetProcAddress(handle, "ReadScreen2"),
+         "ReadScreen");
     FUNC(g_main_ctx.core.plugin_funcs.video_get_video_size, GETVIDEOSIZE, nullptr, "mge_get_video_size");
     FUNC(g_main_ctx.core.plugin_funcs.video_read_video, READVIDEO, nullptr, "mge_read_video");
     FUNC(g_main_ctx.core.plugin_funcs.video_fb_read, FBREAD, dummy_fb_read, "FBRead");
     FUNC(g_main_ctx.core.plugin_funcs.video_fb_write, FBWRITE, dummy_fb_write, "FBWrite");
-    FUNC(g_main_ctx.core.plugin_funcs.video_fb_get_frame_buffer_info, FBGETFRAMEBUFFERINFO, dummy_fb_get_framebuffer_info, "FBGetFrameBufferInfo");
+    FUNC(g_main_ctx.core.plugin_funcs.video_fb_get_frame_buffer_info, FBGETFRAMEBUFFERINFO,
+         dummy_fb_get_framebuffer_info, "FBGetFrameBufferInfo");
     g_main_ctx.core.plugin_funcs.video_dll_crt_free = get_free_function_in_module(handle);
 
     gfx_info.main_hwnd = g_main_ctx.hwnd;
     gfx_info.statusbar_hwnd = g_config.is_statusbar_enabled ? Statusbar::hwnd() : nullptr;
     gfx_info.byteswapped = 1;
     gfx_info.rom = g_main_ctx.core_ctx->rom;
-    gfx_info.rdram = (uint8_t*)g_main_ctx.core_ctx->rdram;
-    gfx_info.dmem = (uint8_t*)g_main_ctx.core_ctx->SP_DMEM;
-    gfx_info.imem = (uint8_t*)g_main_ctx.core_ctx->SP_IMEM;
+    gfx_info.rdram = (uint8_t *)g_main_ctx.core_ctx->rdram;
+    gfx_info.dmem = (uint8_t *)g_main_ctx.core_ctx->SP_DMEM;
+    gfx_info.imem = (uint8_t *)g_main_ctx.core_ctx->SP_IMEM;
     gfx_info.mi_intr_reg = &g_main_ctx.core_ctx->MI_register->mi_intr_reg;
     gfx_info.dpc_start_reg = &g_main_ctx.core_ctx->dpc_register->dpc_start;
     gfx_info.dpc_end_reg = &g_main_ctx.core_ctx->dpc_register->dpc_end;
@@ -231,7 +230,8 @@ void load_input(uint16_t version, HMODULE handle)
     FUNC(receive_extended_funcs, RECEIVEEXTENDEDFUNCS, dummy_receive_extended_funcs, "ReceiveExtendedFuncs");
 
     FUNC(g_main_ctx.core.plugin_funcs.input_close_dll, CLOSEDLL, dummy_void, "CloseDLL");
-    FUNC(g_main_ctx.core.plugin_funcs.input_controller_command, CONTROLLERCOMMAND, dummy_controller_command, "ControllerCommand");
+    FUNC(g_main_ctx.core.plugin_funcs.input_controller_command, CONTROLLERCOMMAND, dummy_controller_command,
+         "ControllerCommand");
     FUNC(g_main_ctx.core.plugin_funcs.input_get_keys, GETKEYS, dummy_get_keys, "GetKeys");
     FUNC(g_main_ctx.core.plugin_funcs.input_set_keys, SETKEYS, dummy_set_keys, "SetKeys");
     if (version == 0x0101)
@@ -253,7 +253,7 @@ void load_input(uint16_t version, HMODULE handle)
     control_info.byteswapped = 1;
     control_info.header = g_main_ctx.core_ctx->rom;
     control_info.controllers = g_main_ctx.core.controls;
-    for (auto& controller : g_main_ctx.core.controls)
+    for (auto &controller : g_main_ctx.core.controls)
     {
         controller.Present = 0;
         controller.RawData = 0;
@@ -270,7 +270,6 @@ void load_input(uint16_t version, HMODULE handle)
     }
 }
 
-
 void load_audio(HMODULE handle)
 {
     INITIATEAUDIO initiate_audio{};
@@ -279,7 +278,8 @@ void load_audio(HMODULE handle)
     FUNC(receive_extended_funcs, RECEIVEEXTENDEDFUNCS, dummy_receive_extended_funcs, "ReceiveExtendedFuncs");
 
     FUNC(g_main_ctx.core.plugin_funcs.audio_close_dll_audio, CLOSEDLL, dummy_void, "CloseDLL");
-    FUNC(g_main_ctx.core.plugin_funcs.audio_ai_dacrate_changed, AIDACRATECHANGED, dummy_ai_dacrate_changed, "AiDacrateChanged");
+    FUNC(g_main_ctx.core.plugin_funcs.audio_ai_dacrate_changed, AIDACRATECHANGED, dummy_ai_dacrate_changed,
+         "AiDacrateChanged");
     FUNC(g_main_ctx.core.plugin_funcs.audio_ai_len_changed, AILENCHANGED, dummy_void, "AiLenChanged");
     FUNC(g_main_ctx.core.plugin_funcs.audio_ai_read_length, AIREADLENGTH, dummy_ai_read_length, "AiReadLength");
     FUNC(initiate_audio, INITIATEAUDIO, dummy_initiate_audio, "InitiateAudio");
@@ -292,9 +292,9 @@ void load_audio(HMODULE handle)
     audio_info.hinst = g_main_ctx.hinst;
     audio_info.byteswapped = 1;
     audio_info.rom = g_main_ctx.core_ctx->rom;
-    audio_info.rdram = (uint8_t*)g_main_ctx.core_ctx->rdram;
-    audio_info.dmem = (uint8_t*)g_main_ctx.core_ctx->SP_DMEM;
-    audio_info.imem = (uint8_t*)g_main_ctx.core_ctx->SP_IMEM;
+    audio_info.rdram = (uint8_t *)g_main_ctx.core_ctx->rdram;
+    audio_info.dmem = (uint8_t *)g_main_ctx.core_ctx->SP_DMEM;
+    audio_info.imem = (uint8_t *)g_main_ctx.core_ctx->SP_IMEM;
     audio_info.mi_intr_reg = &dummy_dw;
     audio_info.ai_dram_addr_reg = &g_main_ctx.core_ctx->ai_register->ai_dram_addr;
     audio_info.ai_len_reg = &g_main_ctx.core_ctx->ai_register->ai_len;
@@ -322,9 +322,9 @@ void load_rsp(HMODULE handle)
     FUNC(g_main_ctx.core.plugin_funcs.rsp_rom_closed, ROMCLOSED, dummy_void, "RomClosed");
 
     rsp_info.byteswapped = 1;
-    rsp_info.rdram = (uint8_t*)g_main_ctx.core_ctx->rdram;
-    rsp_info.dmem = (uint8_t*)g_main_ctx.core_ctx->SP_DMEM;
-    rsp_info.imem = (uint8_t*)g_main_ctx.core_ctx->SP_IMEM;
+    rsp_info.rdram = (uint8_t *)g_main_ctx.core_ctx->rdram;
+    rsp_info.dmem = (uint8_t *)g_main_ctx.core_ctx->SP_DMEM;
+    rsp_info.imem = (uint8_t *)g_main_ctx.core_ctx->SP_IMEM;
     rsp_info.mi_intr_reg = &g_main_ctx.core_ctx->MI_register->mi_intr_reg;
     rsp_info.sp_mem_addr_reg = &g_main_ctx.core_ctx->sp_register->sp_mem_addr_reg;
     rsp_info.sp_dram_addr_reg = &g_main_ctx.core_ctx->sp_register->sp_dram_addr_reg;
@@ -352,7 +352,7 @@ void load_rsp(HMODULE handle)
     receive_extended_funcs(&g_main_ctx.core.plugin_funcs.rsp_extended_funcs);
 
     int32_t i = 4;
-    initiate_rsp(rsp_info, (uint32_t*)&i);
+    initiate_rsp(rsp_info, (uint32_t *)&i);
 }
 
 std::pair<std::wstring, std::unique_ptr<Plugin>> Plugin::create(std::filesystem::path path)
@@ -365,15 +365,14 @@ std::pair<std::wstring, std::unique_ptr<Plugin>> Plugin::create(std::filesystem:
         return std::make_pair(std::format(L"LoadLibrary (code {})", last_error), nullptr);
     }
 
-    const auto get_dll_info = (GETDLLINFO)GetProcAddress(
-    module,
-    "GetDllInfo");
+    const auto get_dll_info = (GETDLLINFO)GetProcAddress(module, "GetDllInfo");
 
     if (!get_dll_info)
     {
         if (!FreeLibrary(module))
         {
-            DialogService::show_dialog(std::format(L"Failed to free library {:#06x}.", (unsigned long)module).c_str(), L"Core", fsvc_error);
+            DialogService::show_dialog(std::format(L"Failed to free library {:#06x}.", (unsigned long)module).c_str(),
+                                       L"Core", fsvc_error);
         }
         return std::make_pair(L"GetDllInfo missing", nullptr);
     }
@@ -403,7 +402,8 @@ Plugin::~Plugin()
 {
     if (!FreeLibrary(m_module))
     {
-        DialogService::show_dialog(std::format(L"Failed to free library {:#06x}.", (unsigned long)m_module).c_str(), L"Core", fsvc_error);
+        DialogService::show_dialog(std::format(L"Failed to free library {:#06x}.", (unsigned long)m_module).c_str(),
+                                   L"Core", fsvc_error);
     }
 }
 
@@ -414,7 +414,10 @@ void Plugin::config(const HWND hwnd)
 
         if (!dll_config)
         {
-            DialogService::show_dialog(std::format(L"'{}' has no configuration.", g_main_ctx.io_service.string_to_wstring(this->name())).c_str(), L"Plugin", fsvc_error, hwnd);
+            DialogService::show_dialog(
+                std::format(L"'{}' has no configuration.", g_main_ctx.io_service.string_to_wstring(this->name()))
+                    .c_str(),
+                L"Plugin", fsvc_error, hwnd);
             goto cleanup;
         }
 
@@ -428,82 +431,75 @@ void Plugin::config(const HWND hwnd)
         }
 
         const auto close_dll = (CLOSEDLL)GetProcAddress(m_module, "CloseDLL");
-        if (close_dll)
-            close_dll();
+        if (close_dll) close_dll();
     };
 
     switch (m_type)
     {
-    case plugin_video:
+    case plugin_video: {
+        if (!g_main_ctx.core_ctx->vr_get_launched())
         {
-            if (!g_main_ctx.core_ctx->vr_get_launched())
+            // NOTE: Since olden days, dummy render target hwnd was the statusbar.
+            dummy_gfx_info.main_hwnd = Statusbar::hwnd();
+            dummy_gfx_info.statusbar_hwnd = Statusbar::hwnd();
+
+            const auto initiate_gfx = (INITIATEGFX)GetProcAddress(m_module, "InitiateGFX");
+            if (initiate_gfx && !initiate_gfx(dummy_gfx_info))
             {
-                // NOTE: Since olden days, dummy render target hwnd was the statusbar.
-                dummy_gfx_info.main_hwnd = Statusbar::hwnd();
-                dummy_gfx_info.statusbar_hwnd = Statusbar::hwnd();
-
-                const auto initiate_gfx = (INITIATEGFX)GetProcAddress(m_module, "InitiateGFX");
-                if (initiate_gfx && !initiate_gfx(dummy_gfx_info))
-                {
-                    DialogService::show_dialog(L"Couldn't initialize video plugin.", L"Core", fsvc_information);
-                }
+                DialogService::show_dialog(L"Couldn't initialize video plugin.", L"Core", fsvc_information);
             }
-
-            run_config();
-
-            break;
         }
-    case plugin_audio:
+
+        run_config();
+
+        break;
+    }
+    case plugin_audio: {
+        if (!g_main_ctx.core_ctx->vr_get_launched())
         {
-            if (!g_main_ctx.core_ctx->vr_get_launched())
+            const auto initiate_audio = (INITIATEAUDIO)GetProcAddress(m_module, "InitiateAudio");
+            if (initiate_audio && !initiate_audio(dummy_audio_info))
             {
-                const auto initiate_audio = (INITIATEAUDIO)GetProcAddress(m_module, "InitiateAudio");
-                if (initiate_audio && !initiate_audio(dummy_audio_info))
-                {
-                    DialogService::show_dialog(L"Couldn't initialize audio plugin.", L"Core", fsvc_information);
-                }
+                DialogService::show_dialog(L"Couldn't initialize audio plugin.", L"Core", fsvc_information);
             }
-
-            run_config();
-
-            break;
         }
-    case plugin_input:
+
+        run_config();
+
+        break;
+    }
+    case plugin_input: {
+        if (!g_main_ctx.core_ctx->vr_get_launched())
         {
-            if (!g_main_ctx.core_ctx->vr_get_launched())
+            if (m_version == 0x0101)
             {
-                if (m_version == 0x0101)
-                {
-                    const auto initiate_controllers = (INITIATECONTROLLERS)GetProcAddress(m_module, "InitiateControllers");
-                    if (initiate_controllers)
-                        initiate_controllers(dummy_control_info);
-                }
-                else
-                {
-                    const auto old_initiate_controllers = (OLD_INITIATECONTROLLERS)GetProcAddress(m_module, "InitiateControllers");
-                    if (old_initiate_controllers)
-                        old_initiate_controllers(g_main_ctx.hwnd, g_main_ctx.core.controls);
-                }
+                const auto initiate_controllers = (INITIATECONTROLLERS)GetProcAddress(m_module, "InitiateControllers");
+                if (initiate_controllers) initiate_controllers(dummy_control_info);
             }
-
-            run_config();
-
-            break;
+            else
+            {
+                const auto old_initiate_controllers =
+                    (OLD_INITIATECONTROLLERS)GetProcAddress(m_module, "InitiateControllers");
+                if (old_initiate_controllers) old_initiate_controllers(g_main_ctx.hwnd, g_main_ctx.core.controls);
+            }
         }
-    case plugin_rsp:
+
+        run_config();
+
+        break;
+    }
+    case plugin_rsp: {
+        if (!g_main_ctx.core_ctx->vr_get_launched())
         {
-            if (!g_main_ctx.core_ctx->vr_get_launched())
-            {
-                auto initiateRSP = (INITIATERSP)GetProcAddress(m_module, "InitiateRSP");
-                uint32_t i = 0;
-                if (initiateRSP)
-                    initiateRSP(dummy_rsp_info, &i);
-            }
-
-            run_config();
-
-            break;
+            auto initiateRSP = (INITIATERSP)GetProcAddress(m_module, "InitiateRSP");
+            uint32_t i = 0;
+            if (initiateRSP) initiateRSP(dummy_rsp_info, &i);
         }
+
+        run_config();
+
+        break;
+    }
     default:
         assert(false);
         break;
@@ -513,15 +509,13 @@ void Plugin::config(const HWND hwnd)
 void Plugin::test(const HWND hwnd)
 {
     dll_test = (DLLTEST)GetProcAddress(m_module, "DllTest");
-    if (dll_test)
-        dll_test(hwnd);
+    if (dll_test) dll_test(hwnd);
 }
 
 void Plugin::about(const HWND hwnd)
 {
     dll_about = (DLLABOUT)GetProcAddress(m_module, "DllAbout");
-    if (dll_about)
-        dll_about(hwnd);
+    if (dll_about) dll_about(hwnd);
 }
 
 void Plugin::initiate()
@@ -550,10 +544,10 @@ void setup_dummy_info()
     /////// GFX ///////////////////////////
 
     dummy_gfx_info.byteswapped = 1;
-    dummy_gfx_info.rom = (uint8_t*)dummy_header;
-    dummy_gfx_info.rdram = (uint8_t*)g_main_ctx.core_ctx->rdram;
-    dummy_gfx_info.dmem = (uint8_t*)g_main_ctx.core_ctx->SP_DMEM;
-    dummy_gfx_info.imem = (uint8_t*)g_main_ctx.core_ctx->SP_IMEM;
+    dummy_gfx_info.rom = (uint8_t *)dummy_header;
+    dummy_gfx_info.rdram = (uint8_t *)g_main_ctx.core_ctx->rdram;
+    dummy_gfx_info.dmem = (uint8_t *)g_main_ctx.core_ctx->SP_DMEM;
+    dummy_gfx_info.imem = (uint8_t *)g_main_ctx.core_ctx->SP_IMEM;
     dummy_gfx_info.mi_intr_reg = &g_main_ctx.core_ctx->MI_register->mi_intr_reg;
     dummy_gfx_info.dpc_start_reg = &g_main_ctx.core_ctx->dpc_register->dpc_start;
     dummy_gfx_info.dpc_end_reg = &g_main_ctx.core_ctx->dpc_register->dpc_end;
@@ -583,10 +577,10 @@ void setup_dummy_info()
     dummy_audio_info.main_hwnd = g_main_ctx.hwnd;
     dummy_audio_info.hinst = g_main_ctx.hinst;
     dummy_audio_info.byteswapped = 1;
-    dummy_audio_info.rom = (uint8_t*)dummy_header;
-    dummy_audio_info.rdram = (uint8_t*)g_main_ctx.core_ctx->rdram;
-    dummy_audio_info.dmem = (uint8_t*)g_main_ctx.core_ctx->SP_DMEM;
-    dummy_audio_info.imem = (uint8_t*)g_main_ctx.core_ctx->SP_IMEM;
+    dummy_audio_info.rom = (uint8_t *)dummy_header;
+    dummy_audio_info.rdram = (uint8_t *)g_main_ctx.core_ctx->rdram;
+    dummy_audio_info.dmem = (uint8_t *)g_main_ctx.core_ctx->SP_DMEM;
+    dummy_audio_info.imem = (uint8_t *)g_main_ctx.core_ctx->SP_IMEM;
     dummy_audio_info.mi_intr_reg = &g_main_ctx.core_ctx->MI_register->mi_intr_reg;
     dummy_audio_info.ai_dram_addr_reg = &g_main_ctx.core_ctx->ai_register->ai_dram_addr;
     dummy_audio_info.ai_len_reg = &g_main_ctx.core_ctx->ai_register->ai_len;
@@ -600,7 +594,7 @@ void setup_dummy_info()
     dummy_control_info.main_hwnd = g_main_ctx.hwnd;
     dummy_control_info.hinst = g_main_ctx.hinst;
     dummy_control_info.byteswapped = 1;
-    dummy_control_info.header = (uint8_t*)dummy_header;
+    dummy_control_info.header = (uint8_t *)dummy_header;
     dummy_control_info.controllers = g_main_ctx.core.controls;
     for (i = 0; i < 4; i++)
     {
@@ -611,9 +605,9 @@ void setup_dummy_info()
 
     //////// RSP /////////////////////////////
     dummy_rsp_info.byteswapped = 1;
-    dummy_rsp_info.rdram = (uint8_t*)g_main_ctx.core_ctx->rdram;
-    dummy_rsp_info.dmem = (uint8_t*)g_main_ctx.core_ctx->SP_DMEM;
-    dummy_rsp_info.imem = (uint8_t*)g_main_ctx.core_ctx->SP_IMEM;
+    dummy_rsp_info.rdram = (uint8_t *)g_main_ctx.core_ctx->rdram;
+    dummy_rsp_info.dmem = (uint8_t *)g_main_ctx.core_ctx->SP_DMEM;
+    dummy_rsp_info.imem = (uint8_t *)g_main_ctx.core_ctx->SP_IMEM;
     dummy_rsp_info.mi_intr_reg = &g_main_ctx.core_ctx->MI_register->mi_intr_reg;
     dummy_rsp_info.sp_mem_addr_reg = &g_main_ctx.core_ctx->sp_register->sp_mem_addr_reg;
     dummy_rsp_info.sp_dram_addr_reg = &g_main_ctx.core_ctx->sp_register->sp_dram_addr_reg;
@@ -639,45 +633,37 @@ void setup_dummy_info()
     dummy_rsp_info.show_cfb = g_main_ctx.core.plugin_funcs.video_show_cfb;
 }
 
-t_plugin_discovery_result PluginUtil::discover_plugins(const std::filesystem::path& directory)
+t_plugin_discovery_result PluginUtil::discover_plugins(const std::filesystem::path &directory)
 {
     std::vector<std::unique_ptr<Plugin>> plugins;
     const auto files = g_main_ctx.io_service.get_files_with_extension_in_directory(directory, L"dll");
 
     std::vector<std::pair<std::filesystem::path, std::wstring>> results;
-    for (const auto& file : files)
+    for (const auto &file : files)
     {
         auto [result, plugin] = Plugin::create(file);
 
         results.emplace_back(file, result);
 
-        if (!result.empty())
-            continue;
+        if (!result.empty()) continue;
 
         plugins.emplace_back(std::move(plugin));
     }
 
     return t_plugin_discovery_result{
-    .plugins = std::move(plugins),
-    .results = results,
+        .plugins = std::move(plugins),
+        .results = results,
     };
 }
 
-#define GEN_EXTENDED_FUNCS(logger) core_plugin_extended_funcs{ \
-.size = sizeof(core_plugin_extended_funcs),                    \
-.log_trace = [](const wchar_t* str) {                          \
-    logger->trace(str);                                        \
-},                                                             \
-.log_info = [](const wchar_t* str) {                           \
-    logger->info(str);                                         \
-},                                                             \
-.log_warn = [](const wchar_t* str) {                           \
-    logger->warn(str);                                         \
-},                                                             \
-.log_error = [](const wchar_t* str) {                          \
-    logger->error(str);                                        \
-},                                                             \
-};
+#define GEN_EXTENDED_FUNCS(logger)                                                                                     \
+    core_plugin_extended_funcs{                                                                                        \
+        .size = sizeof(core_plugin_extended_funcs),                                                                    \
+        .log_trace = [](const wchar_t *str) { logger->trace(str); },                                                   \
+        .log_info = [](const wchar_t *str) { logger->info(str); },                                                     \
+        .log_warn = [](const wchar_t *str) { logger->warn(str); },                                                     \
+        .log_error = [](const wchar_t *str) { logger->error(str); },                                                   \
+    };
 
 core_plugin_extended_funcs PluginUtil::video_extended_funcs()
 {

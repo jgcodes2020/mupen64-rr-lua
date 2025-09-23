@@ -8,7 +8,7 @@
 
 #include <include/core_api.h>
 
-extern uint8_t* rom;
+extern uint8_t *rom;
 extern size_t rom_size;
 extern char rom_md5[33];
 extern core_rom_header ROM_HEADER;
@@ -20,8 +20,8 @@ extern core_rom_header ROM_HEADER;
  */
 bool rom_load(std::filesystem::path path);
 
-void rom_byteswap(uint8_t* rom);
+void rom_byteswap(uint8_t *rom);
 
-core_rom_header* rom_get_rom_header();
+core_rom_header *rom_get_rom_header();
 uint32_t rom_get_vis_per_second(uint16_t country_code);
 std::wstring rom_country_code_to_country_name(uint16_t country_code);

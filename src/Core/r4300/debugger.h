@@ -8,12 +8,12 @@
 
 namespace Debugger
 {
-    /**
-     * \brief Notifies the debugger of a processor cycle ending
-     * \param opcode The processor's opcode
-     * \param address The processor's address
-     */
-    void on_late_cycle(uint32_t opcode, uint32_t address);
+/**
+ * \brief Notifies the debugger of a processor cycle ending
+ * \param opcode The processor's opcode
+ * \param address The processor's address
+ */
+void on_late_cycle(uint32_t opcode, uint32_t address);
 } // namespace Debugger
 
 bool dbg_get_resumed();

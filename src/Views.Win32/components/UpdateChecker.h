@@ -11,9 +11,9 @@
  */
 namespace UpdateChecker
 {
-    /**
-     * Checks for updates.
-     * @param manual Whether the update check was initiated via a deliberate user interaction.
-     */
-    void check(bool manual);
+/**
+ * Checks for updates.
+ * @param manual Whether the update check was initiated via a deliberate user interaction.
+ */
+void check(bool manual);
 }; // namespace UpdateChecker

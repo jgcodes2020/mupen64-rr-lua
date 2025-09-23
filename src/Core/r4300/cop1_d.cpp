@@ -13,56 +13,47 @@
 
 void ADD_D()
 {
-    if (check_cop1_unusable())
-        return;
+    if (check_cop1_unusable()) return;
     CHECK_INPUT(*reg_cop1_double[core_cffs]);
     CHECK_INPUT(*reg_cop1_double[core_cfft]);
-    *reg_cop1_double[core_cffd] = *reg_cop1_double[core_cffs] +
-    *reg_cop1_double[core_cfft];
+    *reg_cop1_double[core_cffd] = *reg_cop1_double[core_cffs] + *reg_cop1_double[core_cfft];
     CHECK_OUTPUT(*reg_cop1_double[core_cffd]);
     PC++;
 }
 
 void SUB_D()
 {
-    if (check_cop1_unusable())
-        return;
+    if (check_cop1_unusable()) return;
     CHECK_INPUT(*reg_cop1_double[core_cffs]);
     CHECK_INPUT(*reg_cop1_double[core_cfft]);
-    *reg_cop1_double[core_cffd] = *reg_cop1_double[core_cffs] -
-    *reg_cop1_double[core_cfft];
+    *reg_cop1_double[core_cffd] = *reg_cop1_double[core_cffs] - *reg_cop1_double[core_cfft];
     CHECK_OUTPUT(*reg_cop1_double[core_cffd]);
     PC++;
 }
 
 void MUL_D()
 {
-    if (check_cop1_unusable())
-        return;
+    if (check_cop1_unusable()) return;
     CHECK_INPUT(*reg_cop1_double[core_cffs]);
     CHECK_INPUT(*reg_cop1_double[core_cfft]);
-    *reg_cop1_double[core_cffd] = *reg_cop1_double[core_cffs] *
-    *reg_cop1_double[core_cfft];
+    *reg_cop1_double[core_cffd] = *reg_cop1_double[core_cffs] * *reg_cop1_double[core_cfft];
     CHECK_OUTPUT(*reg_cop1_double[core_cffd]);
     PC++;
 }
 
 void DIV_D()
 {
-    if (check_cop1_unusable())
-        return;
+    if (check_cop1_unusable()) return;
     CHECK_INPUT(*reg_cop1_double[core_cffs]);
     CHECK_INPUT(*reg_cop1_double[core_cfft]);
-    *reg_cop1_double[core_cffd] = *reg_cop1_double[core_cffs] /
-    *reg_cop1_double[core_cfft];
+    *reg_cop1_double[core_cffd] = *reg_cop1_double[core_cffs] / *reg_cop1_double[core_cfft];
     CHECK_OUTPUT(*reg_cop1_double[core_cffd]);
     PC++;
 }
 
 void SQRT_D()
 {
-    if (check_cop1_unusable())
-        return;
+    if (check_cop1_unusable()) return;
     CHECK_INPUT(*reg_cop1_double[core_cffs]);
     *reg_cop1_double[core_cffd] = sqrt(*reg_cop1_double[core_cffs]);
     CHECK_OUTPUT(*reg_cop1_double[core_cffd]);
@@ -71,8 +62,7 @@ void SQRT_D()
 
 void ABS_D()
 {
-    if (check_cop1_unusable())
-        return;
+    if (check_cop1_unusable()) return;
     CHECK_INPUT(*reg_cop1_double[core_cffs]);
     *reg_cop1_double[core_cffd] = fabs(*reg_cop1_double[core_cffs]);
     // ABS cannot fail
@@ -81,8 +71,7 @@ void ABS_D()
 
 void MOV_D()
 {
-    if (check_cop1_unusable())
-        return;
+    if (check_cop1_unusable()) return;
     // MOV is not an arithmetic instruction, no check needed
     *reg_cop1_double[core_cffd] = *reg_cop1_double[core_cffs];
     PC++;
@@ -90,8 +79,7 @@ void MOV_D()
 
 void NEG_D()
 {
-    if (check_cop1_unusable())
-        return;
+    if (check_cop1_unusable()) return;
     CHECK_INPUT(*reg_cop1_double[core_cffs]);
     *reg_cop1_double[core_cffd] = -(*reg_cop1_double[core_cffs]);
     // NEG cannot fail
@@ -100,8 +88,7 @@ void NEG_D()
 
 void ROUND_L_D()
 {
-    if (check_cop1_unusable())
-        return;
+    if (check_cop1_unusable()) return;
     CHECK_INPUT(*reg_cop1_double[core_cffs]);
     set_round_to_nearest();
     clear_x87_exceptions();
@@ -112,8 +99,7 @@ void ROUND_L_D()
 
 void TRUNC_L_D()
 {
-    if (check_cop1_unusable())
-        return;
+    if (check_cop1_unusable()) return;
     CHECK_INPUT(*reg_cop1_double[core_cffs]);
     set_trunc();
     clear_x87_exceptions();
@@ -124,8 +110,7 @@ void TRUNC_L_D()
 
 void CEIL_L_D()
 {
-    if (check_cop1_unusable())
-        return;
+    if (check_cop1_unusable()) return;
     CHECK_INPUT(*reg_cop1_double[core_cffs]);
     set_ceil();
     clear_x87_exceptions();
@@ -136,8 +121,7 @@ void CEIL_L_D()
 
 void FLOOR_L_D()
 {
-    if (check_cop1_unusable())
-        return;
+    if (check_cop1_unusable()) return;
     CHECK_INPUT(*reg_cop1_double[core_cffs]);
     set_floor();
     clear_x87_exceptions();
@@ -148,8 +132,7 @@ void FLOOR_L_D()
 
 void ROUND_W_D()
 {
-    if (check_cop1_unusable())
-        return;
+    if (check_cop1_unusable()) return;
     CHECK_INPUT(*reg_cop1_double[core_cffs]);
     set_round_to_nearest();
     clear_x87_exceptions();
@@ -160,8 +143,7 @@ void ROUND_W_D()
 
 void TRUNC_W_D()
 {
-    if (check_cop1_unusable())
-        return;
+    if (check_cop1_unusable()) return;
     CHECK_INPUT(*reg_cop1_double[core_cffs]);
     set_trunc();
     clear_x87_exceptions();
@@ -172,8 +154,7 @@ void TRUNC_W_D()
 
 void CEIL_W_D()
 {
-    if (check_cop1_unusable())
-        return;
+    if (check_cop1_unusable()) return;
     CHECK_INPUT(*reg_cop1_double[core_cffs]);
     set_ceil();
     clear_x87_exceptions();
@@ -184,8 +165,7 @@ void CEIL_W_D()
 
 void FLOOR_W_D()
 {
-    if (check_cop1_unusable())
-        return;
+    if (check_cop1_unusable()) return;
     CHECK_INPUT(*reg_cop1_double[core_cffs]);
     set_floor();
     clear_x87_exceptions();
@@ -196,8 +176,7 @@ void FLOOR_W_D()
 
 void CVT_S_D()
 {
-    if (check_cop1_unusable())
-        return;
+    if (check_cop1_unusable()) return;
     CHECK_INPUT(*reg_cop1_double[core_cffs]);
     if (g_core->cfg->wii_vc_emulation)
     {
@@ -214,8 +193,7 @@ void CVT_S_D()
 
 void CVT_W_D()
 {
-    if (check_cop1_unusable())
-        return;
+    if (check_cop1_unusable()) return;
     CHECK_INPUT(*reg_cop1_double[core_cffs]);
     clear_x87_exceptions();
     FLOAT_CONVERT_W_D(reg_cop1_double[core_cffs], reg_cop1_simple[core_cffd]);
@@ -224,8 +202,7 @@ void CVT_W_D()
 
 void CVT_L_D()
 {
-    if (check_cop1_unusable())
-        return;
+    if (check_cop1_unusable()) return;
     CHECK_INPUT(*reg_cop1_double[core_cffs]);
     clear_x87_exceptions();
     FLOAT_CONVERT_L_D(reg_cop1_double[core_cffs], reg_cop1_double[core_cffd]);
@@ -234,16 +211,14 @@ void CVT_L_D()
 
 void C_F_D()
 {
-    if (check_cop1_unusable())
-        return;
+    if (check_cop1_unusable()) return;
     FCR31 &= ~0x800000;
     PC++;
 }
 
 void C_UN_D()
 {
-    if (check_cop1_unusable())
-        return;
+    if (check_cop1_unusable()) return;
     if (isnan(*reg_cop1_double[core_cffs]) || isnan(*reg_cop1_double[core_cfft]))
         FCR31 |= 0x800000;
     else
@@ -253,8 +228,7 @@ void C_UN_D()
 
 void C_EQ_D()
 {
-    if (check_cop1_unusable())
-        return;
+    if (check_cop1_unusable()) return;
     if (!isnan(*reg_cop1_double[core_cffs]) && !isnan(*reg_cop1_double[core_cfft]) &&
         *reg_cop1_double[core_cffs] == *reg_cop1_double[core_cfft])
         FCR31 |= 0x800000;
@@ -265,8 +239,7 @@ void C_EQ_D()
 
 void C_UEQ_D()
 {
-    if (check_cop1_unusable())
-        return;
+    if (check_cop1_unusable()) return;
     if (isnan(*reg_cop1_double[core_cffs]) || isnan(*reg_cop1_double[core_cfft]) ||
         *reg_cop1_double[core_cffs] == *reg_cop1_double[core_cfft])
         FCR31 |= 0x800000;
@@ -277,8 +250,7 @@ void C_UEQ_D()
 
 void C_OLT_D()
 {
-    if (check_cop1_unusable())
-        return;
+    if (check_cop1_unusable()) return;
     if (!isnan(*reg_cop1_double[core_cffs]) && !isnan(*reg_cop1_double[core_cfft]) &&
         *reg_cop1_double[core_cffs] < *reg_cop1_double[core_cfft])
         FCR31 |= 0x800000;
@@ -289,8 +261,7 @@ void C_OLT_D()
 
 void C_ULT_D()
 {
-    if (check_cop1_unusable())
-        return;
+    if (check_cop1_unusable()) return;
     if (isnan(*reg_cop1_double[core_cffs]) || isnan(*reg_cop1_double[core_cfft]) ||
         *reg_cop1_double[core_cffs] < *reg_cop1_double[core_cfft])
         FCR31 |= 0x800000;
@@ -301,8 +272,7 @@ void C_ULT_D()
 
 void C_OLE_D()
 {
-    if (check_cop1_unusable())
-        return;
+    if (check_cop1_unusable()) return;
     if (!isnan(*reg_cop1_double[core_cffs]) && !isnan(*reg_cop1_double[core_cfft]) &&
         *reg_cop1_double[core_cffs] <= *reg_cop1_double[core_cfft])
         FCR31 |= 0x800000;
@@ -313,8 +283,7 @@ void C_OLE_D()
 
 void C_ULE_D()
 {
-    if (check_cop1_unusable())
-        return;
+    if (check_cop1_unusable()) return;
     if (isnan(*reg_cop1_double[core_cffs]) || isnan(*reg_cop1_double[core_cfft]) ||
         *reg_cop1_double[core_cffs] <= *reg_cop1_double[core_cfft])
         FCR31 |= 0x800000;
@@ -371,8 +340,7 @@ void C_NGL_D()
 
 void C_LT_D()
 {
-    if (check_cop1_unusable())
-        return;
+    if (check_cop1_unusable()) return;
     if (isnan(*reg_cop1_double[core_cffs]) || isnan(*reg_cop1_double[core_cfft]))
     {
         fail_float_input();
@@ -386,8 +354,7 @@ void C_LT_D()
 
 void C_NGE_D()
 {
-    if (check_cop1_unusable())
-        return;
+    if (check_cop1_unusable()) return;
     if (isnan(*reg_cop1_double[core_cffs]) || isnan(*reg_cop1_double[core_cfft]))
     {
         fail_float_input();
@@ -401,8 +368,7 @@ void C_NGE_D()
 
 void C_LE_D()
 {
-    if (check_cop1_unusable())
-        return;
+    if (check_cop1_unusable()) return;
     if (isnan(*reg_cop1_double[core_cffs]) || isnan(*reg_cop1_double[core_cfft]))
     {
         fail_float_input();
@@ -416,8 +382,7 @@ void C_LE_D()
 
 void C_NGT_D()
 {
-    if (check_cop1_unusable())
-        return;
+    if (check_cop1_unusable()) return;
     if (isnan(*reg_cop1_double[core_cffs]) || isnan(*reg_cop1_double[core_cfft]))
     {
         fail_float_input();

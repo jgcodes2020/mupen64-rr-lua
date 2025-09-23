@@ -12,11 +12,12 @@
 /**
  * \brief A service providing platform-specific functionality.
  */
-class PlatformService {
-public:
+class PlatformService
+{
+  public:
     virtual ~PlatformService() = default;
 
-    virtual std::vector<uint8_t> read_file_buffer(const std::filesystem::path& path)
+    virtual std::vector<uint8_t> read_file_buffer(const std::filesystem::path &path)
     {
         std::ifstream file(path, std::ios::binary | std::ios::ate);
         if (!file)
@@ -28,7 +29,7 @@ public:
         file.seekg(0, std::ios::beg);
 
         std::vector<uint8_t> buffer(size);
-        if (!file.read(reinterpret_cast<char*>(buffer.data()), size))
+        if (!file.read(reinterpret_cast<char *>(buffer.data()), size))
         {
             return {};
         }
@@ -36,7 +37,7 @@ public:
         return buffer;
     }
 
-    virtual bool write_file_buffer(const std::filesystem::path& path, std::span<uint8_t> data)
+    virtual bool write_file_buffer(const std::filesystem::path &path, std::span<uint8_t> data)
     {
         std::ofstream out(path, std::ios::binary);
         if (!out)
@@ -44,16 +45,15 @@ public:
             return false;
         }
 
-        out.write(reinterpret_cast<const char*>(data.data()), data.size());
+        out.write(reinterpret_cast<const char *>(data.data()), data.size());
         return out.good();
     }
 
-    virtual std::wstring string_to_wstring(const std::string& str)
+    virtual std::wstring string_to_wstring(const std::string &str)
     {
 #ifdef _WIN32
         int size_needed = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, nullptr, 0);
-        if (size_needed <= 0)
-            return L"";
+        if (size_needed <= 0) return L"";
 
         std::wstring wstr(size_needed, 0);
         MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, &wstr[0], size_needed);
@@ -62,12 +62,11 @@ public:
 #endif
     }
 
-    virtual std::string wstring_to_string(const std::wstring& wstr)
+    virtual std::string wstring_to_string(const std::wstring &wstr)
     {
 #ifdef _WIN32
         int size_needed = WideCharToMultiByte(CP_UTF8, 0, wstr.c_str(), -1, nullptr, 0, nullptr, nullptr);
-        if (size_needed <= 0)
-            return "";
+        if (size_needed <= 0) return "";
 
         std::string str(size_needed, 0);
         WideCharToMultiByte(CP_UTF8, 0, wstr.c_str(), -1, &str[0], size_needed, nullptr, nullptr);
@@ -76,13 +75,12 @@ public:
 #endif
     }
 
-
-    virtual bool files_are_equal(const std::filesystem::path& first, const std::filesystem::path& second)
+    virtual bool files_are_equal(const std::filesystem::path &first, const std::filesystem::path &second)
     {
         bool different = false;
 
-        FILE* fp1 = nullptr;
-        FILE* fp2 = nullptr;
+        FILE *fp1 = nullptr;
+        FILE *fp2 = nullptr;
         if (_wfopen_s(&fp1, first.wstring().c_str(), L"rb") || _wfopen_s(&fp2, second.wstring().c_str(), L"rb"))
         {
             return false;
@@ -118,8 +116,8 @@ public:
         return !different;
     }
 
-
-    virtual std::vector<std::wstring> get_files_with_extension_in_directory(std::wstring directory, const std::wstring& extension)
+    virtual std::vector<std::wstring> get_files_with_extension_in_directory(std::wstring directory,
+                                                                            const std::wstring &extension)
     {
 #ifdef _WIN32
         if (directory.empty())
@@ -149,8 +147,7 @@ public:
             {
                 paths.emplace_back(directory + find_file_data.cFileName);
             }
-        }
-        while (FindNextFile(h_find, &find_file_data) != 0);
+        } while (FindNextFile(h_find, &find_file_data) != 0);
 
         FindClose(h_find);
 
@@ -161,7 +158,8 @@ public:
     /**
      * \brief Represents information about path segments.
      */
-    struct t_path_segment_info {
+    struct t_path_segment_info
+    {
         std::wstring drive{};
         std::wstring dir{};
         std::wstring filename{};
@@ -174,21 +172,23 @@ public:
      * \param info The structure to fill with path segment information.
      * \return Whether the operation succeeded.
      */
-    virtual bool get_path_segment_info(const std::filesystem::path& path, t_path_segment_info& info)
+    virtual bool get_path_segment_info(const std::filesystem::path &path, t_path_segment_info &info)
     {
         info.drive = std::wstring(_MAX_DRIVE, 0);
         info.dir = std::wstring(_MAX_DIR, 0);
         info.filename = std::wstring(_MAX_FNAME, 0);
         info.ext = std::wstring(_MAX_EXT, 0);
 
-        const auto result = !(bool)_wsplitpath_s(path.wstring().c_str(), info.drive.data(), info.drive.size(), info.dir.data(), info.dir.size(), info.filename.data(), info.filename.size(), info.ext.data(), info.ext.size());
+        const auto result = !(bool)_wsplitpath_s(path.wstring().c_str(), info.drive.data(), info.drive.size(),
+                                                 info.dir.data(), info.dir.size(), info.filename.data(),
+                                                 info.filename.size(), info.ext.data(), info.ext.size());
 
         if (!result)
         {
             return false;
         }
 
-        auto trim_str = [](std::wstring& str) {
+        auto trim_str = [](std::wstring &str) {
             const size_t null_pos = str.find(L'\0');
             if (null_pos != std::wstring::npos && null_pos > 0)
             {

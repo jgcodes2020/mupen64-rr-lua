@@ -11,7 +11,8 @@
 
 int32_t use_flashram;
 
-typedef enum flashram_mode {
+typedef enum flashram_mode
+{
     NOPES_MODE = 0,
     ERASE_MODE,
     WRITE_MODE,
@@ -23,7 +24,7 @@ static int32_t mode;
 static uint64_t status;
 static uint32_t erase_offset, write_pointer;
 
-void save_flashram_infos(char* buf)
+void save_flashram_infos(char *buf)
 {
     memcpy(buf + 0, &use_flashram, 4);
     memcpy(buf + 4, &mode, 4);
@@ -32,7 +33,7 @@ void save_flashram_infos(char* buf)
     memcpy(buf + 20, &write_pointer, 4);
 }
 
-void load_flashram_infos(char* buf)
+void load_flashram_infos(char *buf)
 {
     memcpy(&use_flashram, buf + 0, 4);
     memcpy(&mode, buf + 4, 4);
@@ -41,7 +42,7 @@ void load_flashram_infos(char* buf)
     memcpy(&write_pointer, buf + 20, 4);
 }
 
-bool check_flashram_infos(uint8_t* buf)
+bool check_flashram_infos(uint8_t *buf)
 {
     uint32_t erase_offset, write_pointer;
     memcpy(&erase_offset, buf + 16, 4);
@@ -50,15 +51,13 @@ bool check_flashram_infos(uint8_t* buf)
     for (int32_t i = erase_offset; i < erase_offset + 128; i++)
     {
         const auto mapped_index = i ^ S8;
-        if (mapped_index < 0 || mapped_index >= sizeof(flashram))
-            return false;
+        if (mapped_index < 0 || mapped_index >= sizeof(flashram)) return false;
     }
 
     for (int32_t i = write_pointer; i < write_pointer + 128; i++)
     {
         const auto mapped_index = i ^ S8;
-        if (mapped_index < 0 || mapped_index >= sizeof(rdram))
-            return false;
+        if (mapped_index < 0 || mapped_index >= sizeof(rdram)) return false;
     }
 
     return true;
@@ -98,31 +97,27 @@ void flashram_command(uint32_t command)
         {
         case NOPES_MODE:
             break;
-        case ERASE_MODE:
-            {
-                fseek(g_sram_file, 0, SEEK_SET);
-                fread(flashram, 1, 0x20000, g_sram_file);
+        case ERASE_MODE: {
+            fseek(g_sram_file, 0, SEEK_SET);
+            fread(flashram, 1, 0x20000, g_sram_file);
 
-                for (int32_t i = erase_offset; i < (erase_offset + 128); i++)
-                    flashram[i ^ S8] = 0xff;
+            for (int32_t i = erase_offset; i < (erase_offset + 128); i++) flashram[i ^ S8] = 0xff;
 
-                fseek(g_sram_file, 0, SEEK_SET);
-                fwrite(flashram, 1, 0x20000, g_sram_file);
-            }
-            break;
-        case WRITE_MODE:
-            {
-                fseek(g_sram_file, 0, SEEK_SET);
-                fread(flashram, 1, 0x20000, g_sram_file);
+            fseek(g_sram_file, 0, SEEK_SET);
+            fwrite(flashram, 1, 0x20000, g_sram_file);
+        }
+        break;
+        case WRITE_MODE: {
+            fseek(g_sram_file, 0, SEEK_SET);
+            fread(flashram, 1, 0x20000, g_sram_file);
 
-                for (int32_t i = 0; i < 128; i++)
-                    flashram[(erase_offset + i) ^ S8] =
-                    ((unsigned char*)rdram)[(write_pointer + i) ^ S8];
+            for (int32_t i = 0; i < 128; i++)
+                flashram[(erase_offset + i) ^ S8] = ((unsigned char *)rdram)[(write_pointer + i) ^ S8];
 
-                fseek(g_sram_file, 0, SEEK_SET);
-                fwrite(flashram, 1, 0x20000, g_sram_file);
-            }
-            break;
+            fseek(g_sram_file, 0, SEEK_SET);
+            fwrite(flashram, 1, 0x20000, g_sram_file);
+        }
+        break;
         case STATUS_MODE:
             break;
         default:
@@ -154,16 +149,15 @@ void dma_read_flashram()
         rdram[pi_register.pi_dram_addr_reg / 4] = (uint32_t)(status >> 32);
         rdram[pi_register.pi_dram_addr_reg / 4 + 1] = (uint32_t)(status);
         break;
-    case READ_MODE:
-        {
-            fseek(g_fram_file, 0, SEEK_SET);
-            fread(flashram, 1, 0x20000, g_fram_file);
+    case READ_MODE: {
+        fseek(g_fram_file, 0, SEEK_SET);
+        fread(flashram, 1, 0x20000, g_fram_file);
 
-            for (i = 0; i < (pi_register.pi_wr_len_reg & 0x0FFFFFF) + 1; i++)
-                ((unsigned char*)rdram)[(pi_register.pi_dram_addr_reg + i) ^ S8] =
+        for (i = 0; i < (pi_register.pi_wr_len_reg & 0x0FFFFFF) + 1; i++)
+            ((unsigned char *)rdram)[(pi_register.pi_dram_addr_reg + i) ^ S8] =
                 flashram[(((pi_register.pi_cart_addr_reg - 0x08000000) & 0xFFFF) * 2 + i) ^ S8];
-            break;
-        }
+        break;
+    }
     default:
         critical_stop(std::format(L"Unknown dma_read_flashram {:#06x}", mode));
     }

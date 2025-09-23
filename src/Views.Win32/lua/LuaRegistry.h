@@ -11,8 +11,8 @@
  */
 namespace LuaRegistry
 {
-    /**
-     * \brief Registers the standard Lua functions along with Mupen's functions to the specified state.
-     */
-    void register_functions(lua_State* L);
+/**
+ * \brief Registers the standard Lua functions along with Mupen's functions to the specified state.
+ */
+void register_functions(lua_State *L);
 } // namespace LuaRegistry

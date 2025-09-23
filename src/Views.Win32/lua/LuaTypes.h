@@ -12,9 +12,10 @@
 /**
  * \brief Represents a Lua rendering context.
  */
-struct t_lua_rendering_context {
+struct t_lua_rendering_context
+{
     // The current presenter, or null
-    Presenter* presenter{};
+    Presenter *presenter{};
 
     // The Direct2D overlay control handle
     HWND d2d_overlay_hwnd{};
@@ -37,24 +38,25 @@ struct t_lua_rendering_context {
     D2D1_SIZE_U dc_size{};
 
     // The DirectWrite factory, whose lifetime is the renderer's
-    IDWriteFactory* dw_factory{};
+    IDWriteFactory *dw_factory{};
 
     // The cache for DirectWrite text layouts
-    MicroLRU::Cache<uint64_t, IDWriteTextLayout*> dw_text_layouts{};
+    MicroLRU::Cache<uint64_t, IDWriteTextLayout *> dw_text_layouts{};
 
     // The cache for DirectWrite text size measurements
     MicroLRU::Cache<uint64_t, DWRITE_TEXT_METRICS> dw_text_sizes{};
 
     // The stack of render targets. The top is used for D2D calls.
-    std::stack<ID2D1RenderTarget*> d2d_render_target_stack{};
+    std::stack<ID2D1RenderTarget *> d2d_render_target_stack{};
 
     // Pool of GDI+ images
-    std::unordered_map<size_t, Gdiplus::Bitmap*> image_pool{};
+    std::unordered_map<size_t, Gdiplus::Bitmap *> image_pool{};
 
     // Amount of generated images, just used to generate uids for image pool
     size_t image_pool_index{};
 
-    // Whether to ignore create_renderer() and ensure_d2d_renderer_created() calls. Used to avoid tearing down and re-creating a renderer when stopping a script.
+    // Whether to ignore create_renderer() and ensure_d2d_renderer_created() calls. Used to avoid tearing down and
+    // re-creating a renderer when stopping a script.
     bool ignore_create_renderer{};
 
     HDC loadscreen_dc{};
@@ -70,12 +72,13 @@ struct t_lua_rendering_context {
 /**
  * \brief Describes a Lua instance.
  */
-struct t_lua_environment {
-    using destroying_func = std::function<void(const t_lua_environment* env)>;
-    using print_func = std::function<void(const t_lua_environment* env, const std::wstring& text)>;
+struct t_lua_environment
+{
+    using destroying_func = std::function<void(const t_lua_environment *env)>;
+    using print_func = std::function<void(const t_lua_environment *env, const std::wstring &text)>;
 
     std::filesystem::path path;
-    lua_State* L;
+    lua_State *L;
     t_lua_rendering_context rctx;
     bool started{};
 

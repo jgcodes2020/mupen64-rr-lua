@@ -40,11 +40,11 @@
 #define core_cffs PC->f.cf.fs
 #define core_cffd PC->f.cf.fd
 
-#define rrt32 *((int32_t*)PC->f.r.rt)
-#define rrd32 *((int32_t*)PC->f.r.rd)
-#define rrs32 *((int32_t*)PC->f.r.rs)
-#define irs32 *((int32_t*)PC->f.i.rs)
-#define irt32 *((int32_t*)PC->f.i.rt)
+#define rrt32 *((int32_t *)PC->f.r.rt)
+#define rrd32 *((int32_t *)PC->f.r.rd)
+#define rrs32 *((int32_t *)PC->f.r.rs)
+#define irs32 *((int32_t *)PC->f.i.rs)
+#define irt32 *((int32_t *)PC->f.i.rt)
 
 // cop0 macros
 #define core_Index reg_cop0[0]
@@ -113,10 +113,10 @@ static int32_t convert_double_to_int32(double d)
     return _mm_cvtsd_si32(_mm_set_sd(d));
 }
 
-#define FLOAT_CONVERT_L_S(s, d) (*(int64_t*)(d) = convert_float_to_int64(*(float*)(s)))
-#define FLOAT_CONVERT_W_S(s, d) (*(int32_t*)(d) = convert_float_to_int32(*(float*)(s)))
-#define FLOAT_CONVERT_L_D(s, d) (*(int64_t*)(d) = convert_double_to_int64(*(double*)(s)))
-#define FLOAT_CONVERT_W_D(s, d) (*(int32_t*)(d) = convert_double_to_int32(*(double*)(s)))
+#define FLOAT_CONVERT_L_S(s, d) (*(int64_t *)(d) = convert_float_to_int64(*(float *)(s)))
+#define FLOAT_CONVERT_W_S(s, d) (*(int32_t *)(d) = convert_float_to_int32(*(float *)(s)))
+#define FLOAT_CONVERT_L_D(s, d) (*(int64_t *)(d) = convert_double_to_int64(*(double *)(s)))
+#define FLOAT_CONVERT_W_D(s, d) (*(int32_t *)(d) = convert_double_to_int32(*(double *)(s)))
 
 #else
 
@@ -134,35 +134,36 @@ static int32_t convert_double_to_int32(double d)
 #define read_x87_status_word() __asm { fstsw x87_status_word }
 
 // asm converter that respects rounding modes
-#define FLOAT_CONVERT(input_width, output_width) __asm { \
+#define FLOAT_CONVERT(input_width, output_width)                                                                       \
+    __asm { \
 __asm mov eax, src \
 __asm fld input_width ptr [eax] \
 __asm mov eax, dest \
 __asm fistp output_width ptr [eax] }
 
-#define FLOAT_CONVERT_L_S(s, d)      \
-    {                                \
-        float* src = s;              \
-        int64_t* dest = (int64_t*)d; \
-        FLOAT_CONVERT(dword, qword); \
+#define FLOAT_CONVERT_L_S(s, d)                                                                                        \
+    {                                                                                                                  \
+        float *src = s;                                                                                                \
+        int64_t *dest = (int64_t *)d;                                                                                  \
+        FLOAT_CONVERT(dword, qword);                                                                                   \
     }
-#define FLOAT_CONVERT_W_S(s, d)      \
-    {                                \
-        float* src = s;              \
-        int32_t* dest = (int32_t*)d; \
-        FLOAT_CONVERT(dword, dword); \
+#define FLOAT_CONVERT_W_S(s, d)                                                                                        \
+    {                                                                                                                  \
+        float *src = s;                                                                                                \
+        int32_t *dest = (int32_t *)d;                                                                                  \
+        FLOAT_CONVERT(dword, dword);                                                                                   \
     }
-#define FLOAT_CONVERT_L_D(s, d)      \
-    {                                \
-        double* src = s;             \
-        int64_t* dest = (int64_t*)d; \
-        FLOAT_CONVERT(qword, dword); \
+#define FLOAT_CONVERT_L_D(s, d)                                                                                        \
+    {                                                                                                                  \
+        double *src = s;                                                                                               \
+        int64_t *dest = (int64_t *)d;                                                                                  \
+        FLOAT_CONVERT(qword, dword);                                                                                   \
     }
-#define FLOAT_CONVERT_W_D(s, d)      \
-    {                                \
-        double* src = s;             \
-        int32_t* dest = (int32_t*)d; \
-        FLOAT_CONVERT(qword, qword); \
+#define FLOAT_CONVERT_W_D(s, d)                                                                                        \
+    {                                                                                                                  \
+        double *src = s;                                                                                               \
+        int32_t *dest = (int32_t *)d;                                                                                  \
+        FLOAT_CONVERT(qword, qword);                                                                                   \
     }
 
 #endif

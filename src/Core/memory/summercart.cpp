@@ -10,7 +10,8 @@
 #include <memory/summercart.h>
 #include <r4300/rom.h>
 
-struct vhd {
+struct vhd
+{
     char cookie[8];
     uint32_t feature;
     uint32_t version;
@@ -31,7 +32,7 @@ struct vhd {
     char pad[427];
 };
 
-static void vhd_copy(struct vhd* vhd, FILE* dst, FILE* src, void* buf, uint32_t n)
+static void vhd_copy(struct vhd *vhd, FILE *dst, FILE *src, void *buf, uint32_t n)
 {
     uint64_t len;
     fseek(src, -512, SEEK_END);
@@ -39,8 +40,7 @@ static void vhd_copy(struct vhd* vhd, FILE* dst, FILE* src, void* buf, uint32_t 
     fseek(src, 0, SEEK_SET);
     for (len = std::byteswap(vhd->disk_size) / 512; len > 0; len -= n)
     {
-        if (n > len)
-            n = len;
+        if (n > len) n = len;
         fread(buf, n, 512, src);
         fwrite(buf, n, 512, dst);
     }
@@ -48,44 +48,37 @@ static void vhd_copy(struct vhd* vhd, FILE* dst, FILE* src, void* buf, uint32_t 
 
 struct summercart summercart;
 
-static int32_t sd_error(const wchar_t* text, const wchar_t* caption)
+static int32_t sd_error(const wchar_t *text, const wchar_t *caption)
 {
     g_core->show_dialog(text, caption, fsvc_error);
     return -1;
 }
 
-static int32_t sd_seek(FILE* fp, const wchar_t* caption)
+static int32_t sd_seek(FILE *fp, const wchar_t *caption)
 {
     struct vhd vhd;
     uint32_t sector = summercart.sd_sector;
     uint32_t count = summercart.data1;
-    if (fseek(fp, -512, SEEK_END))
-        return sd_error(L"Seek(1) error.", caption);
-    if (fread(&vhd, 1, sizeof(struct vhd), fp) != sizeof(struct vhd))
-        return sd_error(L"Read error.", caption);
-    if (memcmp(vhd.cookie, "conectix", 8))
-        return sd_error(L"Invalid VHD file.", caption);
-    if (std::byteswap(vhd.type) != 2)
-        return sd_error(L"Invalid VHD type: must be a fixed disk.", caption);
-    if ((int64_t)sector + count > std::byteswap(vhd.disk_size) / 512)
-        return -1;
-    if (fseek(fp, 512 * (int64_t)sector, SEEK_SET))
-        return sd_error(L"Seek(2) error.", caption);
+    if (fseek(fp, -512, SEEK_END)) return sd_error(L"Seek(1) error.", caption);
+    if (fread(&vhd, 1, sizeof(struct vhd), fp) != sizeof(struct vhd)) return sd_error(L"Read error.", caption);
+    if (memcmp(vhd.cookie, "conectix", 8)) return sd_error(L"Invalid VHD file.", caption);
+    if (std::byteswap(vhd.type) != 2) return sd_error(L"Invalid VHD type: must be a fixed disk.", caption);
+    if ((int64_t)sector + count > std::byteswap(vhd.disk_size) / 512) return -1;
+    if (fseek(fp, 512 * (int64_t)sector, SEEK_SET)) return sd_error(L"Seek(2) error.", caption);
     return 0;
 }
 
 static void sd_read()
 {
     uint32_t i;
-    FILE* fp = nullptr;
+    FILE *fp = nullptr;
     const auto path = g_core->get_summercart_path();
-    char* ptr = NULL;
+    char *ptr = NULL;
     uint32_t addr = summercart.data0 & 0x1fffffff;
     uint32_t count = summercart.data1;
     uint32_t size = 512 * count;
 
-    if (count > 131072)
-        return;
+    if (count > 131072) return;
 
     if (_wfopen_s(&fp, path.wstring().c_str(), L"rb"))
     {
@@ -105,13 +98,12 @@ static void sd_read()
             {
                 s ^= summercart.sd_byteswap;
                 addr -= 0x10000000;
-                ptr = (char*)rom;
+                ptr = (char *)rom;
             }
         }
         if (ptr)
         {
-            for (i = 0; i < size; i++)
-                ptr[(addr + i) ^ s] = fgetc(fp);
+            for (i = 0; i < size; i++) ptr[(addr + i) ^ s] = fgetc(fp);
             summercart.status = 0;
         }
         fclose(fp);
@@ -121,15 +113,14 @@ static void sd_read()
 static void sd_write()
 {
     uint32_t i;
-    FILE* fp = nullptr;
+    FILE *fp = nullptr;
     const auto path = g_core->get_summercart_path();
-    char* ptr = NULL;
+    char *ptr = NULL;
     uint32_t addr = summercart.data0 & 0x1fffffff;
     uint32_t count = summercart.data1;
     uint32_t size = 512 * count;
 
-    if (count > 131072)
-        return;
+    if (count > 131072) return;
 
     if (_wfopen_s(&fp, path.wstring().c_str(), L"r+b"))
     {
@@ -147,25 +138,24 @@ static void sd_write()
             if (addr >= 0x10000000 && addr + size <= 0x14000000)
             {
                 addr -= 0x10000000;
-                ptr = (char*)rom;
+                ptr = (char *)rom;
             }
         }
         if (ptr)
         {
-            for (i = 0; i < size; i++)
-                fputc(ptr[(addr + i) ^ S8], fp);
+            for (i = 0; i < size; i++) fputc(ptr[(addr + i) ^ S8], fp);
             summercart.status = 0;
         }
         fclose(fp);
     }
 }
 
-void save_summercart(const std::filesystem::path& path)
+void save_summercart(const std::filesystem::path &path)
 {
     uint32_t n;
-    void* buf;
-    FILE* sdf = nullptr;
-    FILE* stf = nullptr;
+    void *buf;
+    FILE *sdf = nullptr;
+    FILE *stf = nullptr;
     struct vhd vhd;
     const auto smc_path = g_core->get_summercart_path();
 
@@ -191,12 +181,12 @@ void save_summercart(const std::filesystem::path& path)
         sd_error(L"Could not allocate buffer.", L"Save error");
 }
 
-void load_summercart(const std::filesystem::path& path)
+void load_summercart(const std::filesystem::path &path)
 {
     uint32_t n;
-    void* buf;
-    FILE* stf = nullptr;
-    FILE* sdf = nullptr;
+    void *buf;
+    FILE *stf = nullptr;
+    FILE *sdf = nullptr;
     struct vhd vhd;
     const auto smc_path = g_core->get_summercart_path();
     if ((buf = malloc(512 * (n = 128))))
@@ -232,20 +222,16 @@ uint32_t read_summercart(uint32_t address)
     switch (address & 0xFFFC)
     {
     case 0x00:
-        if (summercart.unlock)
-            return summercart.status;
+        if (summercart.unlock) return summercart.status;
         break;
     case 0x04:
-        if (summercart.unlock)
-            return summercart.data0;
+        if (summercart.unlock) return summercart.data0;
         break;
     case 0x08:
-        if (summercart.unlock)
-            return summercart.data1;
+        if (summercart.unlock) return summercart.data1;
         break;
     case 0x0C:
-        if (summercart.unlock)
-            return 0x53437632;
+        if (summercart.unlock) return 0x53437632;
         break;
     }
     return 0;
@@ -329,12 +315,10 @@ void write_summercart(uint32_t address, uint32_t value)
         }
         break;
     case 0x04:
-        if (summercart.unlock)
-            summercart.data0 = value;
+        if (summercart.unlock) summercart.data0 = value;
         break;
     case 0x08:
-        if (summercart.unlock)
-            summercart.data1 = value;
+        if (summercart.unlock) summercart.data1 = value;
         break;
     case 0x10:
         switch (value)

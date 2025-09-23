@@ -23,11 +23,11 @@ std::string g_inspect_lua_code{};
 std::string g_shims_lua_code{};
 std::string g_sandbox_lua_code{};
 
-std::vector<t_lua_environment*> g_lua_environments{};
-std::unordered_map<lua_State*, t_lua_environment*> g_lua_env_map{};
-std::unordered_map<void*, bool> g_valid_callback_tokens{};
+std::vector<t_lua_environment *> g_lua_environments{};
+std::unordered_map<lua_State *, t_lua_environment *> g_lua_env_map{};
+std::unordered_map<void *, bool> g_valid_callback_tokens{};
 
-static int at_panic(lua_State* L)
+static int at_panic(lua_State *L)
 {
     const auto message = g_main_ctx.io_service.string_to_wstring(lua_tostring(L, -1));
 
@@ -40,13 +40,13 @@ static int at_panic(lua_State* L)
 static void rebuild_lua_env_map()
 {
     g_lua_env_map.clear();
-    for (const auto& lua : g_lua_environments)
+    for (const auto &lua : g_lua_environments)
     {
         g_lua_env_map[lua->L] = lua;
     }
 }
 
-uintptr_t* lua_optcallback(lua_State* L, int i)
+uintptr_t *lua_optcallback(lua_State *L, int i)
 {
     if (!lua_isfunction(L, i))
     {
@@ -65,7 +65,7 @@ uintptr_t* lua_optcallback(lua_State* L, int i)
     return key;
 }
 
-uintptr_t* lua_tocallback(lua_State* L, const int i)
+uintptr_t *lua_tocallback(lua_State *L, const int i)
 {
     if (!lua_isfunction(L, i))
     {
@@ -76,7 +76,7 @@ uintptr_t* lua_tocallback(lua_State* L, const int i)
     return lua_optcallback(L, i);
 }
 
-void lua_pushcallback(lua_State* L, uintptr_t* token, bool free)
+void lua_pushcallback(lua_State *L, uintptr_t *token, bool free)
 {
     lua_pushlightuserdata(L, token);
     lua_gettable(L, LUA_REGISTRYINDEX);
@@ -86,7 +86,7 @@ void lua_pushcallback(lua_State* L, uintptr_t* token, bool free)
     }
 }
 
-void lua_freecallback(lua_State* L, uintptr_t* token)
+void lua_freecallback(lua_State *L, uintptr_t *token)
 {
     if (!g_valid_callback_tokens.contains(token))
     {
@@ -101,7 +101,7 @@ void lua_freecallback(lua_State* L, uintptr_t* token)
     delete token;
 }
 
-std::wstring luaL_checkwstring(lua_State* L, int i)
+std::wstring luaL_checkwstring(lua_State *L, int i)
 {
     if (!lua_isstring(L, i))
     {
@@ -117,7 +117,7 @@ std::wstring luaL_checkwstring(lua_State* L, int i)
     return g_main_ctx.io_service.string_to_wstring(str);
 }
 
-std::wstring luaL_optwstring(lua_State* L, int i, const std::wstring& def)
+std::wstring luaL_optwstring(lua_State *L, int i, const std::wstring &def)
 {
     if (lua_isnoneornil(L, i))
     {
@@ -127,14 +127,14 @@ std::wstring luaL_optwstring(lua_State* L, int i, const std::wstring& def)
     return luaL_checkwstring(L, i);
 }
 
-std::wstring lua_pushwstring(lua_State* L, const std::wstring& str)
+std::wstring lua_pushwstring(lua_State *L, const std::wstring &str)
 {
     const auto s = g_main_ctx.io_service.wstring_to_string(str);
     lua_pushstring(L, s.c_str());
     return str;
 }
 
-bool luaL_checkboolean(lua_State* L, int i)
+bool luaL_checkboolean(lua_State *L, int i)
 {
     if (!lua_isboolean(L, i))
     {
@@ -152,7 +152,7 @@ void LuaManager::init()
     g_sandbox_lua_code = load_resource_as_string(IDR_SANDBOX_LUA_FILE, MAKEINTRESOURCE(TEXTFILE));
 }
 
-t_lua_environment* LuaManager::get_environment_for_state(lua_State* lua_state)
+t_lua_environment *LuaManager::get_environment_for_state(lua_State *lua_state)
 {
     if (!g_lua_env_map.contains(lua_state))
     {
@@ -161,7 +161,9 @@ t_lua_environment* LuaManager::get_environment_for_state(lua_State* lua_state)
     return g_lua_env_map[lua_state];
 }
 
-std::expected<t_lua_environment*, std::wstring> LuaManager::create_environment(const std::filesystem::path& path, const t_lua_environment::destroying_func& destroying_callback, const t_lua_environment::print_func& print_callback)
+std::expected<t_lua_environment *, std::wstring> LuaManager::create_environment(
+    const std::filesystem::path &path, const t_lua_environment::destroying_func &destroying_callback,
+    const t_lua_environment::print_func &print_callback)
 {
     runtime_assert(is_on_gui_thread(), L"not on GUI thread");
 
@@ -180,7 +182,7 @@ std::expected<t_lua_environment*, std::wstring> LuaManager::create_environment(c
     return lua;
 }
 
-std::expected<void, std::wstring> LuaManager::start_environment(t_lua_environment* env, const bool trusted)
+std::expected<void, std::wstring> LuaManager::start_environment(t_lua_environment *env, const bool trusted)
 {
     if (env->started)
     {
@@ -222,7 +224,8 @@ std::expected<void, std::wstring> LuaManager::start_environment(t_lua_environmen
         }
     }
 
-    // NOTE: We don't want to reach luaL_dofile if the prelude scripts failed, as that would potentially compromise security (if the sandbox script fails for example).
+    // NOTE: We don't want to reach luaL_dofile if the prelude scripts failed, as that would potentially compromise
+    // security (if the sandbox script fails for example).
     if (luaL_dofile(env->L, env->path.string().c_str()))
     {
         has_error = true;
@@ -248,7 +251,7 @@ fail:
     return {};
 }
 
-void LuaManager::destroy_environment(t_lua_environment* lua)
+void LuaManager::destroy_environment(t_lua_environment *lua)
 {
     runtime_assert(lua && lua->L, L"LuaManager::destroy_environment: Lua environment is already destroyed");
 
@@ -259,7 +262,7 @@ void LuaManager::destroy_environment(t_lua_environment* lua)
     LuaRenderer::pre_destroy_renderer(&lua->rctx);
 
     ActionManager::begin_batch_work();
-    for (const auto& action : lua->registered_actions)
+    for (const auto &action : lua->registered_actions)
     {
         ActionManager::remove(action);
     }
@@ -267,9 +270,7 @@ void LuaManager::destroy_environment(t_lua_environment* lua)
 
     // NOTE: We must do this *after* calling atstop, as the lua environment still has to exist for that.
     // After this point, it's game over and no callbacks will be called anymore.
-    std::erase_if(g_lua_environments, [=](const t_lua_environment* v) {
-        return v == lua;
-    });
+    std::erase_if(g_lua_environments, [=](const t_lua_environment *v) { return v == lua; });
     rebuild_lua_env_map();
 
     lua_close(lua->L);

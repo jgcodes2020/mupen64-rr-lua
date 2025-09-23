@@ -23,12 +23,12 @@ constexpr uint32_t ADDR_MASK = 0x7FFFFF;
 #define write_hword_in_memory() writememh[address >> 16]()
 #define write_dword_in_memory() writememd[address >> 16]()
 extern uint32_t SP_DMEM[0x1000 / 4 * 2];
-extern unsigned char* SP_DMEMb;
-extern uint32_t* SP_IMEM;
+extern unsigned char *SP_DMEMb;
+extern uint32_t *SP_IMEM;
 extern uint32_t PIF_RAM[0x40 / 4];
-extern unsigned char* PIF_RAMb;
+extern unsigned char *PIF_RAMb;
 extern uint32_t rdram[0x800000 / 4];
-extern uint8_t* rdramb;
+extern uint8_t *rdramb;
 extern uint8_t sram[0x8000];
 extern uint8_t flashram[0x20000];
 extern uint8_t eeprom[0x800];
@@ -228,4 +228,4 @@ void update_DPC();
 /**
  * \brief Checks whether the provided register contents are valid.
  */
-bool check_register_validity(core_si_reg* si_reg);
+bool check_register_validity(core_si_reg *si_reg);

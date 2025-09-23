@@ -13,7 +13,7 @@
 
 // https://github.com/mupen64plus/mupen64plus-core/blob/e170c409fb006aa38fd02031b5eefab6886ec125/src/device/r4300/recomp.c#L995
 
-void* malloc_exec(size_t size)
+void *malloc_exec(size_t size)
 {
 #ifdef WIN32
     return VirtualAlloc(NULL, size, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
@@ -22,22 +22,20 @@ void* malloc_exec(size_t size)
 #endif
 }
 
-void* realloc_exec(void* ptr, size_t oldsize, size_t newsize)
+void *realloc_exec(void *ptr, size_t oldsize, size_t newsize)
 {
-    void* block = malloc_exec(newsize);
+    void *block = malloc_exec(newsize);
     if (block != NULL)
     {
         size_t copysize;
-        copysize = (oldsize < newsize)
-        ? oldsize
-        : newsize;
+        copysize = (oldsize < newsize) ? oldsize : newsize;
         memcpy(block, ptr, copysize);
     }
     free_exec(ptr);
     return block;
 }
 
-void free_exec(void* ptr)
+void free_exec(void *ptr)
 {
 #ifdef WIN32
     VirtualFree(ptr, 0, MEM_RELEASE);

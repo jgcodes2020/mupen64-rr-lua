@@ -18,7 +18,8 @@
 #include <components/Dispatcher.h>
 #include <components/LuaDialog.h>
 
-struct t_cli_params {
+struct t_cli_params
+{
     std::filesystem::path rom{};
     std::filesystem::path lua{};
     std::filesystem::path st{};
@@ -29,7 +30,8 @@ struct t_cli_params {
     bool wait_for_debugger{};
 };
 
-struct t_cli_state {
+struct t_cli_state
+{
     bool rom_is_movie{};
     bool is_movie_from_start{};
     size_t dacrate_change_count{};
@@ -39,7 +41,7 @@ struct t_cli_state {
 static t_cli_params cli_params{};
 static t_cli_state cli_state{};
 
-static void log_cli_params(const t_cli_params& params)
+static void log_cli_params(const t_cli_params &params)
 {
     g_view_logger->trace("log_cli_params:");
     g_view_logger->trace("  rom: {}", params.rom.string());
@@ -74,8 +76,7 @@ static void start_rom()
 
 static void play_movie()
 {
-    if (cli_params.m64.empty())
-        return;
+    if (cli_params.m64.empty()) return;
 
     g_config.core.vcr_readonly = true;
     auto result = g_main_ctx.core_ctx->vcr_start_playback(cli_params.m64);
@@ -118,7 +119,8 @@ static void start_capture()
         return;
     }
 
-    EncodingManager::start_capture(cli_params.avi.string().c_str(), static_cast<t_config::EncoderType>(g_config.encoder_type), false);
+    EncodingManager::start_capture(cli_params.avi.string().c_str(),
+                                   static_cast<t_config::EncoderType>(g_config.encoder_type), false);
 }
 
 static void on_movie_playback_stop()
@@ -131,8 +133,7 @@ static void on_movie_playback_stop()
     if (!cli_params.avi.empty())
     {
         EncodingManager::stop_capture([](auto result) {
-            if (!result)
-                return;
+            if (!result) return;
             PostMessage(g_main_ctx.hwnd, WM_CLOSE, 0, 0);
         });
     }
@@ -163,8 +164,7 @@ static void on_core_executing_changed(std::any data)
 {
     auto value = std::any_cast<bool>(data);
 
-    if (!value)
-        return;
+    if (!value) return;
 
     if (!cli_state.first_emu_launched)
     {
@@ -240,8 +240,7 @@ void CLI::init()
         {
             g_view_logger->trace("[CLI] Waiting for debugger to attach...");
             Sleep(100);
-        }
-        while (!IsDebuggerPresent());
+        } while (!IsDebuggerPresent());
     }
 
     // handle "Open With...":
@@ -258,13 +257,16 @@ void CLI::init()
 
     if (!cli_params.benchmark.empty() && cli_params.m64.empty() && cli_params.rom.empty())
     {
-        DialogService::show_dialog(L"Benchmark flag specified without a movie.\nThe benchmark won't be performed.", L"CLI", fsvc_error);
+        DialogService::show_dialog(L"Benchmark flag specified without a movie.\nThe benchmark won't be performed.",
+                                   L"CLI", fsvc_error);
         cli_params.benchmark.clear();
     }
 
     if (!cli_params.benchmark.empty() && !cli_params.avi.empty())
     {
-        DialogService::show_dialog(L"Benchmark flag specified in combination with AVI.\nThe benchmark won't be performed.", L"CLI", fsvc_error);
+        DialogService::show_dialog(
+            L"Benchmark flag specified in combination with AVI.\nThe benchmark won't be performed.", L"CLI",
+            fsvc_error);
         cli_params.benchmark.clear();
     }
 
@@ -276,19 +278,24 @@ void CLI::init()
     // If an st is specified, a movie mustn't be specified
     if (!cli_params.st.empty() && !cli_params.m64.empty())
     {
-        DialogService::show_dialog(L"Both -st and -m64 options specified in CLI parameters.\nThe -st option will be dropped.", L"CLI", fsvc_error);
+        DialogService::show_dialog(
+            L"Both -st and -m64 options specified in CLI parameters.\nThe -st option will be dropped.", L"CLI",
+            fsvc_error);
         cli_params.st.clear();
     }
 
     if (cli_params.close_on_movie_end && g_config.core.is_movie_loop_enabled)
     {
-        DialogService::show_dialog(L"Movie loop is not allowed when closing on movie end is enabled.\nThe movie loop option will be disabled.", L"CLI", fsvc_warning);
+        DialogService::show_dialog(
+            L"Movie loop is not allowed when closing on movie end is enabled.\nThe movie loop option will be disabled.",
+            L"CLI", fsvc_warning);
         g_config.core.is_movie_loop_enabled = false;
     }
 
-    // HACK: When playing a movie from start, the rom will start normally and signal us to do our work via EmuLaunchedChanged.
-    // The work is started, but then the rom is reset. At that point, the dacrate changes and breaks the capture in some cases.
-    // To avoid this, we store the movie's start flag prior to doing anything, and ignore the first EmuLaunchedChanged if it's set.
+    // HACK: When playing a movie from start, the rom will start normally and signal us to do our work via
+    // EmuLaunchedChanged. The work is started, but then the rom is reset. At that point, the dacrate changes and breaks
+    // the capture in some cases. To avoid this, we store the movie's start flag prior to doing anything, and ignore the
+    // first EmuLaunchedChanged if it's set.
     const auto movie_path = cli_params.rom.extension() == ".m64" ? cli_params.rom : cli_params.m64;
     if (!movie_path.empty())
     {
@@ -299,7 +306,9 @@ void CLI::init()
 
     if (compare_control && compare_actual)
     {
-        DialogService::show_dialog(L"Can't activate more than one compare mode at once.\nThe comparison system will be disabled.", L"CLI", fsvc_warning);
+        DialogService::show_dialog(
+            L"Can't activate more than one compare mode at once.\nThe comparison system will be disabled.", L"CLI",
+            fsvc_warning);
         compare_control = false;
         compare_actual = false;
     }

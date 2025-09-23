@@ -58,8 +58,7 @@ void MTC0()
         break;
     case 9: // Count
         update_count();
-        if (next_interrupt <= core_Count)
-            gen_interrupt();
+        if (next_interrupt <= core_Count) gen_interrupt();
         debug_count += core_Count;
         translate_event_queue(core_rrt & 0xFFFFFFFF);
         core_Count = core_rrt & 0xFFFFFFFF;
@@ -83,8 +82,8 @@ void MTC0()
                 int32_t i;
                 for (i = 0; i < 32; i++)
                 {
-                    reg_cop1_double[i] = (double*)&reg_cop1_fgr_64[i];
-                    reg_cop1_simple[i] = (float*)&reg_cop1_fgr_64[i];
+                    reg_cop1_double[i] = (double *)&reg_cop1_fgr_64[i];
+                    reg_cop1_simple[i] = (float *)&reg_cop1_fgr_64[i];
                 }
             }
             else
@@ -92,9 +91,8 @@ void MTC0()
                 int32_t i;
                 for (i = 0; i < 32; i++)
                 {
-                    if (!(i & 1))
-                        reg_cop1_double[i] = (double*)&reg_cop1_fgr_64[i >> 1];
-                    reg_cop1_simple[i] = (float*)&reg_cop1_fgr_64[i >> 1] + (i & 1);
+                    if (!(i & 1)) reg_cop1_double[i] = (double *)&reg_cop1_fgr_64[i >> 1];
+                    reg_cop1_simple[i] = (float *)&reg_cop1_fgr_64[i >> 1] + (i & 1);
                 }
             }
         }
@@ -102,8 +100,7 @@ void MTC0()
         PC++;
         check_interrupt();
         update_count();
-        if (next_interrupt <= core_Count)
-            gen_interrupt();
+        if (next_interrupt <= core_Count) gen_interrupt();
         PC--;
         break;
     case 13: // Cause

@@ -9,12 +9,11 @@
 
 #define PROP_NAME L"slv_ctx"
 
-static bool begin_listview_edit(SettingsListView::t_settings_listview_context* ctx, HWND lvhwnd)
+static bool begin_listview_edit(SettingsListView::t_settings_listview_context *ctx, HWND lvhwnd)
 {
     int32_t i = ListView_GetNextItem(lvhwnd, -1, LVNI_SELECTED);
 
-    if (i == -1)
-        return false;
+    if (i == -1) return false;
 
     LVITEM item = {0};
     item.mask = LVIF_PARAM;
@@ -27,9 +26,10 @@ static bool begin_listview_edit(SettingsListView::t_settings_listview_context* c
     return true;
 }
 
-static LRESULT CALLBACK list_view_proc(HWND hwnd, UINT msg, WPARAM w_param, LPARAM l_param, UINT_PTR, DWORD_PTR ref_data)
+static LRESULT CALLBACK list_view_proc(HWND hwnd, UINT msg, WPARAM w_param, LPARAM l_param, UINT_PTR,
+                                       DWORD_PTR ref_data)
 {
-    auto ctx = (SettingsListView::t_settings_listview_context*)ref_data;
+    auto ctx = (SettingsListView::t_settings_listview_context *)ref_data;
 
     switch (msg)
     {
@@ -45,24 +45,27 @@ static LRESULT CALLBACK list_view_proc(HWND hwnd, UINT msg, WPARAM w_param, LPAR
             return TRUE;
         }
         break;
-    case WM_NCDESTROY:
-        {
-            RemoveProp(ctx->dlg_hwnd, PROP_NAME);
-            delete ctx;
-            break;
-        }
+    case WM_NCDESTROY: {
+        RemoveProp(ctx->dlg_hwnd, PROP_NAME);
+        delete ctx;
+        break;
+    }
     default:
         break;
     }
     return DefSubclassProc(hwnd, msg, w_param, l_param);
 }
 
-HWND SettingsListView::create(const t_settings_listview_context& ctx)
+HWND SettingsListView::create(const t_settings_listview_context &ctx)
 {
     auto ctx2 = new t_settings_listview_context();
     *ctx2 = ctx;
 
-    HWND lvhwnd = CreateWindowEx(WS_EX_CLIENTEDGE, WC_LISTVIEW, NULL, WS_TABSTOP | WS_VISIBLE | WS_CHILD | LVS_SINGLESEL | LVS_REPORT | LVS_SHOWSELALWAYS | LVS_ALIGNTOP, ctx.rect.left, ctx.rect.top, ctx.rect.right - ctx.rect.left, ctx.rect.bottom - ctx.rect.top, ctx.dlg_hwnd, (HMENU)IDC_SETTINGS_LV, g_main_ctx.hinst, NULL);
+    HWND lvhwnd = CreateWindowEx(
+        WS_EX_CLIENTEDGE, WC_LISTVIEW, NULL,
+        WS_TABSTOP | WS_VISIBLE | WS_CHILD | LVS_SINGLESEL | LVS_REPORT | LVS_SHOWSELALWAYS | LVS_ALIGNTOP,
+        ctx.rect.left, ctx.rect.top, ctx.rect.right - ctx.rect.left, ctx.rect.bottom - ctx.rect.top, ctx.dlg_hwnd,
+        (HMENU)IDC_SETTINGS_LV, g_main_ctx.hinst, NULL);
 
     SetProp(ctx.dlg_hwnd, PROP_NAME, ctx2);
 
@@ -74,7 +77,8 @@ HWND SettingsListView::create(const t_settings_listview_context& ctx)
     ListView_SetImageList(lvhwnd, image_list, LVSIL_SMALL);
 
     ListView_EnableGroupView(lvhwnd, true);
-    ListView_SetExtendedListViewStyle(lvhwnd, LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER | LVS_EX_INFOTIP | LVS_EX_LABELTIP);
+    ListView_SetExtendedListViewStyle(lvhwnd,
+                                      LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER | LVS_EX_INFOTIP | LVS_EX_LABELTIP);
 
     LVGROUP lvgroup;
     lvgroup.cbSize = sizeof(LVGROUP);
@@ -85,7 +89,7 @@ HWND SettingsListView::create(const t_settings_listview_context& ctx)
     for (int i = 0; i < ctx.groups.size(); ++i)
     {
         // FIXME: This is concerning, but seems to work
-        lvgroup.pszHeader = const_cast<wchar_t*>(ctx.groups[i].c_str());
+        lvgroup.pszHeader = const_cast<wchar_t *>(ctx.groups[i].c_str());
         lvgroup.iGroupId = i;
         ListView_InsertGroup(lvhwnd, -1, &lvgroup);
     }
@@ -130,7 +134,7 @@ bool SettingsListView::notify(HWND dlg_hwnd, HWND lvhwnd, LPARAM lparam, WPARAM 
     }
 
     const auto lpnmhdr = reinterpret_cast<LPNMHDR>(lparam);
-    auto ctx = (t_settings_listview_context*)GetProp(dlg_hwnd, PROP_NAME);
+    auto ctx = (t_settings_listview_context *)GetProp(dlg_hwnd, PROP_NAME);
 
     switch (lpnmhdr->code)
     {
@@ -140,42 +144,40 @@ bool SettingsListView::notify(HWND dlg_hwnd, HWND lvhwnd, LPARAM lparam, WPARAM 
             return TRUE;
         }
         break;
-    case LVN_GETDISPINFO:
+    case LVN_GETDISPINFO: {
+        const auto plvdi = reinterpret_cast<NMLVDISPINFOW *>(lparam);
+        const auto i = plvdi->item.lParam;
+
+        if (plvdi->item.mask & LVIF_IMAGE)
         {
-            const auto plvdi = reinterpret_cast<NMLVDISPINFOW*>(lparam);
-            const auto i = plvdi->item.lParam;
+            plvdi->item.iImage = ctx->get_item_image(i);
+        }
 
-            if (plvdi->item.mask & LVIF_IMAGE)
-            {
-                plvdi->item.iImage = ctx->get_item_image(i);
-            }
+        const auto text = ctx->get_item_text(i, plvdi->item.iSubItem);
+        StrNCpy(plvdi->item.pszText, text.c_str(), plvdi->item.cchTextMax);
 
-            const auto text = ctx->get_item_text(i, plvdi->item.iSubItem);
-            StrNCpy(plvdi->item.pszText, text.c_str(), plvdi->item.cchTextMax);
+        break;
+    }
+    case LVN_GETINFOTIP: {
 
+        auto getinfotip = (LPNMLVGETINFOTIP)lparam;
+
+        LVITEM item = {0};
+        item.mask = LVIF_PARAM;
+        item.iItem = getinfotip->iItem;
+        ListView_GetItem(lvhwnd, &item);
+
+        const auto tooltip = ctx->get_item_tooltip(item.lParam);
+
+        if (tooltip.empty())
+        {
             break;
         }
-    case LVN_GETINFOTIP:
-        {
 
-            auto getinfotip = (LPNMLVGETINFOTIP)lparam;
+        StrCpyNW(getinfotip->pszText, tooltip.c_str(), getinfotip->cchTextMax);
 
-            LVITEM item = {0};
-            item.mask = LVIF_PARAM;
-            item.iItem = getinfotip->iItem;
-            ListView_GetItem(lvhwnd, &item);
-
-            const auto tooltip = ctx->get_item_tooltip(item.lParam);
-
-            if (tooltip.empty())
-            {
-                break;
-            }
-
-            StrCpyNW(getinfotip->pszText, tooltip.c_str(), getinfotip->cchTextMax);
-
-            break;
-        }
+        break;
+    }
     default:
         return false;
     }

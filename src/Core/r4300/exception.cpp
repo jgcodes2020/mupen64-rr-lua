@@ -42,8 +42,7 @@ void TLB_refill_exception(uint32_t address, int32_t w)
 {
     int32_t usual_handler = 0, i;
     // g_core->log_error(L"TLB_refill_exception:{:#06x}\n", address);
-    if (!dynacore && w != 2)
-        update_count();
+    if (!dynacore && w != 2) update_count();
     if (w == 1)
         core_Cause = (3 << 2);
     else
@@ -77,16 +76,12 @@ void TLB_refill_exception(uint32_t address, int32_t w)
         core_Cause &= ~0x80000000;
         core_Status |= 0x2; // EXL=1
 
-        if (address >= 0x80000000 && address < 0xc0000000)
-            usual_handler = 1;
+        if (address >= 0x80000000 && address < 0xc0000000) usual_handler = 1;
         for (i = 0; i < 32; i++)
         {
-            if (/*tlb_e[i].v_even &&*/ address >= tlb_e[i].start_even &&
-                address <= tlb_e[i].end_even)
+            if (/*tlb_e[i].v_even &&*/ address >= tlb_e[i].start_even && address <= tlb_e[i].end_even)
                 usual_handler = 1;
-            if (/*tlb_e[i].v_odd &&*/ address >= tlb_e[i].start_odd &&
-                address <= tlb_e[i].end_odd)
-                usual_handler = 1;
+            if (/*tlb_e[i].v_odd &&*/ address >= tlb_e[i].start_odd && address <= tlb_e[i].end_odd) usual_handler = 1;
         }
         if (usual_handler)
         {
@@ -112,8 +107,7 @@ void TLB_refill_exception(uint32_t address, int32_t w)
     {
         core_Cause &= 0x7FFFFFFF;
     }
-    if (w != 2)
-        core_EPC -= 4;
+    if (w != 2) core_EPC -= 4;
 
     if (interpcore)
         last_addr = interp_addr;
@@ -123,8 +117,7 @@ void TLB_refill_exception(uint32_t address, int32_t w)
     if (dynacore)
     {
         dyna_jump();
-        if (!dyna_interp)
-            delay_slot = 0;
+        if (!dyna_interp) delay_slot = 0;
     }
 
     if (!dynacore || dyna_interp)
@@ -201,8 +194,7 @@ void exception_general()
     if (dynacore)
     {
         dyna_jump();
-        if (!dyna_interp)
-            delay_slot = 0;
+        if (!dyna_interp) delay_slot = 0;
     }
     if (!dynacore || dyna_interp)
     {
