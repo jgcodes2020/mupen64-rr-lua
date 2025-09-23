@@ -70,6 +70,8 @@ static void print(t_instance_context &ctx, const std::wstring &text)
         SendMessage(con_wnd, EM_SETSEL, length, length);
         SendMessage(con_wnd, EM_REPLACESEL, false, (LPARAM)text.c_str());
         SetWindowRedraw(con_wnd, true);
+
+        SendMessage(con_wnd, EM_SCROLLCARET, 0, 0);
     }
 
     ctx.logs += text;
