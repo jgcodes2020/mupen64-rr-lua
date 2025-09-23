@@ -821,6 +821,28 @@ lust.describe('mupen64', function()
                 lust.expect(down).to.equal(1)
                 lust.expect(up).to.equal(1)
             end)
+            lust.it('doesnt_call_release_when_pressing_again_while_pressed_if_release_on_repress_is_false', function()
+                local down = 0
+                local up = 0
+
+                action.add({
+                    path = "Test > Something",
+                    on_press = function()
+                        down = down + 1
+                    end,
+                    on_release = function()
+                        up = up + 1
+                    end,
+                })
+
+                action.invoke("Test > Something")
+                lust.expect(down).to.equal(1)
+                lust.expect(up).to.equal(0)
+
+                action.invoke("Test > Something", false, false)
+                lust.expect(down).to.equal(2)
+                lust.expect(up).to.equal(0)
+            end)
         end)
 
         lust.describe('lock_hotkeys', function()

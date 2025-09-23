@@ -548,7 +548,7 @@ ActionManager::action_filter ActionManager::normalize_filter(const action_filter
     return MiscHelpers::join_wstring(parts, SEGMENT_SEPARATOR);
 }
 
-void ActionManager::invoke(const action_path &path, const bool up)
+void ActionManager::invoke(const action_path &path, const bool up, const bool release_on_repress)
 {
     t_action *action = get_single_action_ptr_matching_path(path);
 
@@ -574,7 +574,7 @@ void ActionManager::invoke(const action_path &path, const bool up)
     }
     else
     {
-        if (action->params.on_release && action->pressed)
+        if (release_on_repress && action->params.on_release && action->pressed)
         {
             action->params.on_release();
             action->pressed = false;

@@ -293,8 +293,9 @@ static int invoke(lua_State *L)
 {
     const auto path = luaL_checkwstring(L, 1);
     const auto up = (bool)luaL_opt(L, lua_toboolean, 2, false);
+    const auto release_on_repress = (bool)luaL_opt(L, lua_toboolean, 3, true);
 
-    ActionManager::invoke(path, up);
+    ActionManager::invoke(path, up, release_on_repress);
 
     return 0;
 }
