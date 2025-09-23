@@ -22,12 +22,10 @@
 #ifdef _DEBUG
 #define PLUGIN_TARGET " Debug"
 #else
-#define PLUGIN_TARGET " Release"
+#define PLUGIN_TARGET " "
 #endif
 
-#define PLUGIN_ISAEXT " SSE2"
-
-#define PLUGIN_NAME "TAS RSP " PLUGIN_VERSION PLUGIN_ARCH PLUGIN_ISAEXT PLUGIN_TARGET
+#define PLUGIN_NAME "TAS RSP " PLUGIN_VERSION PLUGIN_ARCH PLUGIN_TARGET
 
 extern HINSTANCE g_instance;
 extern std::filesystem::path g_app_path;

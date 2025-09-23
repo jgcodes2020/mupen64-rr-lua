@@ -17,7 +17,7 @@
 #ifdef _DEBUG
 #define PLUGIN_TARGET L" Debug"
 #else
-#define PLUGIN_TARGET L" Release"
+#define PLUGIN_TARGET L" "
 #endif
 
 #define PLUGIN_NAME L"No Video " PLUGIN_VERSION PLUGIN_ARCH PLUGIN_TARGET
