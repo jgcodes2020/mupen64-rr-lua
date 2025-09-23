@@ -376,6 +376,10 @@ notify(LPARAM lparam)
         break;
     }
     case LVN_KEYDOWN: {
+        if (g_main_ctx.core_ctx->vr_get_core_executing())
+        {
+            break;
+        }
         auto key = reinterpret_cast<LPNMLVKEYDOWN>(lparam)->wVKey;
 
         if (key == VK_RETURN)
@@ -436,6 +440,7 @@ void emu_launched_changed(std::any data)
 {
     auto value = std::any_cast<bool>(data);
     ShowWindow(rombrowser_hwnd, !value ? SW_SHOW : SW_HIDE);
+    EnableWindow(rombrowser_hwnd, !value);
     rombrowser_update_size();
 }
 
