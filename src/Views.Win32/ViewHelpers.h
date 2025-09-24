@@ -440,7 +440,7 @@ template <typename T> static T remap(const T value, const T from1, const T to1, 
  */
 template <typename T> static T wrapping_clamp(const T value, T min, T max)
 {
-    static_assert(std::is_integral_v<T>, L"wrapping_clamp only supports integral types");
+    static_assert(std::is_integral_v<T>, "wrapping_clamp only supports integral types");
 
     if (min == max)
     {
@@ -476,7 +476,7 @@ static std::wstring format_duration(size_t seconds)
  * \param n The maximum length.
  * \return The limited wstring.
  */
-static std::wstring [[nodiscard]] limit_wstring(const std::wstring &input, const size_t n)
+[[nodiscard]] static std::wstring limit_wstring(const std::wstring &input, const size_t n)
 {
     if (input.size() <= n)
     {
