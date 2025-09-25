@@ -1068,14 +1068,6 @@ std::vector<t_options_group> get_static_option_groups()
         GENPROPS(int32_t, core.st_screenshot),
     });
     core_group.items.emplace_back(t_options_item{
-        .type = t_options_item::Type::Bool,
-        .group_id = core_group.id,
-        .name = L"Skip rendering lag",
-        .tooltip = L"Prevents calls to updateScreen during lag.\nMight improve performance on some video plugins at "
-                   L"the cost of stability.",
-        GENPROPS(int32_t, core.skip_rendering_lag),
-    });
-    core_group.items.emplace_back(t_options_item{
         .type = t_options_item::Type::Number,
         .group_id = core_group.id,
         .name = L"ROM Cache Size",

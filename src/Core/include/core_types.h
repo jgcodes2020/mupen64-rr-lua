@@ -262,11 +262,6 @@ struct core_cfg
     int32_t max_lag = 480;
 
     /// <summary>
-    /// Whether lag frames will cause updateScreen to be invoked
-    /// </summary>
-    int32_t skip_rendering_lag;
-
-    /// <summary>
     /// Throttles game rendering to 60 FPS.
     /// </summary>
     int32_t render_throttling = 1;
