@@ -78,51 +78,11 @@ struct t_config
     /// </summary>
     int32_t plugin_discovery_async = 1;
 
-    /// <summary>
-    /// Whether the default plugins directory will be used (otherwise, falls back to <see cref="plugins_directory"/>)
-    /// </summary>
-    int32_t is_default_plugins_directory_used = 1;
-
-    /// <summary>
-    /// Whether the default save directory will be used (otherwise, falls back to <see cref="saves_directory"/>)
-    /// </summary>
-    int32_t is_default_saves_directory_used = 1;
-
-    /// <summary>
-    /// Whether the default screenshot directory will be used (otherwise, falls back to <see
-    /// cref="screenshots_directory"/>)
-    /// </summary>
-    int32_t is_default_screenshots_directory_used = 1;
-
-    /// <summary>
-    /// Whether the default backups directory will be used (otherwise, falls back to <see cref="backups_directory"/>)
-    /// </summary>
-    int32_t is_default_backups_directory_used = 1;
-
-    /// <summary>
-    /// The plugin directory
-    /// </summary>
-    std::wstring plugins_directory;
-
-    /// <summary>
-    /// The save directory
-    /// </summary>
-    std::wstring saves_directory;
-
-    /// <summary>
-    /// The screenshot directory
-    /// </summary>
-    std::wstring screenshots_directory;
-
-    /// <summary>
-    /// The savestate directory
-    /// </summary>
-    std::wstring states_path;
-
-    /// <summary>
-    /// The movie backups directory
-    /// </summary>
-    std::wstring backups_directory;
+    std::wstring rom_directory = L".\\roms\\";
+    std::wstring plugins_directory = L".\\plugin\\";
+    std::wstring saves_directory = L".\\save\\";
+    std::wstring screenshots_directory = L".\\screenshots\\";
+    std::wstring backups_directory = L".\\backups\\";
 
     /// <summary>
     /// The recently opened roms' paths
@@ -148,11 +108,6 @@ struct t_config
     /// Whether the rom browser will recursively search for roms beginning in the specified directories
     /// </summary>
     int32_t is_rombrowser_recursion_enabled;
-
-    /// <summary>
-    /// The paths to directories which are searched for roms
-    /// </summary>
-    std::vector<std::wstring> rombrowser_rom_paths;
 
     /// <summary>
     /// The strategy to use when capturing video
