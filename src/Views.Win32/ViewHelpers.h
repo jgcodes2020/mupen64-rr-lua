@@ -181,7 +181,7 @@ static std::optional<CompositionContext> create_composition_context(const HWND h
 
     D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, {}, &ctx.d2d_factory);
     ctx.d2d_factory->CreateDevice(ctx.dxgi_device, &ctx.d2d_device);
-    ctx.d2d_device->CreateDeviceContext(D2D1_DEVICE_CONTEXT_OPTIONS_NONE, &ctx.d2d_dc);
+    ctx.d2d_device->CreateDeviceContext(D2D1_DEVICE_CONTEXT_OPTIONS_ENABLE_MULTITHREADED_OPTIMIZATIONS, &ctx.d2d_dc);
 
     D3D11_TEXTURE2D_DESC desc{};
     desc.Width = size.width;
