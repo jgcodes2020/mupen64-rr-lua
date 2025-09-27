@@ -73,11 +73,6 @@ struct t_config
     /// </summary>
     int32_t statusbar_layout = (int32_t)StatusbarLayout::Modern;
 
-    /// <summary>
-    /// Whether plugins discovery is performed asynchronously. Removes potential waiting times in the config dialog.
-    /// </summary>
-    int32_t plugin_discovery_async = 1;
-
     std::wstring rom_directory = L".\\roms\\";
     std::wstring plugins_directory = L".\\plugin\\";
     std::wstring saves_directory = L".\\save\\";

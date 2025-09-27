@@ -326,21 +326,14 @@ static void refresh_plugins_page(const HWND hwnd)
 
     plugin_discovery_result = {};
 
-    if (g_config.plugin_discovery_async)
-    {
-        SetDlgItemText(hwnd, IDC_PLUGIN_WARNING, L"Discovering plugins...");
+    SetDlgItemText(hwnd, IDC_PLUGIN_WARNING, L"Discovering plugins...");
 
-        if (g_plugin_discovery_thread.joinable())
-        {
-            g_plugin_discovery_thread.join();
-        }
-
-        g_plugin_discovery_thread = std::thread([=] { start_plugin_discovery(hwnd); });
-    }
-    else
+    if (g_plugin_discovery_thread.joinable())
     {
-        start_plugin_discovery(hwnd);
+        g_plugin_discovery_thread.join();
     }
+
+    g_plugin_discovery_thread = std::thread([=] { start_plugin_discovery(hwnd); });
 }
 
 static void update_plugin_buttons_enabled_state(HWND hwnd)
@@ -663,13 +656,6 @@ std::vector<t_options_group> get_static_option_groups()
                        .tooltip = L"Keep the working directory specified by the caller program at startup.\nWhen "
                                   L"disabled, mupen changes the working directory to its current path.",
                        GENPROPS(int32_t, keep_default_working_directory)});
-    interface_group.items.emplace_back(
-        t_options_item{.type = t_options_item::Type::Bool,
-                       .group_id = interface_group.id,
-                       .name = L"Async Plugin Discovery",
-                       .tooltip = L"Whether plugins discovery is performed asynchronously. Removes potential waiting "
-                                  L"times in the config dialog.",
-                       GENPROPS(int32_t, plugin_discovery_async)});
     interface_group.items.emplace_back(
         t_options_item{.type = t_options_item::Type::Bool,
                        .group_id = interface_group.id,
