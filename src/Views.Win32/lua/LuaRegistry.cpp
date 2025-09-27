@@ -247,7 +247,7 @@ static void register_function(lua_State *L, const std::wstring &name, const lua_
 {
     const auto parts = MiscHelpers::split_wstring(name, L".");
 
-    runtime_assert(parts.size() == 2, L"Accessor invalid");
+    RT_ASSERT(parts.size() == 2, L"Accessor invalid");
 
     const auto namespace_name = g_main_ctx.io_service.wstring_to_string(parts.at(0));
     const auto function_name = g_main_ctx.io_service.wstring_to_string(parts.at(1));
