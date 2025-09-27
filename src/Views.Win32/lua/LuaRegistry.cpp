@@ -224,9 +224,9 @@ const luaL_Reg CLIPBOARD_FUNCS[] = {{"get", LuaCore::Clipboard::get},
                                     {"clear", LuaCore::Clipboard::clear},
                                     {NULL, NULL}};
 
-const std::pair<std::string, lua_CFunction> OVERRIDE_FUNCS[] = {{"os.exit", LuaCore::Global::Exit}};
-
 // end lua funcs
+
+const std::pair<std::string, lua_CFunction> OVERRIDE_FUNCS[] = {{"os.exit", LuaCore::Global::Exit}};
 
 void register_as_package(lua_State *lua_state, const char *name, const luaL_Reg regs[])
 {
