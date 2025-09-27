@@ -94,7 +94,10 @@ static void runtime_assert_fail(const std::wstring &message)
     std::terminate();
 }
 
-#define runtime_assert(condition, message)                                                                             \
+/**
+ * \brief Asserts a condition at runtime.
+ */
+#define RT_ASSERT(condition, message)                                                                                  \
     do                                                                                                                 \
     {                                                                                                                  \
         if (!(condition))                                                                                              \
@@ -103,7 +106,10 @@ static void runtime_assert_fail(const std::wstring &message)
         }                                                                                                              \
     } while (0)
 
-#define runtime_assert_hr(hr, message) runtime_assert(!FAILED(hr), message)
+/**
+ * \brief Asserts that an HRESULT is SUCCESS at runtime.
+ */
+#define RT_ASSERT_HR(hr, message) runtime_assert(!FAILED(hr), message)
 
 static RECT get_window_rect_client_space(HWND parent, HWND child)
 {

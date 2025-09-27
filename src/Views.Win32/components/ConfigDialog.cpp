@@ -78,7 +78,7 @@ std::wstring t_options_item::get_value_name() const
     case Type::Folder:
         return std::get<std::wstring>(value);
     default:
-        runtime_assert(false, L"Unhandled option type in t_options_item::get_value_name");
+        RT_ASSERT(false, L"Unhandled option type in t_options_item::get_value_name");
     }
     return L"";
 }

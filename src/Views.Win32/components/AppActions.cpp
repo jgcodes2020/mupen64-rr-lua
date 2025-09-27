@@ -833,10 +833,10 @@ static void add_action_with_up(const std::wstring &path, const Hotkey::t_hotkey 
         .get_enabled = get_enabled,
         .get_active = get_active,
     });
-    runtime_assert(success, std::format(L"Failed to add action for path '{}'.", path));
+    RT_ASSERT(success, std::format(L"Failed to add action for path '{}'.", path));
 
     success = ActionManager::associate_hotkey(path, default_hotkey, false);
-    runtime_assert(success, std::format(L"Failed to associate hotkey for path '{}'.", path));
+    RT_ASSERT(success, std::format(L"Failed to associate hotkey for path '{}'.", path));
 }
 
 static void add_action(const std::wstring &path, const Hotkey::t_hotkey &default_hotkey,

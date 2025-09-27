@@ -1223,9 +1223,9 @@ static core_result init_core()
     g_main_ctx.core.st_pre_callback = st_callback_wrapper;
     g_main_ctx.core.get_plugin_names = [](char *video, char *audio, char *input, char *rsp) {
         const auto copy = [&](const std::shared_ptr<Plugin> &plugin, char *type) {
-            runtime_assert(plugin.get(), L"Plugin not loaded");
+            RT_ASSERT(plugin.get(), L"Plugin not loaded");
             const auto result = strncpy_s(type, 64 - 1, plugin->name().c_str(), plugin->name().size());
-            runtime_assert(!result, L"Plugin name copy failed");
+            RT_ASSERT(!result, L"Plugin name copy failed");
         };
 
         copy(g_video_plugin, video);
@@ -1358,13 +1358,13 @@ static void enable_mitigations()
     PROCESS_MITIGATION_STRICT_HANDLE_CHECK_POLICY handles = {0};
     handles.RaiseExceptionOnInvalidHandleReference = 1;
     handles.HandleExceptionsPermanentlyEnabled = 1;
-    runtime_assert(SetProcessMitigationPolicy(ProcessStrictHandleCheckPolicy, &handles, sizeof(handles)),
-                   L"Couldn't set process mitigation policy.");
+    RT_ASSERT(SetProcessMitigationPolicy(ProcessStrictHandleCheckPolicy, &handles, sizeof(handles)),
+              L"Couldn't set process mitigation policy.");
 
     PROCESS_MITIGATION_EXTENSION_POINT_DISABLE_POLICY ext = {0};
     ext.DisableExtensionPoints = 1;
-    runtime_assert(SetProcessMitigationPolicy(ProcessExtensionPointDisablePolicy, &ext, sizeof(ext)),
-                   L"Couldn't set process mitigation policy.");
+    RT_ASSERT(SetProcessMitigationPolicy(ProcessExtensionPointDisablePolicy, &ext, sizeof(ext)),
+              L"Couldn't set process mitigation policy.");
 }
 
 int CALLBACK WinMain(const HINSTANCE hInstance, HINSTANCE, LPSTR, const int nShowCmd)

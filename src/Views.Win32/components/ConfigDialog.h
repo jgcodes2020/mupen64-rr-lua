@@ -70,7 +70,7 @@ struct t_options_item
     t_readwrite_property current_value;
 
     t_readonly_property initial_value = t_readonly_property([] -> data_variant {
-        runtime_assert(false, L"Initial value not set for option");
+        RT_ASSERT(false, L"Initial value not set for option");
         return data_variant{};
     });
 

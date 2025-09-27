@@ -107,7 +107,7 @@ static bool create_d3d(const HWND hwnd)
     HRESULT hr = D3D11CreateDeviceAndSwapChain(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, flags, feature_levels,
                                                ARRAYSIZE(feature_levels), D3D11_SDK_VERSION, &scdesc, &swap_raw,
                                                &device_raw, nullptr, &context_raw);
-    runtime_assert_hr(hr, L"D3D11CreateDeviceAndSwapChain");
+    RT_ASSERT_HR(hr, L"D3D11CreateDeviceAndSwapChain");
 
     mge_context.device.Attach(device_raw);
     mge_context.context.Attach(context_raw);
@@ -116,10 +116,10 @@ static bool create_d3d(const HWND hwnd)
     // create RTV for swapchain back buffer
     ComPtr<ID3D11Texture2D> back_buffer;
     hr = mge_context.swapchain->GetBuffer(0, IID_PPV_ARGS(&back_buffer));
-    runtime_assert_hr(hr, L"GetBuffer");
+    RT_ASSERT_HR(hr, L"GetBuffer");
 
     hr = mge_context.device->CreateRenderTargetView(back_buffer.Get(), nullptr, &mge_context.rtv);
-    runtime_assert_hr(hr, L"CreateRenderTargetView");
+    RT_ASSERT_HR(hr, L"CreateRenderTargetView");
 
     // Point sampler for nearest-neighbour scaling
     D3D11_SAMPLER_DESC sampdesc = {};
@@ -131,24 +131,24 @@ static bool create_d3d(const HWND hwnd)
     sampdesc.MinLOD = 0;
     sampdesc.MaxLOD = D3D11_FLOAT32_MAX;
     hr = mge_context.device->CreateSamplerState(&sampdesc, &mge_context.sampler);
-    runtime_assert_hr(hr, L"CreateSamplerState");
+    RT_ASSERT_HR(hr, L"CreateSamplerState");
 
     ComPtr<ID3DBlob> vs_blob, ps_blob, err_blob;
     hr = D3DCompile(VERTEX_SHADER.data(), VERTEX_SHADER.size(), nullptr, nullptr, nullptr, "main", "vs_4_0", 0, 0,
                     &vs_blob, &err_blob);
-    runtime_assert_hr(hr, L"D3DCompile");
+    RT_ASSERT_HR(hr, L"D3DCompile");
 
     hr = D3DCompile(FRAGMENT_SHADER.data(), FRAGMENT_SHADER.size(), nullptr, nullptr, nullptr, "main", "ps_4_0", 0, 0,
                     &ps_blob, &err_blob);
-    runtime_assert_hr(hr, L"D3DCompile");
+    RT_ASSERT_HR(hr, L"D3DCompile");
 
     hr = mge_context.device->CreateVertexShader(vs_blob->GetBufferPointer(), vs_blob->GetBufferSize(), nullptr,
                                                 &mge_context.vs);
-    runtime_assert_hr(hr, L"CreateVertexShader");
+    RT_ASSERT_HR(hr, L"CreateVertexShader");
 
     hr = mge_context.device->CreatePixelShader(ps_blob->GetBufferPointer(), ps_blob->GetBufferSize(), nullptr,
                                                &mge_context.ps);
-    runtime_assert_hr(hr, L"CreatePixelShader");
+    RT_ASSERT_HR(hr, L"CreatePixelShader");
 
     // Set up the pipeline
     mge_context.context->VSSetShader(mge_context.vs.Get(), nullptr, 0);
@@ -197,14 +197,14 @@ static void ensure_texture_exists_with_size(const int w, const int h)
     desc.MiscFlags = 0;
 
     HRESULT hr = mge_context.device->CreateTexture2D(&desc, nullptr, &mge_context.texture);
-    runtime_assert_hr(hr, L"CreateTexture2D");
+    RT_ASSERT_HR(hr, L"CreateTexture2D");
 
     D3D11_SHADER_RESOURCE_VIEW_DESC srvd = {};
     srvd.Format = desc.Format;
     srvd.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
     srvd.Texture2D.MipLevels = 1;
     hr = mge_context.device->CreateShaderResourceView(mge_context.texture.Get(), &srvd, &mge_context.srv);
-    runtime_assert_hr(hr, L"CreateShaderResourceView");
+    RT_ASSERT_HR(hr, L"CreateShaderResourceView");
 
     mge_context.last_width = w;
     mge_context.last_height = h;
@@ -228,14 +228,14 @@ static void upload_rgb32_buffer()
 
 static void render_and_present()
 {
-    runtime_assert(mge_context.context && mge_context.rtv && mge_context.srv, L"D3D context not initialized");
+    RT_ASSERT(mge_context.context && mge_context.rtv && mge_context.srv, L"D3D context not initialized");
 
     ID3D11RenderTargetView *rtv = mge_context.rtv.Get();
     mge_context.context->OMSetRenderTargets(1, &rtv, nullptr);
 
     ComPtr<ID3D11Texture2D> bb;
     HRESULT hr = mge_context.swapchain->GetBuffer(0, IID_PPV_ARGS(&bb));
-    runtime_assert_hr(hr, L"GetBuffer");
+    RT_ASSERT_HR(hr, L"GetBuffer");
 
     D3D11_TEXTURE2D_DESC bbdesc;
     bb->GetDesc(&bbdesc);
@@ -307,7 +307,7 @@ static void recreate_mge_context_d3d()
 
     mge_context.buffer = _aligned_malloc(rgb24_buffer_size, 16);
     mge_context.rgba_buffer = _aligned_malloc(rgba32_buffer_size, 16);
-    runtime_assert(mge_context.buffer && mge_context.rgba_buffer, L"Failed to allocate MGE buffers");
+    RT_ASSERT(mge_context.buffer && mge_context.rgba_buffer, L"Failed to allocate MGE buffers");
 
     ZeroMemory(mge_context.buffer, rgb24_buffer_size);
     ZeroMemory(mge_context.rgba_buffer, rgba32_buffer_size);
@@ -321,14 +321,14 @@ static void recreate_mge_context_d3d()
     {
         mge_context.rtv.Reset();
         HRESULT hr = mge_context.swapchain->ResizeBuffers(1, w, h, DXGI_FORMAT_B8G8R8A8_UNORM, 0);
-        runtime_assert_hr(hr, L"ResizeBuffers");
+        RT_ASSERT_HR(hr, L"ResizeBuffers");
 
         ComPtr<ID3D11Texture2D> backBuffer;
         hr = mge_context.swapchain->GetBuffer(0, IID_PPV_ARGS(&backBuffer));
-        runtime_assert_hr(hr, L"GetBuffer");
+        RT_ASSERT_HR(hr, L"GetBuffer");
 
         hr = mge_context.device->CreateRenderTargetView(backBuffer.Get(), nullptr, &mge_context.rtv);
-        runtime_assert_hr(hr, L"CreateRenderTargetView");
+        RT_ASSERT_HR(hr, L"CreateRenderTargetView");
     }
 
     ensure_texture_exists_with_size(mge_context.width, mge_context.height);

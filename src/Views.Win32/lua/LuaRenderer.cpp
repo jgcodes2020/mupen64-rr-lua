@@ -17,7 +17,7 @@ static HBRUSH g_alpha_mask_brush;
 
 static LRESULT CALLBACK d2d_overlay_wndproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
-    runtime_assert(is_on_gui_thread(), L"LuaRenderer::d2d_overlay_wndproc called from non-GUI thread");
+    RT_ASSERT(is_on_gui_thread(), L"LuaRenderer::d2d_overlay_wndproc called from non-GUI thread");
 
     switch (msg)
     {

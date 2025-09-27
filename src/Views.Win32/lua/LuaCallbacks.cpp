@@ -154,7 +154,7 @@ void LuaCallbacks::call_warp_modify_status_changed(const int32_t status)
 bool invoke_callbacks_with_key_impl(const t_lua_environment *lua, const std::function<int(lua_State *)> &function,
                                     LuaCallbacks::callback_key key)
 {
-    runtime_assert(is_on_gui_thread(), L"not on GUI thread");
+    RT_ASSERT(is_on_gui_thread(), L"not on GUI thread");
 
     lua_State *L = lua->L;
 
