@@ -109,7 +109,7 @@ static void runtime_assert_fail(const std::wstring &message)
 /**
  * \brief Asserts that an HRESULT is SUCCESS at runtime.
  */
-#define RT_ASSERT_HR(hr, message) runtime_assert(!FAILED(hr), message)
+#define RT_ASSERT_HR(hr, message) RT_ASSERT(!FAILED(hr), message)
 
 static RECT get_window_rect_client_space(HWND parent, HWND child)
 {
