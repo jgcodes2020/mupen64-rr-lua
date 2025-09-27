@@ -122,29 +122,48 @@ static RECT get_window_rect_client_space(HWND parent, HWND child)
     return {offset_client.left, offset_client.top, offset_client.left + (client.right - client.left),
             offset_client.top + (client.bottom - client.top)};
 }
-static bool create_composition_surface(HWND hwnd, D2D1_SIZE_U size, IDXGIFactory2 **factory,
-                                       IDXGIAdapter1 **dxgiadapter, ID3D11Device **d3device, IDXGIDevice1 **dxdevice,
-                                       ID2D1Bitmap1 **bitmap, IDCompositionVisual **comp_visual,
-                                       IDCompositionDevice **comp_device, IDCompositionTarget **comp_target,
-                                       IDXGISwapChain1 **swapchain, ID2D1Factory3 **d2d_factory,
-                                       ID2D1Device2 **d2d_device, ID3D11DeviceContext **d3d_dc,
-                                       ID2D1DeviceContext2 **d2d_dc, IDXGISurface1 **dxgi_surface,
-                                       ID3D11Resource **dxgi_surface_resource, ID3D11Resource **front_buffer,
-                                       ID3D11Texture2D **d3d_gdi_tex)
+
+struct CompositionContext
 {
-    CreateDXGIFactory2(0, IID_PPV_ARGS(factory));
-    (*factory)->EnumAdapters1(0, dxgiadapter);
+    IDXGIFactory2 *dxgi_factory{};
+    IDXGIAdapter1 *dxgi_adapter{};
+    IDXGIDevice1 *dxgi_device{};
+    IDXGISwapChain1 *dxgi_swapchain{};
+    IDXGISurface1 *dxgi_surface{};
 
-    D3D11CreateDevice(*dxgiadapter, D3D_DRIVER_TYPE_UNKNOWN, nullptr,
+    ID3D11Device *d3d11_device{};
+    ID3D11DeviceContext *d3d_dc{};
+    ID3D11Resource *d3d11_surface{};
+    ID3D11Resource *d3d11_front_buffer{};
+    ID3D11Texture2D *d3d11_gdi_tex{};
+
+    ID2D1Bitmap1 *d2d1_bitmap{};
+    ID2D1Factory3 *d2d_factory{};
+    ID2D1Device2 *d2d_device{};
+    ID2D1DeviceContext2 *d2d_dc{};
+
+    IDCompositionVisual *comp_visual{};
+    IDCompositionDevice *comp_device{};
+    IDCompositionTarget *comp_target{};
+};
+
+static std::optional<CompositionContext> create_composition_context(const HWND hwnd, const D2D1_SIZE_U size)
+{
+    CompositionContext ctx;
+
+    CreateDXGIFactory2(0, IID_PPV_ARGS(&ctx.dxgi_factory));
+    ctx.dxgi_factory->EnumAdapters1(0, &ctx.dxgi_adapter);
+
+    D3D11CreateDevice(ctx.dxgi_adapter, D3D_DRIVER_TYPE_UNKNOWN, nullptr,
                       D3D11_CREATE_DEVICE_BGRA_SUPPORT | D3D11_CREATE_DEVICE_SINGLETHREADED, nullptr, 0,
-                      D3D11_SDK_VERSION, d3device, nullptr, d3d_dc);
+                      D3D11_SDK_VERSION, &ctx.d3d11_device, nullptr, &ctx.d3d_dc);
 
-    (*d3device)->QueryInterface(dxdevice);
-    (*dxdevice)->SetMaximumFrameLatency(1);
+    ctx.d3d11_device->QueryInterface(&ctx.dxgi_device);
+    ctx.dxgi_device->SetMaximumFrameLatency(1);
 
-    DCompositionCreateDevice(*dxdevice, IID_PPV_ARGS(comp_device));
-    (*comp_device)->CreateTargetForHwnd(hwnd, true, comp_target);
-    (*comp_device)->CreateVisual(comp_visual);
+    DCompositionCreateDevice(ctx.dxgi_device, IID_PPV_ARGS(&ctx.comp_device));
+    ctx.comp_device->CreateTargetForHwnd(hwnd, true, &ctx.comp_target);
+    ctx.comp_device->CreateVisual(&ctx.comp_visual);
 
     DXGI_SWAP_CHAIN_DESC1 swapdesc{};
     swapdesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
@@ -156,13 +175,13 @@ static bool create_composition_surface(HWND hwnd, D2D1_SIZE_U size, IDXGIFactory
     swapdesc.Width = size.width;
     swapdesc.Height = size.height;
 
-    (*factory)->CreateSwapChainForComposition(*d3device, &swapdesc, nullptr, swapchain);
-    (*comp_visual)->SetContent(*swapchain);
-    (*comp_target)->SetRoot(*comp_visual);
+    ctx.dxgi_factory->CreateSwapChainForComposition(ctx.d3d11_device, &swapdesc, nullptr, &ctx.dxgi_swapchain);
+    ctx.comp_visual->SetContent(ctx.dxgi_swapchain);
+    ctx.comp_target->SetRoot(ctx.comp_visual);
 
-    D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, {}, d2d_factory);
-    (*d2d_factory)->CreateDevice(*dxdevice, d2d_device);
-    (*d2d_device)->CreateDeviceContext(D2D1_DEVICE_CONTEXT_OPTIONS_NONE, d2d_dc);
+    D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, {}, &ctx.d2d_factory);
+    ctx.d2d_factory->CreateDevice(ctx.dxgi_device, &ctx.d2d_device);
+    ctx.d2d_device->CreateDeviceContext(D2D1_DEVICE_CONTEXT_OPTIONS_NONE, &ctx.d2d_dc);
 
     D3D11_TEXTURE2D_DESC desc{};
     desc.Width = size.width;
@@ -175,21 +194,21 @@ static bool create_composition_surface(HWND hwnd, D2D1_SIZE_U size, IDXGIFactory
     desc.BindFlags = D3D11_BIND_RENDER_TARGET;
     desc.MiscFlags = D3D11_RESOURCE_MISC_GDI_COMPATIBLE;
 
-    (*d3device)->CreateTexture2D(&desc, nullptr, d3d_gdi_tex);
-    (*d3d_gdi_tex)->QueryInterface(dxgi_surface);
+    ctx.d3d11_device->CreateTexture2D(&desc, nullptr, &ctx.d3d11_gdi_tex);
+    ctx.d3d11_gdi_tex->QueryInterface(&ctx.dxgi_surface);
 
     const UINT dpi = GetDpiForWindow(hwnd);
     const D2D1_BITMAP_PROPERTIES1 props =
         D2D1::BitmapProperties1(D2D1_BITMAP_OPTIONS_TARGET | D2D1_BITMAP_OPTIONS_CANNOT_DRAW,
                                 D2D1::PixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED), dpi, dpi);
 
-    (*d2d_dc)->CreateBitmapFromDxgiSurface(*dxgi_surface, props, bitmap);
-    (*d2d_dc)->SetTarget(*bitmap);
+    ctx.d2d_dc->CreateBitmapFromDxgiSurface(ctx.dxgi_surface, props, &ctx.d2d1_bitmap);
+    ctx.d2d_dc->SetTarget(ctx.d2d1_bitmap);
 
-    (*swapchain)->GetBuffer(1, IID_PPV_ARGS(front_buffer));
-    (*dxgi_surface)->QueryInterface(dxgi_surface_resource);
+    ctx.dxgi_swapchain->GetBuffer(1, IID_PPV_ARGS(&ctx.d3d11_front_buffer));
+    ctx.dxgi_surface->QueryInterface(&ctx.d3d11_surface);
 
-    return true;
+    return ctx;
 }
 
 static void set_statusbar_parts(HWND hwnd, std::vector<int32_t> parts)
