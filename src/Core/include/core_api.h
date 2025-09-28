@@ -285,6 +285,11 @@ extern "C"
         std::wstring (*find_available_rom)(const std::function<bool(const core_rom_header &)> &predicate);
 
         /**
+         * \return Whether MGE functionality is currently available.
+         */
+        bool (*mge_available)(void);
+
+        /**
          * \brief Fills the screen with the specified data.
          * The size of the buffer is determined by the resolution returned by the get_video_size (MGE) or readScreen
          * (Non-MGE) functions. Note that the buffer format is 24bpp.
@@ -462,12 +467,6 @@ extern "C"
          * \brief Invalidates the visuals, allowing an updateScreen call to happen.
          */
         std::function<void()> vr_invalidate_visuals;
-
-        /**
-         * \brief Gets whether the current set of plugin functions loaded in the core is capable of providing MGE
-         * functionality.
-         */
-        std::function<bool()> vr_get_mge_available;
 
         /**
          * \brief Invalidates the dynarec code cache for the block containing the specified address.

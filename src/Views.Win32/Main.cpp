@@ -451,7 +451,7 @@ void st_callback_wrapper(const core_st_callback_info &info, const std::vector<ui
 
 void update_screen()
 {
-    if (g_main_ctx.core_ctx->vr_get_mge_available())
+    if (PluginUtil::mge_available())
     {
         MGECompositor::update_screen();
     }
@@ -1219,6 +1219,7 @@ static core_result init_core()
     g_main_ctx.core.update_screen = update_screen;
     g_main_ctx.core.copy_video = MGECompositor::copy_video;
     g_main_ctx.core.find_available_rom = RomBrowser::find_available_rom;
+    g_main_ctx.core.mge_available = PluginUtil::mge_available;
     g_main_ctx.core.load_screen = MGECompositor::load_screen;
     g_main_ctx.core.st_pre_callback = st_callback_wrapper;
     g_main_ctx.core.get_plugin_names = [](char *video, char *audio, char *input, char *rsp) {

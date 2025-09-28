@@ -206,7 +206,7 @@ std::vector<uint8_t> generate_savestate()
         MiscHelpers::vecwrite(b, freeze.input_buffer.data(), freeze.input_buffer.size() * sizeof(core_buttons));
     }
 
-    if (vr_get_mge_available() && g_core->cfg->st_screenshot)
+    if (g_core->mge_available() && g_core->cfg->st_screenshot)
     {
         int32_t width;
         int32_t height;
@@ -476,7 +476,7 @@ void savestates_load_immediate_impl(const t_savestate_task &task)
 
         // NOTE: We don't want to restore screen buffer while seeking, since it creates a int16_t ugly flicker when the
         // movie restarts by loading state
-        if (vr_get_mge_available() && video_buffer && !vcr_is_seeking())
+        if (g_core->mge_available() && video_buffer && !vcr_is_seeking())
         {
             int32_t current_width, current_height;
             g_core->plugin_funcs.video_get_video_size(&current_width, &current_height);

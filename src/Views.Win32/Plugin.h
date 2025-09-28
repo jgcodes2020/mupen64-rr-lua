@@ -132,4 +132,9 @@ core_plugin_extended_funcs input_extended_funcs();
  */
 core_plugin_extended_funcs rsp_extended_funcs();
 
+/**
+ * \return Whether MGE functionality is currently available.
+ */
+bool mge_available();
+
 } // namespace PluginUtil

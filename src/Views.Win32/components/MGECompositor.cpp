@@ -5,7 +5,8 @@
 // (Add appropriate include/library paths if necessary.)
 
 #include "stdafx.h"
-#include "MGECompositor.h"
+#include <components/MGECompositor.h>
+#include <Plugin.h>
 #include <Messenger.h>
 
 using Microsoft::WRL::ComPtr;
@@ -367,7 +368,7 @@ void MGECompositor::init()
 
     Messenger::subscribe(Messenger::Message::EmuLaunchedChanged, [](const std::any &data) {
         const auto value = std::any_cast<bool>(data);
-        ShowWindow(mge_context.hwnd, value && g_main_ctx.core_ctx->vr_get_mge_available() ? SW_SHOW : SW_HIDE);
+        ShowWindow(mge_context.hwnd, value && PluginUtil::mge_available() ? SW_SHOW : SW_HIDE);
     });
 }
 

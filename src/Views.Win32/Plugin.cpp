@@ -684,3 +684,8 @@ core_plugin_extended_funcs PluginUtil::rsp_extended_funcs()
 {
     return GEN_EXTENDED_FUNCS(g_rsp_logger);
 }
+
+bool PluginUtil::mge_available()
+{
+    return g_main_ctx.core.plugin_funcs.video_read_video && g_main_ctx.core.plugin_funcs.video_get_video_size;
+}

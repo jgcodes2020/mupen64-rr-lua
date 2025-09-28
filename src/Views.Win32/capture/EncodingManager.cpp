@@ -5,6 +5,7 @@
  */
 
 #include "stdafx.h"
+#include <Plugin.h>
 #include <ThreadPool.h>
 #include <Config.h>
 #include <DialogService.h>
@@ -48,7 +49,7 @@ HBITMAP hy_bmp = nullptr;
 
 void readscreen_plugin(int32_t *width = nullptr, int32_t *height = nullptr)
 {
-    if (g_main_ctx.core_ctx->vr_get_mge_available())
+    if (PluginUtil::mge_available())
     {
         MGECompositor::copy_video(m_video_buf);
         MGECompositor::get_video_size(width, height);
@@ -229,8 +230,7 @@ void read_screen()
  */
 static bool check_readscreen_available()
 {
-    bool has_no_mge_or_readscreen =
-        !g_main_ctx.core_ctx->vr_get_mge_available() && !g_main_ctx.core.plugin_funcs.video_read_screen;
+    bool has_no_mge_or_readscreen = !PluginUtil::mge_available() && !g_main_ctx.core.plugin_funcs.video_read_screen;
     if ((g_config.capture_mode == 0 || g_config.capture_mode == 3) && has_no_mge_or_readscreen)
     {
         DialogService::show_dialog(READSCREEN_MISSING_MSG, L"Capture", fsvc_error);
@@ -244,7 +244,7 @@ void get_video_dimensions(int32_t *width, int32_t *height)
 {
     if (g_config.capture_mode == 0)
     {
-        if (g_main_ctx.core_ctx->vr_get_mge_available())
+        if (PluginUtil::mge_available())
         {
             MGECompositor::get_video_size(width, height);
         }

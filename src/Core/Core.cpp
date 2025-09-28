@@ -99,7 +99,6 @@ EXPORT core_result CALL core_create(core_params *params, core_ctx **ctx)
     g_ctx.vr_country_code_to_country_name = rom_country_code_to_country_name;
     g_ctx.vr_on_speed_modifier_changed = timer_on_speed_modifier_changed;
     g_ctx.vr_invalidate_visuals = vr_invalidate_visuals;
-    g_ctx.vr_get_mge_available = vr_get_mge_available;
     g_ctx.vr_recompile = vr_recompile;
     g_ctx.vr_get_timings = timer_get_timings;
     g_ctx.vcr_parse_header = vcr_parse_header;

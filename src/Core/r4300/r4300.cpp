@@ -2237,8 +2237,3 @@ void vr_set_gs_button(bool value)
 {
     gs_button = value;
 }
-
-bool vr_get_mge_available()
-{
-    return g_core->plugin_funcs.video_read_video && g_core->plugin_funcs.video_get_video_size;
-}
