@@ -671,7 +671,7 @@ static void show_piano_roll()
 
 static void screenshot()
 {
-    g_main_ctx.core.plugin_funcs.video_capture_screen(Config::screenshot_directory().string().data());
+    g_view_plugin_funcs.video_capture_screen(Config::screenshot_directory().string().data());
 }
 
 static void start_capture(const bool ask_preset)

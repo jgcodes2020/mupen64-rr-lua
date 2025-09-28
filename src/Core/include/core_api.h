@@ -66,7 +66,6 @@ extern "C"
 
 // TODO: Maybe implement dummy substitutions in the core?
 #pragma region Video
-        core_plugin_extended_funcs video_extended_funcs;
         CLOSEDLL video_close_dll;
         ROMCLOSED video_rom_closed;
         ROMOPEN video_rom_open;
@@ -74,22 +73,15 @@ extern "C"
         PROCESSDLIST video_process_dlist;
         PROCESSRDPLIST video_process_rdp_list;
         SHOWCFB video_show_cfb;
-        UPDATESCREEN video_update_screen;
         VISTATUSCHANGED video_vi_status_changed;
         VIWIDTHCHANGED video_vi_width_changed;
-        READSCREEN video_read_screen;
-        DLLCRTFREE video_dll_crt_free;
-        MOVESCREEN video_move_screen;
-        CAPTURESCREEN video_capture_screen;
         GETVIDEOSIZE video_get_video_size;
-        READVIDEO video_read_video;
         FBREAD video_fb_read;
         FBWRITE video_fb_write;
         FBGETFRAMEBUFFERINFO video_fb_get_frame_buffer_info;
 #pragma endregion
 
 #pragma region Audio
-        core_plugin_extended_funcs audio_extended_funcs;
         CLOSEDLL audio_close_dll_audio;
         ROMCLOSED audio_rom_closed;
         ROMOPEN audio_rom_open;
@@ -102,7 +94,6 @@ extern "C"
 #pragma endregion
 
 #pragma region Input
-        core_plugin_extended_funcs input_extended_funcs;
         CLOSEDLL input_close_dll;
         ROMCLOSED input_rom_closed;
         ROMOPEN input_rom_open;
@@ -111,12 +102,10 @@ extern "C"
         GETKEYS input_get_keys;
         SETKEYS input_set_keys;
         READCONTROLLER input_read_controller;
-        KEYDOWN input_key_down;
-        KEYUP input_key_up;
+
 #pragma endregion
 
 #pragma region RSP
-        core_plugin_extended_funcs rsp_extended_funcs;
         CLOSEDLL rsp_close_dll;
         ROMCLOSED rsp_rom_closed;
 

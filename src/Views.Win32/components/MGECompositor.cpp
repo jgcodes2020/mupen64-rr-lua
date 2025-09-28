@@ -382,7 +382,7 @@ void MGECompositor::update_screen()
         recreate_mge_context_d3d();
     }
 
-    g_main_ctx.core.plugin_funcs.video_read_video(&mge_context.buffer);
+    g_view_plugin_funcs.video_read_video(&mge_context.buffer);
 
     copy_rgb24_buffer_to_rgb32();
     upload_rgb32_buffer();

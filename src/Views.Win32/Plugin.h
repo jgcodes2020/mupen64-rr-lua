@@ -12,6 +12,21 @@
 struct view_plugin_funcs
 {
     CHANGEWINDOW video_change_window = nullptr;
+    core_plugin_extended_funcs video_extended_funcs;
+    UPDATESCREEN video_update_screen;
+    READSCREEN video_read_screen;
+    DLLCRTFREE video_dll_crt_free;
+    MOVESCREEN video_move_screen;
+    CAPTURESCREEN video_capture_screen;
+    READVIDEO video_read_video;
+
+    core_plugin_extended_funcs audio_extended_funcs;
+
+    core_plugin_extended_funcs input_extended_funcs;
+    KEYDOWN input_key_down;
+    KEYUP input_key_up;
+
+    core_plugin_extended_funcs rsp_extended_funcs;
 };
 
 class Plugin

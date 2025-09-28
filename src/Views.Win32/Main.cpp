@@ -457,7 +457,7 @@ void update_screen()
     }
     else
     {
-        g_main_ctx.core.plugin_funcs.video_update_screen();
+        g_view_plugin_funcs.video_update_screen();
     }
 }
 
@@ -805,13 +805,13 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
     }
     case WM_KEYDOWN:
     case WM_SYSKEYDOWN:
-        if (g_main_ctx.core.plugin_funcs.input_key_down && g_main_ctx.core_ctx->vr_get_launched())
-            g_main_ctx.core.plugin_funcs.input_key_down(wParam, lParam);
+        if (g_view_plugin_funcs.input_key_down && g_main_ctx.core_ctx->vr_get_launched())
+            g_view_plugin_funcs.input_key_down(wParam, lParam);
         break;
     case WM_SYSKEYUP:
     case WM_KEYUP:
-        if (g_main_ctx.core.plugin_funcs.input_key_up && g_main_ctx.core_ctx->vr_get_launched())
-            g_main_ctx.core.plugin_funcs.input_key_up(wParam, lParam);
+        if (g_view_plugin_funcs.input_key_up && g_main_ctx.core_ctx->vr_get_launched())
+            g_view_plugin_funcs.input_key_up(wParam, lParam);
         break;
     case WM_MOUSEWHEEL:
         g_main_ctx.last_wheel_delta = GET_WHEEL_DELTA_WPARAM(wParam);
@@ -829,7 +829,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
     case WM_MOVE: {
         if (g_main_ctx.core_ctx->vr_get_launched())
         {
-            g_main_ctx.core.plugin_funcs.video_move_screen((int)wParam, lParam);
+            g_view_plugin_funcs.video_move_screen((int)wParam, lParam);
         }
 
         if (IsIconic(g_main_ctx.hwnd))
@@ -1235,10 +1235,10 @@ static core_result init_core()
         copy(g_rsp_plugin, rsp);
     };
 
-    g_main_ctx.core.plugin_funcs.video_extended_funcs = PluginUtil::video_extended_funcs();
-    g_main_ctx.core.plugin_funcs.audio_extended_funcs = PluginUtil::audio_extended_funcs();
-    g_main_ctx.core.plugin_funcs.input_extended_funcs = PluginUtil::input_extended_funcs();
-    g_main_ctx.core.plugin_funcs.rsp_extended_funcs = PluginUtil::rsp_extended_funcs();
+    g_view_plugin_funcs.video_extended_funcs = PluginUtil::video_extended_funcs();
+    g_view_plugin_funcs.audio_extended_funcs = PluginUtil::audio_extended_funcs();
+    g_view_plugin_funcs.input_extended_funcs = PluginUtil::input_extended_funcs();
+    g_view_plugin_funcs.rsp_extended_funcs = PluginUtil::rsp_extended_funcs();
 
     const auto result = core_create(&g_main_ctx.core, &g_main_ctx.core_ctx);
 
