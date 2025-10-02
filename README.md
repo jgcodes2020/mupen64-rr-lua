@@ -3,7 +3,7 @@
 </p>
 
 <h1 align="center">
-  mupen64-rr-lua
+  Mupen64
 </h1>
 
 <p align="center">
@@ -18,10 +18,10 @@
 
 # Quickstart
 
-Since Mupen64 requires plugins to run, the easiest way to get started is by downloading the Mupen64 Repack from the [Mupen64 Homepage](https://mupen64.com).
+The easiest way to get started using Mupen64 is by visiting the [Mupen64 Homepage](https://mupen64.com) and downloading the repack there.
 
 If any issues arise or you need help, join the [Mupen64 Community Discord](https://discord.gg/eZXbmguKEq).
 
-Cutting-edge features with potential instability are available for download as a zipped binary under the latest commit's artifact. 
-
 Visit the [Mupen64 Wiki](https://github.com/mkdasher/mupen64-rr-lua-/wiki/Contributing) for documentation!
+
+Cutting-edge features with potential instability are available for download as a zipped binary under the latest commit's artifact.
