@@ -21,30 +21,30 @@
         <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">build\$(ProjectName)\obj-x86-release\</IntDir>
         <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">build\$(ProjectName)\obj-x64-debug\</IntDir>
         <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">build\$(ProjectName)\obj-x64-release\</IntDir>
-        <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">tas-rsp-x86-debug</TargetName>
-        <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">tas-rsp-x86-release</TargetName>
-        <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">tas-rsp-x64-debug</TargetName>
-        <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">tas-rsp-x64-release</TargetName>
+        <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TASRSP-x86-debug</TargetName>
+        <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TASRSP-x86-release</TargetName>
+        <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">TASRSP-x64-debug</TargetName>
+        <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">TASRSP-x64-release</TargetName>
     </PropertyGroup>
 
     <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
         <Link>
-            <ProgramDatabaseFile>build\$(ProjectName)\tas-rsp-x86-debug.pdb</ProgramDatabaseFile>
+            <ProgramDatabaseFile>build\$(ProjectName)\TASRSP-x86-debug.pdb</ProgramDatabaseFile>
         </Link>
     </ItemDefinitionGroup>
     <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
         <Link>
-            <ProgramDatabaseFile>build\$(ProjectName)\tas-rsp-x86-release.pdb</ProgramDatabaseFile>
+            <ProgramDatabaseFile>build\$(ProjectName)\TASRSP-x86-release.pdb</ProgramDatabaseFile>
         </Link>
     </ItemDefinitionGroup>
     <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
         <Link>
-            <ProgramDatabaseFile>build\$(ProjectName)\tas-rsp-x64-debug.pdb</ProgramDatabaseFile>
+            <ProgramDatabaseFile>build\$(ProjectName)\TASRSP-x64-debug.pdb</ProgramDatabaseFile>
         </Link>
     </ItemDefinitionGroup>
     <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
         <Link>
-            <ProgramDatabaseFile>build\$(ProjectName)\tas-rsp-x64-release.pdb</ProgramDatabaseFile>
+            <ProgramDatabaseFile>build\$(ProjectName)\TASRSP-x64-release.pdb</ProgramDatabaseFile>
         </Link>
     </ItemDefinitionGroup>
 
