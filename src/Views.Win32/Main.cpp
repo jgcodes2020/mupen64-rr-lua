@@ -1237,14 +1237,9 @@ static core_result init_core()
         copy(g_rsp_plugin, rsp);
     };
 
-    g_plugin_funcs.video_extended_funcs = PluginUtil::video_extended_funcs();
-    g_plugin_funcs.audio_extended_funcs = PluginUtil::audio_extended_funcs();
-    g_plugin_funcs.input_extended_funcs = PluginUtil::input_extended_funcs();
-    g_plugin_funcs.rsp_extended_funcs = PluginUtil::rsp_extended_funcs();
-
     const auto result = core_create(&g_main_ctx.core, &g_main_ctx.core_ctx);
 
-    setup_dummy_info();
+    PluginUtil::init_dummy_and_extended_funcs();
 
     return result;
 }

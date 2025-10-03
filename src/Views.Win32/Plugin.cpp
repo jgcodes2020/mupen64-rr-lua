@@ -15,7 +15,7 @@
 
 #define CALL _cdecl
 
-static core_gfx_info dummy_gfx_info{};
+static core_gfx_info dummy_video_info{};
 static core_audio_info dummy_audio_info{};
 static core_input_info dummy_control_info{};
 static core_rsp_info dummy_rsp_info{};
@@ -437,11 +437,11 @@ void Plugin::config(const HWND hwnd)
         if (!g_main_ctx.core_ctx->vr_get_launched())
         {
             // NOTE: Since olden days, dummy render target hwnd was the statusbar.
-            dummy_gfx_info.main_hwnd = Statusbar::hwnd();
-            dummy_gfx_info.statusbar_hwnd = Statusbar::hwnd();
+            dummy_video_info.main_hwnd = Statusbar::hwnd();
+            dummy_video_info.statusbar_hwnd = Statusbar::hwnd();
 
             const auto initiate_gfx = (INITIATEGFX)GetProcAddress(m_module, "InitiateGFX");
-            if (initiate_gfx && !initiate_gfx(dummy_gfx_info))
+            if (initiate_gfx && !initiate_gfx(dummy_video_info))
             {
                 DialogService::show_dialog(L"Couldn't initialize video plugin.", L"Core", fsvc_information);
             }
@@ -534,43 +534,70 @@ void Plugin::initiate()
     }
 }
 
-void setup_dummy_info()
+t_plugin_discovery_result PluginUtil::discover_plugins(const std::filesystem::path &directory)
 {
-    int32_t i;
+    std::vector<std::unique_ptr<Plugin>> plugins;
+    const auto files = g_main_ctx.io_service.get_files_with_extension_in_directory(directory, L"dll");
 
-    /////// GFX ///////////////////////////
+    std::vector<std::pair<std::filesystem::path, std::wstring>> results;
+    for (const auto &file : files)
+    {
+        auto [result, plugin] = Plugin::create(file);
 
-    dummy_gfx_info.byteswapped = 1;
-    dummy_gfx_info.rom = (uint8_t *)dummy_header;
-    dummy_gfx_info.rdram = (uint8_t *)g_main_ctx.core_ctx->rdram;
-    dummy_gfx_info.dmem = (uint8_t *)g_main_ctx.core_ctx->SP_DMEM;
-    dummy_gfx_info.imem = (uint8_t *)g_main_ctx.core_ctx->SP_IMEM;
-    dummy_gfx_info.mi_intr_reg = &g_main_ctx.core_ctx->MI_register->mi_intr_reg;
-    dummy_gfx_info.dpc_start_reg = &g_main_ctx.core_ctx->dpc_register->dpc_start;
-    dummy_gfx_info.dpc_end_reg = &g_main_ctx.core_ctx->dpc_register->dpc_end;
-    dummy_gfx_info.dpc_current_reg = &g_main_ctx.core_ctx->dpc_register->dpc_current;
-    dummy_gfx_info.dpc_status_reg = &g_main_ctx.core_ctx->dpc_register->dpc_status;
-    dummy_gfx_info.dpc_clock_reg = &g_main_ctx.core_ctx->dpc_register->dpc_clock;
-    dummy_gfx_info.dpc_bufbusy_reg = &g_main_ctx.core_ctx->dpc_register->dpc_bufbusy;
-    dummy_gfx_info.dpc_pipebusy_reg = &g_main_ctx.core_ctx->dpc_register->dpc_pipebusy;
-    dummy_gfx_info.dpc_tmem_reg = &g_main_ctx.core_ctx->dpc_register->dpc_tmem;
-    dummy_gfx_info.vi_status_reg = &g_main_ctx.core_ctx->vi_register->vi_status;
-    dummy_gfx_info.vi_origin_reg = &g_main_ctx.core_ctx->vi_register->vi_origin;
-    dummy_gfx_info.vi_width_reg = &g_main_ctx.core_ctx->vi_register->vi_width;
-    dummy_gfx_info.vi_intr_reg = &g_main_ctx.core_ctx->vi_register->vi_v_intr;
-    dummy_gfx_info.vi_v_current_line_reg = &g_main_ctx.core_ctx->vi_register->vi_current;
-    dummy_gfx_info.vi_timing_reg = &g_main_ctx.core_ctx->vi_register->vi_burst;
-    dummy_gfx_info.vi_v_sync_reg = &g_main_ctx.core_ctx->vi_register->vi_v_sync;
-    dummy_gfx_info.vi_h_sync_reg = &g_main_ctx.core_ctx->vi_register->vi_h_sync;
-    dummy_gfx_info.vi_leap_reg = &g_main_ctx.core_ctx->vi_register->vi_leap;
-    dummy_gfx_info.vi_h_start_reg = &g_main_ctx.core_ctx->vi_register->vi_h_start;
-    dummy_gfx_info.vi_v_start_reg = &g_main_ctx.core_ctx->vi_register->vi_v_start;
-    dummy_gfx_info.vi_v_burst_reg = &g_main_ctx.core_ctx->vi_register->vi_v_burst;
-    dummy_gfx_info.vi_x_scale_reg = &g_main_ctx.core_ctx->vi_register->vi_x_scale;
-    dummy_gfx_info.vi_y_scale_reg = &g_main_ctx.core_ctx->vi_register->vi_y_scale;
-    dummy_gfx_info.check_interrupts = dummy_void;
+        results.emplace_back(file, result);
 
-    /////// AUDIO /////////////////////////
+        if (!result.empty()) continue;
+
+        plugins.emplace_back(std::move(plugin));
+    }
+
+    return t_plugin_discovery_result{
+        .plugins = std::move(plugins),
+        .results = results,
+    };
+}
+
+#define GEN_EXTENDED_FUNCS(logger)                                                                                     \
+    core_plugin_extended_funcs                                                                                         \
+    {                                                                                                                  \
+        .size = sizeof(core_plugin_extended_funcs), .log_trace = [](const wchar_t *str) { logger->trace(str); },       \
+        .log_info = [](const wchar_t *str) { logger->info(str); },                                                     \
+        .log_warn = [](const wchar_t *str) { logger->warn(str); },                                                     \
+        .log_error = [](const wchar_t *str) { logger->error(str); },                                                   \
+    }
+
+void PluginUtil::init_dummy_and_extended_funcs()
+{
+    dummy_video_info.byteswapped = 1;
+    dummy_video_info.rom = (uint8_t *)dummy_header;
+    dummy_video_info.rdram = (uint8_t *)g_main_ctx.core_ctx->rdram;
+    dummy_video_info.dmem = (uint8_t *)g_main_ctx.core_ctx->SP_DMEM;
+    dummy_video_info.imem = (uint8_t *)g_main_ctx.core_ctx->SP_IMEM;
+    dummy_video_info.mi_intr_reg = &g_main_ctx.core_ctx->MI_register->mi_intr_reg;
+    dummy_video_info.dpc_start_reg = &g_main_ctx.core_ctx->dpc_register->dpc_start;
+    dummy_video_info.dpc_end_reg = &g_main_ctx.core_ctx->dpc_register->dpc_end;
+    dummy_video_info.dpc_current_reg = &g_main_ctx.core_ctx->dpc_register->dpc_current;
+    dummy_video_info.dpc_status_reg = &g_main_ctx.core_ctx->dpc_register->dpc_status;
+    dummy_video_info.dpc_clock_reg = &g_main_ctx.core_ctx->dpc_register->dpc_clock;
+    dummy_video_info.dpc_bufbusy_reg = &g_main_ctx.core_ctx->dpc_register->dpc_bufbusy;
+    dummy_video_info.dpc_pipebusy_reg = &g_main_ctx.core_ctx->dpc_register->dpc_pipebusy;
+    dummy_video_info.dpc_tmem_reg = &g_main_ctx.core_ctx->dpc_register->dpc_tmem;
+    dummy_video_info.vi_status_reg = &g_main_ctx.core_ctx->vi_register->vi_status;
+    dummy_video_info.vi_origin_reg = &g_main_ctx.core_ctx->vi_register->vi_origin;
+    dummy_video_info.vi_width_reg = &g_main_ctx.core_ctx->vi_register->vi_width;
+    dummy_video_info.vi_intr_reg = &g_main_ctx.core_ctx->vi_register->vi_v_intr;
+    dummy_video_info.vi_v_current_line_reg = &g_main_ctx.core_ctx->vi_register->vi_current;
+    dummy_video_info.vi_timing_reg = &g_main_ctx.core_ctx->vi_register->vi_burst;
+    dummy_video_info.vi_v_sync_reg = &g_main_ctx.core_ctx->vi_register->vi_v_sync;
+    dummy_video_info.vi_h_sync_reg = &g_main_ctx.core_ctx->vi_register->vi_h_sync;
+    dummy_video_info.vi_leap_reg = &g_main_ctx.core_ctx->vi_register->vi_leap;
+    dummy_video_info.vi_h_start_reg = &g_main_ctx.core_ctx->vi_register->vi_h_start;
+    dummy_video_info.vi_v_start_reg = &g_main_ctx.core_ctx->vi_register->vi_v_start;
+    dummy_video_info.vi_v_burst_reg = &g_main_ctx.core_ctx->vi_register->vi_v_burst;
+    dummy_video_info.vi_x_scale_reg = &g_main_ctx.core_ctx->vi_register->vi_x_scale;
+    dummy_video_info.vi_y_scale_reg = &g_main_ctx.core_ctx->vi_register->vi_y_scale;
+    dummy_video_info.check_interrupts = dummy_void;
+
     dummy_audio_info.main_hwnd = g_main_ctx.hwnd;
     dummy_audio_info.hinst = g_main_ctx.hinst;
     dummy_audio_info.byteswapped = 1;
@@ -587,20 +614,18 @@ void setup_dummy_info()
     dummy_audio_info.ai_bitrate_reg = &g_main_ctx.core_ctx->ai_register->ai_bitrate;
     dummy_audio_info.check_interrupts = dummy_void;
 
-    ///// CONTROLS ///////////////////////////
     dummy_control_info.main_hwnd = g_main_ctx.hwnd;
     dummy_control_info.hinst = g_main_ctx.hinst;
     dummy_control_info.byteswapped = 1;
     dummy_control_info.header = (uint8_t *)dummy_header;
     dummy_control_info.controllers = g_main_ctx.core.controls;
-    for (i = 0; i < 4; i++)
+    for (int32_t i = 0; i < 4; i++)
     {
         g_main_ctx.core.controls[i].Present = 0;
         g_main_ctx.core.controls[i].RawData = 0;
         g_main_ctx.core.controls[i].Plugin = (int32_t)ce_none;
     }
 
-    //////// RSP /////////////////////////////
     dummy_rsp_info.byteswapped = 1;
     dummy_rsp_info.rdram = (uint8_t *)g_main_ctx.core_ctx->rdram;
     dummy_rsp_info.dmem = (uint8_t *)g_main_ctx.core_ctx->SP_DMEM;
@@ -628,58 +653,11 @@ void setup_dummy_info()
     dummy_rsp_info.process_alist_list = g_plugin_funcs.audio_process_alist;
     dummy_rsp_info.process_rdp_list = g_plugin_funcs.video_process_rdp_list;
     dummy_rsp_info.show_cfb = g_plugin_funcs.video_show_cfb;
-}
 
-t_plugin_discovery_result PluginUtil::discover_plugins(const std::filesystem::path &directory)
-{
-    std::vector<std::unique_ptr<Plugin>> plugins;
-    const auto files = g_main_ctx.io_service.get_files_with_extension_in_directory(directory, L"dll");
-
-    std::vector<std::pair<std::filesystem::path, std::wstring>> results;
-    for (const auto &file : files)
-    {
-        auto [result, plugin] = Plugin::create(file);
-
-        results.emplace_back(file, result);
-
-        if (!result.empty()) continue;
-
-        plugins.emplace_back(std::move(plugin));
-    }
-
-    return t_plugin_discovery_result{
-        .plugins = std::move(plugins),
-        .results = results,
-    };
-}
-
-#define GEN_EXTENDED_FUNCS(logger)                                                                                     \
-    core_plugin_extended_funcs{                                                                                        \
-        .size = sizeof(core_plugin_extended_funcs),                                                                    \
-        .log_trace = [](const wchar_t *str) { logger->trace(str); },                                                   \
-        .log_info = [](const wchar_t *str) { logger->info(str); },                                                     \
-        .log_warn = [](const wchar_t *str) { logger->warn(str); },                                                     \
-        .log_error = [](const wchar_t *str) { logger->error(str); },                                                   \
-    };
-
-core_plugin_extended_funcs PluginUtil::video_extended_funcs()
-{
-    return GEN_EXTENDED_FUNCS(g_view_logger);
-}
-
-core_plugin_extended_funcs PluginUtil::audio_extended_funcs()
-{
-    return GEN_EXTENDED_FUNCS(g_audio_logger);
-}
-
-core_plugin_extended_funcs PluginUtil::input_extended_funcs()
-{
-    return GEN_EXTENDED_FUNCS(g_input_logger);
-}
-
-core_plugin_extended_funcs PluginUtil::rsp_extended_funcs()
-{
-    return GEN_EXTENDED_FUNCS(g_rsp_logger);
+    g_plugin_funcs.video_extended_funcs = GEN_EXTENDED_FUNCS(g_video_logger);
+    g_plugin_funcs.audio_extended_funcs = GEN_EXTENDED_FUNCS(g_audio_logger);
+    g_plugin_funcs.input_extended_funcs = GEN_EXTENDED_FUNCS(g_input_logger);
+    g_plugin_funcs.rsp_extended_funcs = GEN_EXTENDED_FUNCS(g_rsp_logger);
 }
 
 bool PluginUtil::mge_available()

@@ -142,11 +142,6 @@ typedef struct
 
 extern plugin_funcs g_plugin_funcs;
 
-/// <summary>
-/// Initializes dummy info used by per-plugin functions
-/// </summary>
-void setup_dummy_info();
-
 /**
  * \brief A module providing utility functions related to plugins.
  */
@@ -160,21 +155,9 @@ namespace PluginUtil
 t_plugin_discovery_result discover_plugins(const std::filesystem::path &directory);
 
 /**
- * \brief Gets the extended function set for video plugins.
+ * \brief Initializes dummy and extended function sets.
  */
-core_plugin_extended_funcs video_extended_funcs();
-/**
- * \brief Gets the extended function set for audio plugins.
- */
-core_plugin_extended_funcs audio_extended_funcs();
-/**
- * \brief Gets the extended function set for input plugins.
- */
-core_plugin_extended_funcs input_extended_funcs();
-/**
- * \brief Gets the extended function set for RSP plugins.
- */
-core_plugin_extended_funcs rsp_extended_funcs();
+void init_dummy_and_extended_funcs();
 
 /**
  * \return Whether MGE functionality is currently available.
