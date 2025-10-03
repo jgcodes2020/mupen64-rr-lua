@@ -31,6 +31,11 @@ static DLLABOUT dll_about{};
 static DLLCONFIG dll_config{};
 static DLLTEST dll_test{};
 
+static std::shared_ptr<Plugin> video_plugin;
+static std::shared_ptr<Plugin> audio_plugin;
+static std::shared_ptr<Plugin> input_plugin;
+static std::shared_ptr<Plugin> rsp_plugin;
+
 plugin_funcs g_plugin_funcs{};
 
 #pragma region Dummy Functions
@@ -705,4 +710,95 @@ void PluginUtil::stop_plugins()
     g_plugin_funcs.audio_close_dll_audio();
     g_plugin_funcs.input_close_dll();
     g_plugin_funcs.rsp_close_dll();
+}
+bool PluginUtil::load_plugins()
+{
+    if (video_plugin.get() && audio_plugin.get() && input_plugin.get() && rsp_plugin.get() &&
+        video_plugin->path() == g_config.selected_video_plugin &&
+        audio_plugin->path() == g_config.selected_audio_plugin &&
+        input_plugin->path() == g_config.selected_input_plugin && rsp_plugin->path() == g_config.selected_rsp_plugin)
+    {
+        g_core_logger->info("[Core] Plugins unchanged, reusing...");
+    }
+    else
+    {
+        video_plugin.reset();
+        audio_plugin.reset();
+        input_plugin.reset();
+        rsp_plugin.reset();
+
+        g_view_logger->trace(L"Loading video plugin: {}", g_config.selected_video_plugin);
+        g_view_logger->trace(L"Loading audio plugin: {}", g_config.selected_audio_plugin);
+        g_view_logger->trace(L"Loading input plugin: {}", g_config.selected_input_plugin);
+        g_view_logger->trace(L"Loading RSP plugin: {}", g_config.selected_rsp_plugin);
+
+        auto video_pl = Plugin::create(g_config.selected_video_plugin);
+        auto audio_pl = Plugin::create(g_config.selected_audio_plugin);
+        auto input_pl = Plugin::create(g_config.selected_input_plugin);
+        auto rsp_pl = Plugin::create(g_config.selected_rsp_plugin);
+
+        if (!video_pl.first.empty())
+        {
+            g_view_logger->error(L"Failed to load video plugin: {}", video_pl.first);
+        }
+        if (!audio_pl.first.empty())
+        {
+            g_view_logger->error(L"Failed to load audio plugin: {}", audio_pl.first);
+        }
+        if (!input_pl.first.empty())
+        {
+            g_view_logger->error(L"Failed to load input plugin: {}", input_pl.first);
+        }
+        if (!rsp_pl.first.empty())
+        {
+            g_view_logger->error(L"Failed to load rsp plugin: {}", rsp_pl.first);
+        }
+
+        if (video_pl.second == nullptr || audio_pl.second == nullptr || input_pl.second == nullptr ||
+            rsp_pl.second == nullptr)
+        {
+            video_pl.second.reset();
+            audio_pl.second.reset();
+            input_pl.second.reset();
+            rsp_pl.second.reset();
+            return false;
+        }
+
+        video_plugin = std::move(video_pl.second);
+        audio_plugin = std::move(audio_pl.second);
+        input_plugin = std::move(input_pl.second);
+        rsp_plugin = std::move(rsp_pl.second);
+    }
+    return true;
+}
+
+void PluginUtil::initiate_plugins()
+{
+    // HACK: We sleep between each plugin load, as that seems to remedy various plugins failing to initialize correctly.
+    auto gfx_plugin_thread = std::thread([] { video_plugin->initiate(); });
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    auto audio_plugin_thread = std::thread([] { audio_plugin->initiate(); });
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    auto input_plugin_thread = std::thread([] { input_plugin->initiate(); });
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    auto rsp_plugin_thread = std::thread([] { rsp_plugin->initiate(); });
+
+    gfx_plugin_thread.join();
+    audio_plugin_thread.join();
+    input_plugin_thread.join();
+    rsp_plugin_thread.join();
+}
+
+void PluginUtil::get_plugin_names(char *video, char *audio, char *input, char *rsp)
+{
+    const auto copy = [&](const std::shared_ptr<Plugin> &plugin, char *type) {
+        RT_ASSERT(plugin.get(), L"Plugin not loaded");
+        const auto result = strncpy_s(type, 64 - 1, plugin->name().c_str(), plugin->name().size());
+        RT_ASSERT(!result, L"Plugin name copy failed");
+    };
+
+    copy(video_plugin, video);
+    copy(audio_plugin, audio);
+    copy(input_plugin, input);
+    copy(rsp_plugin, rsp);
 }

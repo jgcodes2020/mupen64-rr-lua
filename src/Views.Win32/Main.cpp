@@ -60,11 +60,6 @@ DWORD g_ui_thread_id{};
 
 ULONG_PTR gdi_plus_token;
 
-std::shared_ptr<Plugin> g_video_plugin;
-std::shared_ptr<Plugin> g_audio_plugin;
-std::shared_ptr<Plugin> g_input_plugin;
-std::shared_ptr<Plugin> g_rsp_plugin;
-
 constexpr auto WND_CLASS = L"myWindowClass";
 
 BetterEmulationLock::BetterEmulationLock()
@@ -982,85 +977,6 @@ void on_new_frame()
 #endif
 }
 
-bool load_plugins()
-{
-    if (g_video_plugin.get() && g_audio_plugin.get() && g_input_plugin.get() && g_rsp_plugin.get() &&
-        g_video_plugin->path() == g_config.selected_video_plugin &&
-        g_audio_plugin->path() == g_config.selected_audio_plugin &&
-        g_input_plugin->path() == g_config.selected_input_plugin &&
-        g_rsp_plugin->path() == g_config.selected_rsp_plugin)
-    {
-        g_core_logger->info("[Core] Plugins unchanged, reusing...");
-    }
-    else
-    {
-        g_video_plugin.reset();
-        g_audio_plugin.reset();
-        g_input_plugin.reset();
-        g_rsp_plugin.reset();
-
-        g_view_logger->trace(L"Loading video plugin: {}", g_config.selected_video_plugin);
-        g_view_logger->trace(L"Loading audio plugin: {}", g_config.selected_audio_plugin);
-        g_view_logger->trace(L"Loading input plugin: {}", g_config.selected_input_plugin);
-        g_view_logger->trace(L"Loading RSP plugin: {}", g_config.selected_rsp_plugin);
-
-        auto video_pl = Plugin::create(g_config.selected_video_plugin);
-        auto audio_pl = Plugin::create(g_config.selected_audio_plugin);
-        auto input_pl = Plugin::create(g_config.selected_input_plugin);
-        auto rsp_pl = Plugin::create(g_config.selected_rsp_plugin);
-
-        if (!video_pl.first.empty())
-        {
-            g_view_logger->error(L"Failed to load video plugin: {}", video_pl.first);
-        }
-        if (!audio_pl.first.empty())
-        {
-            g_view_logger->error(L"Failed to load audio plugin: {}", audio_pl.first);
-        }
-        if (!input_pl.first.empty())
-        {
-            g_view_logger->error(L"Failed to load input plugin: {}", input_pl.first);
-        }
-        if (!rsp_pl.first.empty())
-        {
-            g_view_logger->error(L"Failed to load rsp plugin: {}", rsp_pl.first);
-        }
-
-        if (video_pl.second == nullptr || audio_pl.second == nullptr || input_pl.second == nullptr ||
-            rsp_pl.second == nullptr)
-        {
-            video_pl.second.reset();
-            audio_pl.second.reset();
-            input_pl.second.reset();
-            rsp_pl.second.reset();
-            return false;
-        }
-
-        g_video_plugin = std::move(video_pl.second);
-        g_audio_plugin = std::move(audio_pl.second);
-        g_input_plugin = std::move(input_pl.second);
-        g_rsp_plugin = std::move(rsp_pl.second);
-    }
-    return true;
-}
-
-void initiate_plugins()
-{
-    // HACK: We sleep between each plugin load, as that seems to remedy various plugins failing to initialize correctly.
-    auto gfx_plugin_thread = std::thread([] { g_video_plugin->initiate(); });
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
-    auto audio_plugin_thread = std::thread([] { g_audio_plugin->initiate(); });
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
-    auto input_plugin_thread = std::thread([] { g_input_plugin->initiate(); });
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
-    auto rsp_plugin_thread = std::thread([] { g_rsp_plugin->initiate(); });
-
-    gfx_plugin_thread.join();
-    audio_plugin_thread.join();
-    input_plugin_thread.join();
-    rsp_plugin_thread.join();
-}
-
 static void CALLBACK invalidate_callback(UINT, UINT, DWORD_PTR, DWORD_PTR, DWORD_PTR)
 {
     g_main_ctx.core_ctx->vr_invalidate_visuals();
@@ -1200,8 +1116,8 @@ static core_result init_core()
     g_main_ctx.core.log_info = [](const auto &str) { g_core_logger->info(str); };
     g_main_ctx.core.log_warn = [](const auto &str) { g_core_logger->warn(str); };
     g_main_ctx.core.log_error = [](const auto &str) { g_core_logger->error(str); };
-    g_main_ctx.core.load_plugins = load_plugins;
-    g_main_ctx.core.initiate_plugins = initiate_plugins;
+    g_main_ctx.core.load_plugins = PluginUtil::load_plugins;
+    g_main_ctx.core.initiate_plugins = PluginUtil::initiate_plugins;
     g_main_ctx.core.submit_task = [](const auto cb) { ThreadPool::submit_task(cb); };
     g_main_ctx.core.get_saves_directory = Config::save_directory;
     g_main_ctx.core.get_backups_directory = Config::backup_directory;
@@ -1224,18 +1140,7 @@ static core_result init_core()
     g_main_ctx.core.mge_available = PluginUtil::mge_available;
     g_main_ctx.core.load_screen = MGECompositor::load_screen;
     g_main_ctx.core.st_pre_callback = st_callback_wrapper;
-    g_main_ctx.core.get_plugin_names = [](char *video, char *audio, char *input, char *rsp) {
-        const auto copy = [&](const std::shared_ptr<Plugin> &plugin, char *type) {
-            RT_ASSERT(plugin.get(), L"Plugin not loaded");
-            const auto result = strncpy_s(type, 64 - 1, plugin->name().c_str(), plugin->name().size());
-            RT_ASSERT(!result, L"Plugin name copy failed");
-        };
-
-        copy(g_video_plugin, video);
-        copy(g_audio_plugin, audio);
-        copy(g_input_plugin, input);
-        copy(g_rsp_plugin, rsp);
-    };
+    g_main_ctx.core.get_plugin_names = PluginUtil::get_plugin_names;
 
     const auto result = core_create(&g_main_ctx.core, &g_main_ctx.core_ctx);
 

@@ -174,4 +174,24 @@ void start_plugins();
  */
 void stop_plugins();
 
+/**
+ * \brief Loads the plugins specified in the configuration, filling out the global plugin function registry.
+ * \return Whether the operation succeeded.
+ */
+bool load_plugins();
+
+/**
+ * \brief Initiates the currently loaded plugins.
+ */
+void initiate_plugins();
+
+/**
+ * \brief Copies the names of the currently loaded plugins into the provided buffers.
+ * \param video The video plugin name buffer of size `64` (including NUL terminator).
+ * \param audio The audio plugin name buffer of size `64` (including NUL terminator).
+ * \param input The input plugin name buffer of size `64` (including NUL terminator).
+ * \param rsp The RSP plugin name buffer of size `64` (including NUL terminator).
+ */
+void get_plugin_names(char *video, char *audio, char *input, char *rsp);
+
 } // namespace PluginUtil
