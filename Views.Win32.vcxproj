@@ -365,7 +365,7 @@
         <Image Include="src\Views.Win32\icons\plugin_rsp.bmp"/>
     </ItemGroup>
     <ItemGroup>
-        <ResourceCompile Include="src\Views.Win32\rsrc.rc"/>
+        <ResourceCompile Include="src\Views.Win32\Resource.rc"/>
     </ItemGroup>
     <ItemGroup>
         <Manifest Include="src\Views.Win32\app.manifest"/>
