@@ -25,7 +25,6 @@ constexpr auto ROM_COUNTRY_WARNING_MESSAGE = L"The movie was recorded on a {} RO
 constexpr auto ROM_CRC_WARNING_MESSAGE =
     L"The movie was recorded with a ROM that has CRC \"0x%X\",\nbut you are using a ROM with CRC \"0x%X\".\r\nPlayback "
     L"might desynchronize. Are you sure you want to continue?";
-constexpr auto TRUNCATE_MESSAGE = L"Failed to truncate the movie file. The movie may be corrupted.";
 constexpr auto WII_VC_MISMATCH_A_WARNING_MESSAGE =
     L"The movie was recorded with WiiVC mode enabled, but is being played back with it disabled.\r\nPlayback might "
     L"desynchronize. Are you sure you want to continue?";
@@ -35,8 +34,6 @@ constexpr auto WII_VC_MISMATCH_B_WARNING_MESSAGE =
 constexpr auto OLD_MOVIE_EXTENDED_SECTION_NONZERO_MESSAGE =
     L"The movie was recorded prior to the extended format being available, but contains data in an extended format "
     L"section.\r\nThe movie may be corrupted. Are you sure you want to continue?";
-constexpr auto WARP_MODIFY_SEEKBACK_FAILED_MESSAGE =
-    L"Failed to seek back during a warp modify operation, error code {}.\r\nPiano roll might be desynced.";
 constexpr auto CHEAT_ERROR_ASK_MESSAGE = L"This movie has a cheat file associated with it, but it could not be "
                                          L"loaded.\r\nPlayback might desynchronize. Are you sure you want to continue?";
 constexpr auto CONTROLLER_ON_OFF_MISMATCH =
