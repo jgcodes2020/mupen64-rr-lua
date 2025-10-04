@@ -12,6 +12,7 @@
 #include <algorithm>
 #include <any>
 #include <atomic>
+#include <bit>
 #include <cassert>
 #include <cctype>
 #include <cfloat>

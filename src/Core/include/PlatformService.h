@@ -7,7 +7,14 @@
 #pragma once
 
 #define NOMINMAX
+#define UNICODE
 #include <Windows.h>
+#include <cstdint>
+#include <filesystem>
+#include <fstream>
+#include <string>
+#include <span>
+#include <vector>
 
 /**
  * \brief A service providing platform-specific functionality.
