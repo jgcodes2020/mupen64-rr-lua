@@ -7,7 +7,6 @@ add_library(Mupen64RR.Core STATIC
     "include/core_plugin.h"
     "include/core_types.h"
     "include/core_api.h"
-    "stdafx.h"
     "memory/pif_lut.h"
     "memory/dma.h"
     "memory/flashram.h"
@@ -88,8 +87,8 @@ set_target_properties(Mupen64RR.Core PROPERTIES
 )
 target_include_directories(Mupen64RR.Core PUBLIC "include")
 target_include_directories(Mupen64RR.Core PRIVATE ".")
-target_link_libraries(Mupen64RR.Core PUBLIC
+target_link_libraries(Mupen64RR.Core PRIVATE
+    Mupen64RR.Common
     libdeflate::libdeflate_shared
     vendor::aladdin-md5
-    vendor::xxhash64
 )

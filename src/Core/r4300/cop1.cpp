@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: GPL-2.0-or-later
  */
 
-#include "stdafx.h"
+#include <CommonPCH.h>
 #include "ops.h"
 #include "r4300.h"
 #include "macros.h"

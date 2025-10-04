@@ -1,14 +1,5 @@
-/*
- * Copyright (c) 2025, Mupen64 maintainers, contributors, and original authors (Hacktarux, ShadowPrince, linker).
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
- */
+#pragma once
 
-#ifdef _MSC_VER
-#define _MSVC_STL_HARDENING 1
-#endif
-
-#pragma warning(push, 0)
 #include <algorithm>
 #include <any>
 #include <atomic>
@@ -40,6 +31,5 @@
 #include <variant>
 #include <vector>
 #include <xxh64.h>
-#include <MiscHelpers.h>
-#include <PlatformService.h>
-#pragma warning pop
+#include "MiscHelpers.h"
+#include "PlatformService.h"

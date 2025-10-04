@@ -19,4 +19,6 @@ find_package(libdeflate CONFIG REQUIRED)
 # vendored libraries
 add_subdirectory(vendor)
 
+# subprojects
+add_subdirectory(src/Common)
 add_subdirectory(src/Core)
