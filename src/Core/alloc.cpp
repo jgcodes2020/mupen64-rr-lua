@@ -7,7 +7,7 @@
 #include <CommonPCH.h>
 #include <alloc.h>
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <Windows.h>
 #endif
 
@@ -15,7 +15,7 @@
 
 void *malloc_exec(size_t size)
 {
-#ifdef WIN32
+#ifdef _WIN32
     return VirtualAlloc(NULL, size, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
 #else
 #error "malloc_exec not implemented for this platform"
@@ -37,7 +37,7 @@ void *realloc_exec(void *ptr, size_t oldsize, size_t newsize)
 
 void free_exec(void *ptr)
 {
-#ifdef WIN32
+#ifdef _WIN32
     VirtualFree(ptr, 0, MEM_RELEASE);
 #else
 #error "free_exec not implemented for this platform"

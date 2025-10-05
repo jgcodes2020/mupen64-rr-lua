@@ -271,8 +271,8 @@ void jpg_uncompress(OSTask_t *task)
 
         if (jpg_data.h == 0)
         {
-#ifdef __WIN32
-            MessageBox(NULL, "h==0", "h==0", MB_OK);
+#ifdef _WIN32
+            MessageBoxA(NULL, "h==0", "h==0", MB_OK);
 #else
             printf("h==0\n");
 #endif

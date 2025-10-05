@@ -21,4 +21,7 @@ if (WIN32)
     add_subdirectory(Plugins.Input.Dummy)
     add_subdirectory(Plugins.RSP.Dummy)
     add_subdirectory(Plugins.Video.Dummy)
+
+    # TAS RSP
+    add_subdirectory(Plugins.RSP.TAS)
 endif()

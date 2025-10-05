@@ -2,13 +2,13 @@
   "version": 3,
   "configurePresets": [
     {
-        "name": "common",
-        "hidden": true,
-        "generator": "Ninja",
-        "binaryDir": "${sourceDir}/build",
-        "cacheVariables": {
-            "CMAKE_EXPORT_COMPILE_COMMANDS": true
-        }
+      "name": "common",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build",
+      "cacheVariables": {
+        "CMAKE_EXPORT_COMPILE_COMMANDS": true
+      }
     },
     {
       "name": "vcpkg",

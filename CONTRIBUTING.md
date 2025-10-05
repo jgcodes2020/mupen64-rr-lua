@@ -12,6 +12,31 @@ Every non-library file must contain the following header:
 
 # Compiling
 
+You'll need:
+- Visual Studio (for the compiler, CMake, Ninja and vcpkg)
+
+## Windows/CMake
+Create a `CMakeUserPresets.json` in the root folder with the following:
+```json
+{
+  "version": 3,
+  "configurePresets": [
+    {
+      "name": "default",
+      "inherits": "vcpkg",
+      "environment": {
+        "VCPKG_ROOT": "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\vcpkg"
+      }
+    }
+  ]
+}
+```
+
+You may adjust the path in `VCPKG_ROOT` if you have `vcpkg` installed in an alternate location, or if you have a newer version than VS2022 installed. From here, open the Visual Studio Developer PowerShell and run `cmake --preset default` and `cmake --build build`.
+
+To create a 32-bit build, run CMake under the 32-bit Visual Studio Developer PowerShell instead.
+
+## Visual Studio (broken)
 Open the solution with your IDE of choice and build the solution.
 
 Recommended IDEs are:
