@@ -36,18 +36,6 @@ You may adjust the path in `VCPKG_ROOT` if you have `vcpkg` installed in an alte
 
 To create a 32-bit build, run CMake under the 32-bit Visual Studio Developer PowerShell instead.
 
-## Visual Studio (broken)
-Open the solution with your IDE of choice and build the solution.
-
-Recommended IDEs are:
-
-- [Visual Studio 2022](https://visualstudio.microsoft.com/vs/)
-- [Rider](https://www.jetbrains.com/rider/)
-
-For Rider users:
-
-It's recommended to enable "Use external console" (Run > Modify Run Configuration...).
-
 # Commit Style
 
 Merge commits to the `main` branch *must* adhere to [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/#specification). 
