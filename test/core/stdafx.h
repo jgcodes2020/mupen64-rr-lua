@@ -4,6 +4,6 @@
  * SPDX-License-Identifier: GPL-2.0-or-later
  */
 
-#include <Core/stdafx.h>
+#include <CommonPCH.h>
 #include <Core/include/core_api.h>
 #include <catch_amalgamated.hpp>

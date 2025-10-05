@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include <ViewPlugin.h>
+#include <Views.Win32/ViewPlugin.h>
 
 struct plugin_funcs
 {

@@ -1,0 +1,24 @@
+# COMMON LIBRARIES
+# ============================
+
+# common headers and PCH
+add_subdirectory(Common)
+# core API and headers
+add_subdirectory(Core)
+
+
+if (WIN32)
+    # VIEW
+    # ============================
+
+    add_subdirectory(Views.Win32)
+
+    # BUNDLED PLUGINS
+    # ============================
+
+    # dummy plugins
+    add_subdirectory(Plugins.Audio.Dummy)
+    add_subdirectory(Plugins.Input.Dummy)
+    add_subdirectory(Plugins.RSP.Dummy)
+    add_subdirectory(Plugins.Video.Dummy)
+endif()

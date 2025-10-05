@@ -10,7 +10,7 @@
 
 #define SPDLOG_LEVEL_NAMES {"🔍", "🪲", "ℹ️", "⚠️", "❌", "💥", ""}
 
-#include <Core/stdafx.h>
+#include <CommonPCH.h>
 #include <core_api.h>
 
 #pragma warning(push, 0)

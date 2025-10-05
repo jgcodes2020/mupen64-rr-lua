@@ -1,12 +1,19 @@
-add_library(Mupen64RR.Core STATIC
-    "include/PlatformService.h"
-    "include/MiscHelpers.h"
-    "Core.h"
-    "alloc.h"
-    "cheats.h"
+add_library(Mupen64RR.Core.Headers INTERFACE
     "include/core_plugin.h"
     "include/core_types.h"
     "include/core_api.h"
+)
+set_target_properties(Mupen64RR.Core.Headers PROPERTIES
+    CXX_STANDARD 23
+    CXX_STANDARD_REQUIRED ON
+)
+target_include_directories(Mupen64RR.Core.Headers INTERFACE "include")
+target_link_libraries(Mupen64RR.Core.Headers INTERFACE Mupen64RR.Common)
+
+add_library(Mupen64RR.Core STATIC
+    "Core.h"
+    "alloc.h"
+    "cheats.h"
     "memory/pif_lut.h"
     "memory/dma.h"
     "memory/flashram.h"
@@ -89,6 +96,7 @@ target_include_directories(Mupen64RR.Core PUBLIC "include")
 target_include_directories(Mupen64RR.Core PRIVATE ".")
 target_link_libraries(Mupen64RR.Core PRIVATE
     Mupen64RR.Common
+    Mupen64RR.Core.Headers
     libdeflate::libdeflate_shared
     vendor::aladdin-md5
 )

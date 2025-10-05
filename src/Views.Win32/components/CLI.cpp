@@ -10,7 +10,7 @@
 #include <Messenger.h>
 #include <ThreadPool.h>
 #include <argh.h>
-#include <json.hpp>
+#include <nlohmann/json.hpp>
 #include <capture/EncodingManager.h>
 #include <components/Benchmark.h>
 #include <components/CLI.h>

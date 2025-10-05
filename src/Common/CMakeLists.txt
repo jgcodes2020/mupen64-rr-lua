@@ -9,6 +9,7 @@ set_target_properties(Mupen64RR.Common PROPERTIES
 )
 target_include_directories(Mupen64RR.Common INTERFACE include)
 target_link_libraries(Mupen64RR.Common INTERFACE
+    libdeflate::libdeflate_shared
     vendor::xxhash64
 )
 target_precompile_headers(Mupen64RR.Common INTERFACE "include/CommonPCH.h")

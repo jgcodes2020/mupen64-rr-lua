@@ -1,9 +1,9 @@
 CompileFlags:
   Add: ["/std:c++latest"]
-Diagnostics:
-  UnusedIncludes: Strict
-  MissingIncludes: Strict
-  Includes:
-    IgnoreHeader:
-    - "core_(api|plugin|types).h"
-    - "CommonPCH.h"
+# Diagnostics:
+#   UnusedIncludes: Strict
+#   MissingIncludes: Strict
+#   Includes:
+#     IgnoreHeader:
+#     - "core_(api|plugin|types).h"
+#     - "CommonPCH.h"

@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: GPL-2.0-or-later
  */
 
-#include <Main.h>
+#include "Main.h"
 
 PlatformService platform_service;
 

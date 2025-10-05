@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include <Core/stdafx.h>
+#include <CommonPCH.h>
 #include <core_api.h>
 #include <Views.Win32/ViewPlugin.h>
 #include <resource.h>
