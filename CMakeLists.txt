@@ -4,8 +4,12 @@ project(mupen64-rr
   DESCRIPTION "Powerful N64 TASing emulator with Lua scripting support"
   LANGUAGES C CXX
 )
+# version suffix
 set(MUPEN64RR_VERSION_SUFFIX "")
 message(STATUS "Full version name: ${PROJECT_VERSION}${MUPEN64RR_VERSION_SUFFIX}")
+
+# build output
+set(MUPEN64RR_OUT_DIR "${PROJECT_BINARY_DIR}/out/")
 
 if(NOT WIN32)
   message(WARNING "This build setup has not been tested outside of Windows. You're on your own; good luck.")

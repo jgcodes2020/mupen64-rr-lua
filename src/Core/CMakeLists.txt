@@ -91,6 +91,7 @@ add_library(Mupen64RR.Core STATIC
 set_target_properties(Mupen64RR.Core PROPERTIES
     CXX_STANDARD 23
     CXX_STANDARD_REQUIRED ON
+    OUTPUT_NAME Core
 )
 target_include_directories(Mupen64RR.Core PUBLIC "include")
 target_include_directories(Mupen64RR.Core PRIVATE ".")

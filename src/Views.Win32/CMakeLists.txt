@@ -4,6 +4,7 @@ add_library(Mupen64RR.Views.Win32.Headers INTERFACE
 set_target_properties(Mupen64RR.Views.Win32.Headers PROPERTIES
     CXX_STANDARD 23
     CXX_STANDARD_REQUIRED ON
+    OUTPUT_NAME mupen64
 )
 target_include_directories(Mupen64RR.Views.Win32.Headers INTERFACE "include")
 
@@ -126,7 +127,10 @@ add_executable(Mupen64RR.Views.Win32 WIN32
 set_target_properties(Mupen64RR.Views.Win32 PROPERTIES
     CXX_STANDARD 23
     CXX_STANDARD_REQUIRED ON
+    # output location
     OUTPUT_NAME "mupen64"
+    RUNTIME_OUTPUT_DIRECTORY "${MUPEN64RR_OUT_DIR}"
+    PDB_OUTPUT_DIRECTORY "${MUPEN64RR_OUT_DIR}"
 )
 target_precompile_headers(Mupen64RR.Views.Win32 PRIVATE "stdafx.h")
 target_include_directories(Mupen64RR.Views.Win32 PRIVATE ".")
@@ -143,7 +147,7 @@ target_link_libraries(Mupen64RR.Views.Win32 PRIVATE
     vendor::microlru
     vendor::mini
 )
-# Windows-
+# Windows library linkages
 target_link_libraries(Mupen64RR.Views.Win32 PRIVATE
     Shlwapi
     vfw32
@@ -168,22 +172,3 @@ target_compile_definitions(Mupen64RR.Views.Win32 PRIVATE
     # "SPDLOG_WCHAR_TO_UTF8_SUPPORT"
     "VERSION_SUFFIX=L\"${MUPEN64RR_VERSION_SUFFIX}\""
 )
-#[=[
-Shlwapi
-vfw32
-winmm
-propsys
-Comctl32
-uxtheme
-Msimg32
-Gdiplus
-d2d1
-dwrite
-Dbghelp
-lua54
-Dcomp
-D3D11
-DXGI
-d3dcompiler
-Winhttp
-]=]
