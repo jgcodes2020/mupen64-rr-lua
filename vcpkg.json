@@ -7,6 +7,7 @@
       "name": "spdlog",
       "features": ["wchar"]
     },
+    "pkgconf",
     "speexdsp"
   ],
   "builtin-baseline": "a62ce77d56ee07513b4b67de1ec2daeaebfae51a"
