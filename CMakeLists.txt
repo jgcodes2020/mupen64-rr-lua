@@ -11,6 +11,11 @@ if(NOT WIN32)
   message(WARNING "This build setup has not been tested outside of Windows. You're on your own; good luck.")
 endif()
 
+get_property(is_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+if (NOT CMAKE_BUILD_TYPE AND NOT is_multi_config)
+  set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "The build type to use with CMake. [Debug;Release;MinSizeRel;RelWithDebInfo]")
+endif()
+
 # pkg-config libraries
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(speexdsp IMPORTED_TARGET GLOBAL "speexdsp")
