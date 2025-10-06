@@ -29,3 +29,9 @@ target_link_libraries(Mupen64RR.Plugins.RSP.TAS PRIVATE
     Mupen64RR.Core.Headers
     Mupen64RR.Views.Win32.Headers
 )
+target_link_libraries(Mupen64RR.Plugins.RSP.TAS PRIVATE
+    Comctl32
+    uxtheme
+    Msimg32
+    Gdiplus
+)
