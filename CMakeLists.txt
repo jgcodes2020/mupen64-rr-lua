@@ -37,7 +37,7 @@ endif()
 # =======================================
 include(CTest)
 
-# LIBRARIES
+# Libraries
 # =======================================
 
 # pkg-config libraries
@@ -62,6 +62,20 @@ if(LUA_FOUND AND NOT TARGET Lua::Lua)
     INTERFACE_LINK_LIBRARIES "${LUA_LIBRARIES}"
   )
 endif()
+
+# Extra config options for specific compilers
+# ===========================================
+
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+  # Include linker options to:
+  # - disable Address-Space Layout Randomization (ASLR)
+  # - disable Windows Data Execution Prevention (DEP)
+  # - enable the program to use pointers larger than 2GB
+  add_link_options(/DYNAMICBASE:NO /NXCOMPAT:NO /LARGEADDRESSAWARE)
+endif()
+
+# Subdirectories
+# ===========================================
 
 # vendored libraries
 add_subdirectory(vendor)
