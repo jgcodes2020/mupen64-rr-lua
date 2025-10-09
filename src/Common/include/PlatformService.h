@@ -7,7 +7,6 @@
 #pragma once
 
 #define NOMINMAX
-#define UNICODE
 #include <Windows.h>
 #include <cstdint>
 #include <filesystem>

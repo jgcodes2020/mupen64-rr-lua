@@ -11,11 +11,10 @@
       }
     },
     {
-      "name": "vcpkg",
-      "hidden": true,
+      "name": "vcpkg-win64",
       "inherits": "common",
       "cacheVariables": {
-        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+        "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/toolchains/vcpkg-win64.cmake"
       },
       "condition": {
         "type": "equals",

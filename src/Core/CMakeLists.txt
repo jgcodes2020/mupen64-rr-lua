@@ -1,3 +1,9 @@
+#[===[
+Copyright (c) 2025, Mupen64 maintainers, contributors, and original authors (Hacktarux, ShadowPrince, linker).
+
+SPDX-License-Identifier: GPL-2.0-or-later
+]===]
+
 add_library(Mupen64RR.Core.Headers INTERFACE
     "include/core_plugin.h"
     "include/core_types.h"
@@ -98,6 +104,6 @@ target_include_directories(Mupen64RR.Core PRIVATE ".")
 target_link_libraries(Mupen64RR.Core PRIVATE
     Mupen64RR.Common
     Mupen64RR.Core.Headers
-    libdeflate::libdeflate_shared
+    libdeflate::libdeflate_static
     vendor::aladdin-md5
 )

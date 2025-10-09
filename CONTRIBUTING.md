@@ -10,31 +10,27 @@ Every non-library file must contain the following header:
  */
 ```
 
+Every non-library CMake script must contain the following header:
+
+```cmake
+#[===[
+Copyright (c) 2025, Mupen64 maintainers, contributors, and original authors (Hacktarux, ShadowPrince, linker).
+
+SPDX-License-Identifier: GPL-2.0-or-later
+]===]
+```
+
 # Compiling
 
 You'll need:
 - Visual Studio (for the compiler, CMake, Ninja and vcpkg)
 
 ## Windows/CMake
-Create a `CMakeUserPresets.json` in the root folder with the following:
-```json
-{
-  "version": 3,
-  "configurePresets": [
-    {
-      "name": "default",
-      "inherits": "vcpkg",
-      "environment": {
-        "VCPKG_ROOT": "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\vcpkg"
-      }
-    }
-  ]
-}
+In order for the compiler to work, you'll need to be in a VS developer environment (Command Prompt or PowerShell). The architecture will be set by the target architecture (x86 or x64) used in the command prompt. Use the `vcpkg-win64` preset as shown below.
 ```
-
-You may adjust the path in `VCPKG_ROOT` if you have `vcpkg` installed in an alternate location, or if you have a newer version than VS2022 installed. From here, open the Visual Studio Developer PowerShell and run `cmake --preset default` and `cmake --build build`.
-
-To create a 32-bit build, run CMake under the 32-bit Visual Studio Developer PowerShell instead.
+cmake --preset vcpkg-win64
+cmake --build build
+```
 
 # Commit Style
 

@@ -1,3 +1,8 @@
+#[===[
+Copyright (c) 2025, Mupen64 maintainers, contributors, and original authors (Hacktarux, ShadowPrince, linker).
+
+SPDX-License-Identifier: GPL-2.0-or-later
+]===]
 cmake_minimum_required(VERSION 3.22.1 FATAL_ERROR)
 project(mupen64-rr
   VERSION 1.3.0
