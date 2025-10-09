@@ -23,9 +23,13 @@ if (NOT EXISTS "${MUPEN64_VCPKG_TOOLCHAIN}")
     message(FATAL_ERROR "Expected vcpkg.cmake at ${MUPEN64_VCPKG_TOOLCHAIN}")
 endif()
 
+# set some necessary settings to get compilation to work properly
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>" CACHE INTERNAL "MSVCRT variant needed to get things to work.")
+add_compile_definitions(UNICODE)
+
 # setup a few last values for vcpkg
 set(VCPKG_TARGET_TRIPLET "$ENV{VSCMD_ARG_TGT_ARCH}-windows-static" CACHE INTERNAL "target triplet for vcpkg")
-set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>" CACHE INTERNAL "MSVCRT variant needed to get things to work.")
+
 
 message(STATUS "VS architecture set to: $ENV{VSCMD_ARG_TGT_ARCH}")
 

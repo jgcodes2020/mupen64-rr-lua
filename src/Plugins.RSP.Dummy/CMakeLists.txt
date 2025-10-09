@@ -15,8 +15,4 @@ set_target_properties(Mupen64RR.Plugins.RSP.Dummy PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY "${MUPEN64RR_OUT_DIR}/plugins"
     PDB_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
 )
-target_link_libraries(Mupen64RR.Plugins.RSP.Dummy PRIVATE
-    Mupen64RR.Common
-    Mupen64RR.Core.Headers
-    Mupen64RR.Views.Win32.Headers
-)
+target_link_libraries(Mupen64RR.Plugins.RSP.Dummy PRIVATE Mupen64RR.Plugins.Win32.Common)

@@ -21,6 +21,9 @@ if (WIN32)
 
     # BUNDLED PLUGINS
     # ============================
+    
+    # common settings
+    include("${CMAKE_CURRENT_LIST_DIR}/Plugins.Common.cmake")
 
     # dummy plugins
     add_subdirectory(Plugins.Audio.Dummy)
