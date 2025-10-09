@@ -102,8 +102,17 @@ set_target_properties(Mupen64RR.Core PROPERTIES
 target_include_directories(Mupen64RR.Core PUBLIC "include")
 target_include_directories(Mupen64RR.Core PRIVATE ".")
 target_link_libraries(Mupen64RR.Core PRIVATE
-    Mupen64RR.Common
-    Mupen64RR.Core.Headers
     libdeflate::libdeflate_static
     vendor::aladdin-md5
 )
+target_link_libraries(Mupen64RR.Core PUBLIC
+    Mupen64RR.Common
+    Mupen64RR.Core.Headers
+)
+
+# FOR TESTING ONLY. DO NOT USE OTHERWISE.
+add_library(Mupen64RR.Core._TestIncludes INTERFACE)
+target_link_libraries(Mupen64RR.Core._TestIncludes INTERFACE
+    Mupen64RR.Core
+)
+target_include_directories(Mupen64RR.Core._TestIncludes INTERFACE "../" "./")
